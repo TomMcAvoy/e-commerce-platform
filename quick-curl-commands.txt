@@ -1,0 +1,48 @@
+# Quick API Test Commands
+# Copy and paste these individual curl commands for testing
+
+# 1. Health Check
+curl -s http://localhost:3000/health
+
+# 2. Register a new user
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:3002" \
+  -d '{
+    "email": "quicktest@example.com",
+    "password": "password123",
+    "firstName": "Quick",
+    "lastName": "Test",
+    "role": "customer"
+  }'
+
+# 3. Login with the user
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:3002" \
+  -d '{
+    "email": "quicktest@example.com",
+    "password": "password123"
+  }'
+
+# 4. Test CORS headers
+curl -I -H "Origin: http://localhost:3002" http://localhost:3000/api/auth/register
+
+# 5. Get products list
+curl -H "Origin: http://localhost:3002" http://localhost:3000/api/products
+
+# 6. Logout (need to replace TOKEN with actual token from login)
+curl -X POST http://localhost:3000/api/auth/logout \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Origin: http://localhost:3002"
+
+# 7. Test with a protected endpoint (need token)
+curl -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Origin: http://localhost:3002" \
+  http://localhost:3000/api/auth/me
+
+# 8. Access the debug page directly
+curl -s http://localhost:3002/debug-api.html > debug-page.html && open debug-page.html
+
+# 9. Test frontend Next.js debug page
+curl -s http://localhost:3002/debug

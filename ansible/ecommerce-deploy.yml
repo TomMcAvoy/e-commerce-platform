@@ -1,0 +1,232 @@
+---
+# Ansible Playbook for E-Commerce Platform Deployment
+# Usage: ansible-playbook -i inventory ecommerce-deploy.yml
+
+- name: Deploy E-Commerce Platform
+  hosts: ecommerce_servers
+  become: yes
+  vars:
+    app_name: shoppingcart
+    app_path: /var/www/{{ app_name }}
+    node_version: "18"
+    mongodb_version: "6.0"
+    redis_version: "7.0"
+
+  tasks:
+    # System Setup
+    - name: Update package cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install system dependencies
+      apt:
+        name:
+          - curl
+          - git
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+        state: present
+
+    # Node.js Setup
+    - name: Install Node.js {{ node_version }}
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | sudo -E bash -
+        apt-get install -y nodejs
+      args:
+        creates: /usr/bin/node
+
+    # MongoDB Setup
+    - name: Add MongoDB repository key
+      apt_key:
+        url: https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc
+        state: present
+
+    - name: Add MongoDB repository
+      apt_repository:
+        repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/{{ mongodb_version }} multiverse"
+        state: present
+
+    - name: Install MongoDB
+      apt:
+        name: mongodb-org
+        state: present
+
+    - name: Start and enable MongoDB
+      systemd:
+        name: mongod
+        state: started
+        enabled: yes
+
+    # Redis Setup
+    - name: Install Redis
+      apt:
+        name: redis-server
+        state: present
+
+    - name: Configure Redis
+      template:
+        src: redis.conf.j2
+        dest: /etc/redis/redis.conf
+        backup: yes
+      notify: restart redis
+
+    # Application Deployment
+    - name: Create application user
+      user:
+        name: "{{ app_name }}"
+        home: "{{ app_path }}"
+        shell: /bin/bash
+        system: yes
+
+    - name: Create application directory
+      file:
+        path: "{{ app_path }}"
+        state: directory
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+        mode: '0755'
+
+    - name: Clone application repository
+      git:
+        repo: https://github.com/yourusername/shoppingcart.git
+        dest: "{{ app_path }}"
+        force: yes
+      become_user: "{{ app_name }}"
+      notify: restart app
+
+    - name: Install npm dependencies
+      npm:
+        path: "{{ app_path }}"
+        state: present
+      become_user: "{{ app_name }}"
+
+    - name: Build application
+      command: npm run build
+      args:
+        chdir: "{{ app_path }}"
+      become_user: "{{ app_name }}"
+
+    # Environment Configuration
+    - name: Create environment file
+      template:
+        src: .env.j2
+        dest: "{{ app_path }}/.env"
+        owner: "{{ app_name }}"
+        group: "{{ app_name }}"
+        mode: '0600'
+      notify: restart app
+
+    # Systemd Service
+    - name: Create systemd service file
+      template:
+        src: ecommerce.service.j2
+        dest: /etc/systemd/system/{{ app_name }}.service
+      notify:
+        - reload systemd
+        - restart app
+
+    - name: Enable and start application service
+      systemd:
+        name: "{{ app_name }}"
+        enabled: yes
+        state: started
+
+    # Nginx Configuration
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Create Nginx configuration
+      template:
+        src: nginx.conf.j2
+        dest: "/etc/nginx/sites-available/{{ app_name }}"
+      notify: restart nginx
+
+    - name: Enable Nginx site
+      file:
+        src: "/etc/nginx/sites-available/{{ app_name }}"
+        dest: "/etc/nginx/sites-enabled/{{ app_name }}"
+        state: link
+      notify: restart nginx
+
+    - name: Test Nginx configuration
+      command: nginx -t
+      changed_when: false
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    # SSL Certificate (Let's Encrypt)
+    - name: Obtain SSL certificate
+      command: certbot --nginx -d {{ domain_name }} --non-interactive --agree-tos --email {{ admin_email }}
+      when: domain_name is defined and admin_email is defined
+
+    # Firewall Configuration
+    - name: Configure UFW firewall
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - '22'    # SSH
+        - '80'    # HTTP
+        - '443'   # HTTPS
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: deny
+
+    # Health Checks
+    - name: Wait for application to start
+      uri:
+        url: "http://localhost:3000/health"
+        method: GET
+        status_code: 200
+      retries: 10
+      delay: 5
+
+  handlers:
+    - name: restart redis
+      systemd:
+        name: redis-server
+        state: restarted
+
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
+
+    - name: restart app
+      systemd:
+        name: "{{ app_name }}"
+        state: restarted
+
+    - name: reload systemd
+      systemd:
+        daemon_reload: yes
+
+# Post-deployment tasks
+- name: Post-deployment verification
+  hosts: ecommerce_servers
+  tasks:
+    - name: Run API tests
+      uri:
+        url: "http://{{ inventory_hostname }}/health"
+        method: GET
+        status_code: 200
+      delegate_to: localhost
+
+    - name: Check application logs
+      command: journalctl -u {{ app_name }} --lines=10 --no-pager
+      register: app_logs
+
+    - name: Display application status
+      debug:
+        msg: "Application is running. Recent logs: {{ app_logs.stdout_lines[-3:] }}"
