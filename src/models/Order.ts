@@ -99,7 +99,37 @@ const OrderSchema = new Schema({
     required: true
   },
   notes: String,
-  trackingNumbers: [String]
+  trackingNumbers: [String],
+  // Fulfillment fields
+  shippingMethod: {
+    type: String,
+    enum: ['standard', 'express', 'overnight', 'pickup'],
+    default: 'standard'
+  },
+  carrier: {
+    type: String,
+    enum: ['ups', 'fedex', 'usps', 'dhl', 'other'],
+    default: 'ups'
+  },
+  shippedAt: Date,
+  deliveredAt: Date,
+  estimatedDelivery: Date,
+  fulfillmentStatus: {
+    type: String,
+    enum: ['pending', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered', 'failed'],
+    default: 'pending'
+  },
+  // Production fields
+  productionStatus: {
+    type: String,
+    enum: ['not_started', 'in_production', 'quality_check', 'completed'],
+    default: 'not_started'
+  },
+  priorityLevel: {
+    type: String,
+    enum: ['low', 'normal', 'high', 'urgent'],
+    default: 'normal'
+  }
 }, {
   timestamps: true
 });

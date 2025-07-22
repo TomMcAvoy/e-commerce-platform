@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types'
 import Product from '../models/Product'
-import Order from '../models/Order'
+import Vendor from '../models/Vendor'
+import QualityInspection from '../models/QualityInspection'
 import { AppError } from '../middleware/errorHandler'
 
 interface QualityInspection {

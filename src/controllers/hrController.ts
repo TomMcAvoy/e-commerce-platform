@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types'
 import User from '../models/User'
+import { Employee, TimeEntry, PayrollRecord } from '../models/HRModels'
 import { AppError } from '../middleware/errorHandler'
 
 interface Employee {

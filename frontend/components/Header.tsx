@@ -63,6 +63,14 @@ export default function SocialHeader() {
               <span className="text-xs text-gray-600 group-hover:text-blue-600 mt-1 hidden md:block">Business</span>
             </Link>
 
+            {/* LinkedIn Style */}
+            <Link href="/linkedin" className="flex flex-col items-center p-2 hover:bg-gray-100 rounded-lg transition-colors group">
+              <div className="w-6 h-6 bg-blue-600 rounded text-white flex items-center justify-center text-xs font-bold">
+                in
+              </div>
+              <span className="text-xs text-gray-600 group-hover:text-blue-600 mt-1 hidden md:block">LinkedIn</span>
+            </Link>
+
             {/* Messages */}
             <Link href="/messages" className="flex flex-col items-center p-2 hover:bg-gray-100 rounded-lg transition-colors group relative">
               <MessageCircle className="h-6 w-6 text-gray-600 group-hover:text-blue-600" />

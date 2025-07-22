@@ -114,6 +114,29 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* LinkedIn Style Banner */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <div className="max-w-screen-xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white rounded flex items-center justify-center">
+                <span className="text-blue-600 font-bold text-sm">in</span>
+              </div>
+              <div>
+                <h3 className="font-semibold">Try LinkedIn-Style Social Commerce</h3>
+                <p className="text-sm text-blue-100">Experience professional networking with affiliate marketing</p>
+              </div>
+            </div>
+            <Link 
+              href="/linkedin" 
+              className="bg-white text-blue-600 px-4 py-2 rounded-md font-medium hover:bg-blue-50 transition-colors"
+            >
+              Switch to LinkedIn View
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* LinkedIn-style container with max width and proper spacing */}
       <div className="max-w-screen-xl mx-auto">
         <div className="flex gap-6 px-6 py-6">

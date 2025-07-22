@@ -85,8 +85,8 @@ kill_by_pattern() {
 
 # Stop development servers by port
 echo -e "${BLUE}📍 Stopping servers by port:${NC}"
-kill_port 3000 "Backend API Server"
-kill_port 3001 "Frontend Next.js Server"
+kill_port 3010 "Backend API Server"
+kill_port 3011 "Frontend Next.js Server"
 kill_port 3002 "Alternative Frontend Port"
 
 # Stop common development processes
@@ -126,17 +126,17 @@ echo ""
 
 # Final port check
 echo -e "${BLUE}🔍 Final port status check:${NC}"
-PORT_3000=$(lsof -ti :3000 2>/dev/null)
-PORT_3001=$(lsof -ti :3001 2>/dev/null)
+PORT_3010=$(lsof -ti :3010 2>/dev/null)
+PORT_3011=$(lsof -ti :3011 2>/dev/null)
 
-if [ -z "$PORT_3000" ] && [ -z "$PORT_3001" ]; then
+if [ -z "$PORT_3010" ] && [ -z "$PORT_3011" ]; then
     echo -e "${GREEN}✅ All development servers stopped successfully!${NC}"
-    echo -e "${GREEN}   Port 3000: Free${NC}"
-    echo -e "${GREEN}   Port 3001: Free${NC}"
+    echo -e "${GREEN}   Port 3010: Free${NC}"
+    echo -e "${GREEN}   Port 3011: Free${NC}"
 else
     echo -e "${YELLOW}⚠️  Some ports may still be in use:${NC}"
-    [ -n "$PORT_3000" ] && echo -e "${RED}   Port 3000: In use (PID: $PORT_3000)${NC}"
-    [ -n "$PORT_3001" ] && echo -e "${RED}   Port 3001: In use (PID: $PORT_3001)${NC}"
+    [ -n "$PORT_3010" ] && echo -e "${RED}   Port 3010: In use (PID: $PORT_3010)${NC}"
+    [ -n "$PORT_3011" ] && echo -e "${RED}   Port 3011: In use (PID: $PORT_3011)${NC}"
 fi
 
 echo ""

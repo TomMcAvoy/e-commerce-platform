@@ -2,48 +2,8 @@ import { Request, Response, NextFunction } from 'express'
 import { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types'
 import Product from '../models/Product'
 import Order from '../models/Order'
+import ProductionOrder, { IProductionOrder } from '../models/ProductionOrder'
 import { AppError } from '../middleware/errorHandler'
-
-interface ProductionOrder {
-  _id?: string
-  orderNumber: string
-  productId: string
-  productName?: string
-  quantity: number
-  targetDate: Date
-  priority: 'low' | 'normal' | 'high' | 'urgent'
-  status: 'planned' | 'released' | 'in-progress' | 'completed' | 'cancelled'
-  billOfMaterials: Array<{
-    materialId: string
-    materialName: string
-    quantityRequired: number
-    unit: string
-    costPerUnit: number
-    totalCost: number
-  }>
-  routing: Array<{
-    operationNumber: number
-    workCenter: string
-    operationDescription: string
-    setupTime: number
-    processTime: number
-    estimatedDuration: number
-  }>
-  actualCosts: {
-    materialCost: number
-    laborCost: number
-    overheadCost: number
-    totalCost: number
-  }
-  progress: {
-    percentComplete: number
-    completedOperations: number
-    totalOperations: number
-    actualStartDate?: Date
-    estimatedCompletionDate?: Date
-    actualCompletionDate?: Date
-  }
-}
 
 interface WorkCenter {
   _id?: string
@@ -189,7 +149,7 @@ export const getProductionDashboard = async (
 // @access  Private (Admin/Production Manager)
 export const getProductionOrders = async (
   req: Request,
-  res: Response<PaginatedResponse<ProductionOrder>>,
+  res: Response<PaginatedResponse<IProductionOrder>>,
   next: NextFunction
 ): Promise<void> => {
   try {
@@ -217,82 +177,18 @@ export const getProductionOrders = async (
       }
     }
 
-    // TODO: Replace with actual ProductionOrder model
-    // For now, simulate production orders from products and orders
-    const productionOrders: ProductionOrder[] = [
-      {
-        _id: 'po-001',
-        orderNumber: 'PO-2025-001',
-        productId: 'prod-001',
-        productName: 'Premium Widget',
-        quantity: 500,
-        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-        priority: 'high',
-        status: 'in-progress',
-        billOfMaterials: [
-          {
-            materialId: 'mat-001',
-            materialName: 'Steel Component',
-            quantityRequired: 1000,
-            unit: 'kg',
-            costPerUnit: 2.50,
-            totalCost: 2500
-          },
-          {
-            materialId: 'mat-002',
-            materialName: 'Electronic Module',
-            quantityRequired: 500,
-            unit: 'pcs',
-            costPerUnit: 15.00,
-            totalCost: 7500
-          }
-        ],
-        routing: [
-          {
-            operationNumber: 10,
-            workCenter: 'Assembly Line 1',
-            operationDescription: 'Component Assembly',
-            setupTime: 2,
-            processTime: 8,
-            estimatedDuration: 10
-          },
-          {
-            operationNumber: 20,
-            workCenter: 'Quality Control',
-            operationDescription: 'Quality Inspection',
-            setupTime: 0.5,
-            processTime: 2,
-            estimatedDuration: 2.5
-          }
-        ],
-        actualCosts: {
-          materialCost: 10000,
-          laborCost: 3500,
-          overheadCost: 1500,
-          totalCost: 15000
-        },
-        progress: {
-          percentComplete: 65,
-          completedOperations: 1,
-          totalOperations: 2,
-          actualStartDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          estimatedCompletionDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
-        }
-      }
-    ]
-
-    // Apply filters (simplified for demo)
-    let filteredOrders = productionOrders
-    if (req.query.status) {
-      filteredOrders = filteredOrders.filter(order => order.status === req.query.status)
-    }
-
-    const paginatedOrders = filteredOrders.slice(skip, skip + limit)
-    const total = filteredOrders.length
+    // Use actual ProductionOrder model
+    const total = await ProductionOrder.countDocuments(filter)
+    const productionOrders = await ProductionOrder.find(filter)
+      .populate('product', 'name description')
+      .populate('order', 'orderNumber status')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
 
     res.status(200).json({
       success: true,
-      data: paginatedOrders,
+      data: productionOrders,
       pagination: {
         page,
         pages: Math.ceil(total / limit),
@@ -325,12 +221,10 @@ export const createProductionOrder = async (
       return next(new AppError('Product not found', 404))
     }
 
-    // TODO: Create actual ProductionOrder model
-    const productionOrder: ProductionOrder = {
-      _id: new Date().getTime().toString(),
+    // Create actual ProductionOrder using the model
+    const productionOrder = new ProductionOrder({
       orderNumber: `PO-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
-      productId,
-      productName: product.name,
+      product: productId,
       quantity,
       targetDate: new Date(targetDate),
       priority: priority || 'normal',
@@ -348,7 +242,9 @@ export const createProductionOrder = async (
         completedOperations: 0,
         totalOperations: routing?.length || 0
       }
-    }
+    })
+
+    await productionOrder.save()
 
     res.status(201).json({
       success: true,

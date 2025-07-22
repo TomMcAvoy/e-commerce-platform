@@ -4,7 +4,7 @@ const nextConfig = {
     domains: ['localhost', 'placeholder.com'],
   },
   env: {
-    NEXT_PUBLIC_API_URL: 'http://localhost:3000/api',
+    NEXT_PUBLIC_API_URL: 'http://localhost:3010/api',
   },
 }
 

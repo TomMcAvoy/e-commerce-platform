@@ -85,8 +85,8 @@ class Server {
     const corsOrigins = process.env.CORS_ORIGIN 
       ? process.env.CORS_ORIGIN.split(',')
       : [
-          process.env.FRONTEND_URL || 'http://localhost:3001',
-          'http://localhost:3000' // Backend URL for debugging
+          process.env.FRONTEND_URL || 'http://localhost:3011',
+          'http://localhost:3010' // Backend URL for debugging
         ];
 
     this.app.use(cors({
@@ -198,11 +198,11 @@ class Server {
   }
 
   public start(): void {
-    const port = process.env.PORT || 3000;
+    const port = process.env.PORT || 3010;
     this.app.listen(port, () => {
       logger.info(`🚀 Server running on port ${port}`);
       logger.info(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
-      logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3001'}`);
+      logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3011'}`);
     });
   }
 

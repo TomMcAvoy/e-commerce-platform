@@ -3,6 +3,7 @@ import { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types'
 import Order from '../models/Order'
 import User from '../models/User'
 import Vendor from '../models/Vendor'
+import { Transaction, PayoutRequest } from '../models/FinancialModels'
 import { AppError } from '../middleware/errorHandler'
 
 interface Transaction {

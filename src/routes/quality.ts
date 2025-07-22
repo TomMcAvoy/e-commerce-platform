@@ -13,22 +13,21 @@ import { protect, authorize } from '../middleware/auth'
 const router = express.Router()
 
 // Quality Dashboard
-router.get('/dashboard', protect, authorize('admin', 'quality_manager'), getQualityDashboard)
+router.get('/dashboard', protect as any, authorize('admin', 'quality_manager') as any, getQualityDashboard as any)
 
 // Quality Inspections
-router.route('/inspections')
-  .get(protect, authorize('admin', 'quality_manager', 'inspector'), getQualityInspections)
-  .post(protect, authorize('admin', 'quality_manager', 'inspector'), createQualityInspection)
+router.get('/inspections', protect as any, authorize('admin', 'quality_manager', 'inspector') as any, getQualityInspections as any)
+router.post('/inspections', protect as any, authorize('admin', 'quality_manager', 'inspector') as any, createQualityInspection as any)
 
-router.put('/inspections/:id', protect, authorize('admin', 'quality_manager', 'inspector'), updateInspectionResults)
+router.put('/inspections/:id', protect as any, authorize('admin', 'quality_manager', 'inspector') as any, updateInspectionResults as any)
 
 // Quality Metrics
-router.get('/metrics', protect, authorize('admin', 'quality_manager'), getQualityMetrics)
+router.get('/metrics', protect as any, authorize('admin', 'quality_manager') as any, getQualityMetrics as any)
 
 // Supplier Quality
-router.get('/suppliers', protect, authorize('admin', 'quality_manager'), getSupplierQualityRatings)
+router.get('/suppliers', protect as any, authorize('admin', 'quality_manager') as any, getSupplierQualityRatings as any)
 
 // Quality Reports
-router.get('/reports', protect, authorize('admin', 'quality_manager'), getQualityReports)
+router.get('/reports', protect as any, authorize('admin', 'quality_manager') as any, getQualityReports as any)
 
 export default router

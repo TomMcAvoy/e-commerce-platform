@@ -1,10 +1,8 @@
 #!/bin/bash
 
-# API Debug Test Script
-# This script tests all the API endpoints that our debug page would test
-
-API_URL="http://localhost:3000"
-FRONTEND_URL="http://localhost:3001"
+# API Testing Script with Health Checks and CORS Validation
+API_URL="http://localhost:3010"
+FRONTEND_URL="http://localhost:3011"
 
 echo "🚀 Starting API Debug Tests..."
 echo "API URL: $API_URL"
@@ -178,8 +176,8 @@ echo ""
 echo "🔧 Common 'Failed to Fetch' Solutions:"
 echo "================================"
 echo "1. Ensure both servers are running:"
-echo "   Backend:  npm run dev:server  (port 3000)"
-echo "   Frontend: npm run dev:frontend (port 3001)"
+echo "   Backend:  npm run dev:server  (port 3010)"
+echo "   Frontend: npm run dev:frontend (port 3011)"
 echo "   Both:     npm run dev:all"
 echo ""
 echo "2. Stop all servers if needed:"
@@ -187,7 +185,7 @@ echo "   Quick stop: npm run stop"
 echo "   Force stop: npm run kill"
 echo ""
 echo "3. Check CORS configuration in .env:"
-echo "   CORS_ORIGIN=http://localhost:3001,http://localhost:3000"
+echo "   CORS_ORIGIN=http://localhost:3011,http://localhost:3010"
 echo ""
 echo "4. Verify network connectivity:"
 echo "   curl $API_URL/health"

@@ -13,22 +13,21 @@ import { protect, authorize } from '../middleware/auth'
 const router = express.Router()
 
 // Production Dashboard
-router.get('/dashboard', protect, authorize('admin', 'production_manager'), getProductionDashboard)
+router.get('/dashboard', protect as any, authorize('admin', 'production_manager') as any, getProductionDashboard as any)
 
 // Production Orders
-router.route('/orders')
-  .get(protect, authorize('admin', 'production_manager', 'manager'), getProductionOrders)
-  .post(protect, authorize('admin', 'production_manager'), createProductionOrder)
+router.get('/orders', protect as any, authorize('admin', 'production_manager', 'manager') as any, getProductionOrders as any)
+router.post('/orders', protect as any, authorize('admin', 'production_manager') as any, createProductionOrder as any)
 
-router.put('/orders/:id/status', protect, authorize('admin', 'production_manager'), updateProductionOrderStatus)
+router.put('/orders/:id/status', protect as any, authorize('admin', 'production_manager') as any, updateProductionOrderStatus as any)
 
 // Material Requirements Planning
-router.get('/mrp', protect, authorize('admin', 'production_manager'), getMaterialRequirements)
+router.get('/mrp', protect as any, authorize('admin', 'production_manager') as any, getMaterialRequirements as any)
 
 // Capacity Planning
-router.get('/capacity', protect, authorize('admin', 'production_manager'), getCapacityPlanning)
+router.get('/capacity', protect as any, authorize('admin', 'production_manager') as any, getCapacityPlanning as any)
 
 // Production Reports
-router.get('/reports', protect, authorize('admin', 'production_manager'), getProductionReports)
+router.get('/reports', protect as any, authorize('admin', 'production_manager') as any, getProductionReports as any)
 
 export default router
