@@ -18,6 +18,15 @@ import categoryRoutes from './routes/categories';
 import cartRoutes from './routes/cart';
 import dropshippingRoutes from './routes/dropshipping';
 import networkingRoutes from './routes/networking';
+import inventoryRoutes from './routes/inventory';
+import crmRoutes from './routes/crm';
+import purchaseOrderRoutes from './routes/purchaseOrders';
+import fulfillmentRoutes from './routes/fulfillment';
+import analyticsRoutes from './routes/analytics';
+import financialRoutes from './routes/financial';
+import hrRoutes from './routes/hr';
+import productionRoutes from './routes/production';
+import qualityRoutes from './routes/quality';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -148,7 +157,16 @@ class Server {
           categories: '/api/categories',
           cart: '/api/cart',
           dropshipping: '/api/dropshipping',
-          networking: '/api/networking'
+          networking: '/api/networking',
+          inventory: '/api/inventory',
+          crm: '/api/crm',
+          purchaseOrders: '/api/purchase-orders',
+          fulfillment: '/api/fulfillment',
+          analytics: '/api/analytics',
+          financial: '/api/financial',
+          hr: '/api/hr',
+          production: '/api/production',
+          quality: '/api/quality'
         }
       });
     });
@@ -163,6 +181,15 @@ class Server {
     this.app.use('/api/cart', cartRoutes);
     this.app.use('/api/dropshipping', dropshippingRoutes);
     this.app.use('/api/networking', networkingRoutes);
+    this.app.use('/api/inventory', inventoryRoutes);
+    this.app.use('/api/crm', crmRoutes);
+    this.app.use('/api/purchase-orders', purchaseOrderRoutes);
+    this.app.use('/api/fulfillment', fulfillmentRoutes);
+    this.app.use('/api/analytics', analyticsRoutes);
+    this.app.use('/api/financial', financialRoutes);
+    this.app.use('/api/hr', hrRoutes);
+    this.app.use('/api/production', productionRoutes);
+    this.app.use('/api/quality', qualityRoutes);
   }
 
   private setupErrorHandling(): void {
