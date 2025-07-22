@@ -63,25 +63,18 @@ export default function VendorRegisterPage() {
     }
 
     try {
-      // First create the user account
-      const userData = await apiRequest(apiConfig.endpoints.auth.register, {
+      // Use the new vendor registration endpoint
+      const response = await apiRequest(`${apiConfig.endpoints.vendors}/register`, {
         method: 'POST',
         body: JSON.stringify({
+          // Personal Information
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
-          role: 'vendor'
-        }),
-      })
-
-      // Store the token temporarily for vendor creation
-      localStorage.setItem('token', userData.data.token)
-
-      // Then create the vendor profile
-      const vendorData = await apiRequest(apiConfig.endpoints.vendors, {
-        method: 'POST',
-        body: JSON.stringify({
+          phone: formData.phone,
+          
+          // Business Information
           businessName: formData.businessName,
           businessType: formData.businessType,
           businessDescription: formData.businessDescription,
@@ -90,10 +83,7 @@ export default function VendorRegisterPage() {
           state: formData.state,
           country: formData.country,
           zipCode: formData.zipCode,
-          taxId: formData.taxId,
-          phone: formData.phone,
-          dropshippingEnabled: formData.dropshippingInterest,
-          preferredProviders: formData.preferredProviders
+          taxId: formData.taxId
         }),
       })
 

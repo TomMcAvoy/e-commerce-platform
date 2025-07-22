@@ -293,6 +293,80 @@ export const validateCreateOrder = [
   handleValidationErrors
 ];
 
+// Vendor validation rules
+export const validateVendorRegister = [
+  check('firstName')
+    .trim()
+    .notEmpty()
+    .withMessage('First name is required')
+    .isLength({ max: 50 })
+    .withMessage('First name must be less than 50 characters'),
+  check('lastName')
+    .trim()
+    .notEmpty()
+    .withMessage('Last name is required')
+    .isLength({ max: 50 })
+    .withMessage('Last name must be less than 50 characters'),
+  check('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  check('password')
+    .custom((value: any) => {
+      if (!isStrongPassword(value)) {
+        throw new Error('Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+      }
+      return true;
+    }),
+  check('phone')
+    .optional()
+    .trim()
+    .isMobilePhone('any')
+    .withMessage('Please provide a valid phone number'),
+  check('businessName')
+    .trim()
+    .notEmpty()
+    .withMessage('Business name is required')
+    .isLength({ max: 200 })
+    .withMessage('Business name must be less than 200 characters'),
+  check('businessAddress')
+    .trim()
+    .notEmpty()
+    .withMessage('Business address is required')
+    .isLength({ max: 500 })
+    .withMessage('Business address must be less than 500 characters'),
+  check('city')
+    .trim()
+    .notEmpty()
+    .withMessage('City is required')
+    .isLength({ max: 100 })
+    .withMessage('City must be less than 100 characters'),
+  check('state')
+    .trim()
+    .notEmpty()
+    .withMessage('State is required')
+    .isLength({ max: 100 })
+    .withMessage('State must be less than 100 characters'),
+  check('country')
+    .trim()
+    .notEmpty()
+    .withMessage('Country is required')
+    .isLength({ max: 100 })
+    .withMessage('Country must be less than 100 characters'),
+  check('zipCode')
+    .trim()
+    .notEmpty()
+    .withMessage('ZIP code is required')
+    .isLength({ max: 20 })
+    .withMessage('ZIP code must be less than 20 characters'),
+  check('taxId')
+    .optional()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('Tax ID must be less than 50 characters'),
+  handleValidationErrors
+];
+
 // Common validations
 export const validateMongoId = (paramName: string = 'id') => [
   param(paramName)
