@@ -2,6 +2,63 @@
 
 A modern, full-stack e-commerce platform built with TypeScript, featuring multi-vendor marketplace capabilities and dropshipping integration. Similar to platforms like Temu and Amazon, designed for selling clothes, apparel, and makeup.
 
+## 🚀 Quick Start
+
+### For New Developers
+```bash
+# Clone the repository
+git clone <repository-url>
+cd shoppingcart
+
+# Quick setup (installs dependencies, creates .env, builds project)
+npm run setup
+
+# Start development servers
+npm run dev:all
+
+# Visit the application
+# Frontend: http://localhost:3001
+# Backend: http://localhost:3000
+# Debug page: http://localhost:3001/debug
+```
+
+### For Testing
+```bash
+# Run comprehensive test suite
+npm test
+
+# Run specific tests
+npm run test:api        # API endpoint tests
+npm run test:enhanced   # Enhanced test suite
+npm run test:e2e        # End-to-end tests
+```
+
+### Server Management
+```bash
+# Start servers
+npm run dev:all         # Start both frontend and backend
+npm run dev:server      # Start backend only (port 3000)
+npm run dev:frontend    # Start frontend only (port 3001)
+
+# Stop servers
+npm run stop            # Gracefully stop all development servers
+npm run kill            # Force kill all development servers (emergency)
+```
+
+## 🧪 Debug & Development Tools
+
+This platform includes comprehensive debugging tools for development:
+
+- **Static Debug Page**: [http://localhost:3001/debug-api.html](http://localhost:3001/debug-api.html)
+- **Next.js Debug Dashboard**: [http://localhost:3001/debug](http://localhost:3001/debug)
+- **API Health Check**: [http://localhost:3000/health](http://localhost:3000/health)
+- **API Status**: [http://localhost:3000/api/status](http://localhost:3000/api/status)
+
+### Available Test Scripts
+- `npm test` - Comprehensive test suite with detailed reporting
+- `npm run test:api` - Quick API endpoint validation
+- `run-all-tests.sh` - Full platform validation with health checks
+
 ## 🚀 Features
 
 ### Core Features

@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 export interface IUser {
   _id?: string;
   email: string;
@@ -9,8 +11,51 @@ export interface IUser {
   phoneNumber?: string;
   dateOfBirth?: Date;
   addresses: IAddress[];
+  
+  // Networking fields
+  bio?: string;
+  headline?: string;
+  company?: string;
+  jobTitle?: string;
+  industry?: string;
+  location?: string;
+  profileImage?: string;
+  coverImage?: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    facebook?: string;
+    website?: string;
+  };
+  interests?: string[];
+  skills?: string[];
+  networkingPreferences?: {
+    isProfilePublic: boolean;
+    allowConnectionRequests: boolean;
+    showContactInfo: boolean;
+    notifyOnNewConnections: boolean;
+    notifyOnMessages: boolean;
+  };
+  connectionCount?: number;
+  followerCount?: number;
+  followingCount?: number;
+  profileViews?: number;
+  lastActiveAt?: Date;
+  
+  resetPasswordToken?: string;
+  resetPasswordExpire?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+// Express Request Extensions
+export interface AuthenticatedRequest extends Request {
+  user: IUser;
+}
+
+export interface OptionalAuthRequest extends Request {
+  user?: IUser;
 }
 
 export interface IVendor {

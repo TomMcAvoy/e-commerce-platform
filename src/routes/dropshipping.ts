@@ -10,6 +10,7 @@ import {
   getOrderStatus,
   healthCheck
 } from '../controllers/dropshippingController';
+import { validateDropshippingImport, validateBulkImport } from '../middleware/validation';
 
 const router = express.Router();
 
@@ -18,13 +19,13 @@ router.get('/providers', getProviders);
 router.get('/health', healthCheck);
 
 // Protected routes (require authentication)
-router.get('/search', protect, searchProducts);
-router.get('/products/:provider/:productId', protect, getProduct);
+router.get('/search', protect as any, searchProducts as any);
+router.get('/products/:provider/:productId', protect as any, getProduct as any);
 
 // Vendor/Admin only routes
-router.post('/import', protect, authorize('vendor', 'admin'), importProduct);
-router.post('/sync-inventory', protect, authorize('vendor', 'admin'), syncInventory);
-router.post('/orders', protect, authorize('vendor', 'admin'), createOrder);
-router.get('/orders/:provider/:orderId', protect, authorize('vendor', 'admin'), getOrderStatus);
+router.post('/import', protect as any, authorize('vendor', 'admin') as any, validateDropshippingImport, importProduct as any);
+router.post('/sync-inventory', protect as any, authorize('vendor', 'admin') as any, syncInventory as any);
+router.post('/orders', protect as any, authorize('vendor', 'admin') as any, createOrder as any);
+router.get('/orders/:provider/:orderId', protect as any, authorize('vendor', 'admin') as any, getOrderStatus as any);
 
 export default router;

@@ -1,5 +1,5 @@
 {
-  "name": "shoppingcart",
+  "name": "whitestartups-shopping-online",
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
@@ -9,9 +9,18 @@
     "dev:server": "ts-node src/index.ts",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:all": "concurrently \"npm run dev:server\" \"npm run dev:frontend\"",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "stop": "chmod +x stop-servers.sh && ./stop-servers.sh",
+    "kill": "chmod +x stop-servers.sh && ./stop-servers.sh",
+    "test": "npm run test:comprehensive",
+    "test:api": "chmod +x test-api.sh && ./test-api.sh",
+    "test:enhanced": "chmod +x enhanced-test-suite.sh && ./enhanced-test-suite.sh",
+    "test:e2e": "cd tests/e2e && chmod +x run-all-tests.sh && ./run-all-tests.sh",
+    "test:comprehensive": "chmod +x run-all-tests.sh && ./run-all-tests.sh",
+    "setup": "chmod +x setup.sh && ./setup.sh",
     "lint": "echo \"Linting not configured yet\"",
-    "seed": "ts-node src/utils/seed.ts"
+    "seed": "ts-node src/utils/seed.ts",
+    "clean": "rm -rf dist/",
+    "postinstall": "npm run build"
   },
   "keywords": [
     "ecommerce",
@@ -36,6 +45,7 @@
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "express-rate-limit": "^8.0.1",
+    "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
@@ -59,6 +69,7 @@
     "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/express-validator": "^2.20.33",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.0.0",

@@ -2,11 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import { AppError } from './errorHandler';
-import { JWTPayload } from '../types';
-
-interface AuthenticatedRequest extends Request {
-  user?: any;
-}
+import { JWTPayload, AuthenticatedRequest, OptionalAuthRequest } from '../types';
 
 export const protect = async (
   req: AuthenticatedRequest,
@@ -57,7 +53,7 @@ export const authorize = (...roles: string[]) => {
 };
 
 export const optionalAuth = async (
-  req: AuthenticatedRequest,
+  req: OptionalAuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {

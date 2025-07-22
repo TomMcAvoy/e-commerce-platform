@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
   res.json({ message: 'Vendor routes coming soon' });
 });
 
-router.post('/', protect, authorize('vendor', 'admin'), (req, res) => {
+router.post('/', protect as any, authorize('vendor', 'admin') as any, (req: any, res: any) => {
   res.json({ message: 'Create vendor coming soon' });
 });
 

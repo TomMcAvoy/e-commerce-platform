@@ -17,10 +17,15 @@ import vendorRoutes from './routes/vendors';
 import categoryRoutes from './routes/categories';
 import cartRoutes from './routes/cart';
 import dropshippingRoutes from './routes/dropshipping';
+import networkingRoutes from './routes/networking';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
+
+// Import utilities
+import { logger } from './utils/logger';
+import { config } from './utils/config';
 
 // Load environment variables
 dotenv.config();
@@ -68,12 +73,19 @@ class Server {
     this.app.use(helmet());
     
     // CORS configuration
+    const corsOrigins = process.env.CORS_ORIGIN 
+      ? process.env.CORS_ORIGIN.split(',')
+      : [
+          process.env.FRONTEND_URL || 'http://localhost:3001',
+          'http://localhost:3000' // Backend URL for debugging
+        ];
+
     this.app.use(cors({
-      origin: [
-        process.env.FRONTEND_URL || 'http://localhost:3001',
-        'http://localhost:3002'
-      ],
-      credentials: true
+      origin: corsOrigins,
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      exposedHeaders: ['X-Total-Count']
     }));
 
     // Rate limiting
@@ -91,6 +103,9 @@ class Server {
     // Compression middleware
     this.app.use(compression());
 
+    // Custom request logging middleware
+    this.app.use(logger.requestLogger());
+
     // Logging middleware
     if (process.env.NODE_ENV === 'development') {
       this.app.use(morgan('dev'));
@@ -103,12 +118,38 @@ class Server {
   }
 
   private setupRoutes(): void {
-    // Health check
+    // Health check endpoint
     this.app.get('/health', (req, res) => {
       res.status(200).json({
         status: 'OK',
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
+        version: process.env.npm_package_version || '1.0.0',
+        environment: process.env.NODE_ENV || 'development',
+        services: {
+          database: 'connected', // TODO: Add actual MongoDB health check
+          redis: this.redisClient?.isOpen ? 'connected' : 'disconnected'
+        }
+      });
+    });
+
+    // API status endpoint
+    this.app.get('/api/status', (req, res) => {
+      res.status(200).json({
+        api: 'E-Commerce Platform API',
+        version: '1.0.0',
+        documentation: '/api/docs',
+        endpoints: {
+          auth: '/api/auth',
+          products: '/api/products',
+          users: '/api/users',
+          orders: '/api/orders',
+          vendors: '/api/vendors',
+          categories: '/api/categories',
+          cart: '/api/cart',
+          dropshipping: '/api/dropshipping',
+          networking: '/api/networking'
+        }
       });
     });
 
@@ -121,6 +162,7 @@ class Server {
     this.app.use('/api/categories', categoryRoutes);
     this.app.use('/api/cart', cartRoutes);
     this.app.use('/api/dropshipping', dropshippingRoutes);
+    this.app.use('/api/networking', networkingRoutes);
   }
 
   private setupErrorHandling(): void {
@@ -131,8 +173,9 @@ class Server {
   public start(): void {
     const port = process.env.PORT || 3000;
     this.app.listen(port, () => {
-      console.log(`🚀 Server running on port ${port}`);
-      console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`🚀 Server running on port ${port}`);
+      logger.info(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3001'}`);
     });
   }
 

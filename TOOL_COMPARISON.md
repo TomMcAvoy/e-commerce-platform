@@ -1,4 +1,17 @@
-# Tool Comparison & Recommendations for E-Commerce Platform
+PORT=3002
+NODE_ENV=development
+MONGODB_URI=mongodb://localhost:27017/ecommerce
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your_super_secure_jwt_secret_here
+JWT_EXPIRES_IN=7d
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your_email@example.com
+EMAIL_PASS=your_app_password
+MAX_FILE_SIZE=10485760
+UPLOAD_PATH=uploads
+CORS_ORIGIN=http://localhost:3001# Tool Comparison & Recommendations for E-Commerce Platform
 
 ## 🧪 Testing Tools Comparison
 

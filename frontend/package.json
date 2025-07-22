@@ -1,12 +1,13 @@
 {
-  "name": "ecommerce-frontend",
+  "name": "whitestartups-frontend",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dev:debug": "next dev -p 3001 --turbo"
   },
   "dependencies": {
     "next": "15.4.2",

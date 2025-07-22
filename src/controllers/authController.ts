@@ -207,16 +207,17 @@ export const forgotPassword = async (
     // Set expire
     const resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    // Save to user (you'll need to add these fields to User model)
-    // user.resetPasswordToken = resetPasswordToken;
-    // user.resetPasswordExpire = resetPasswordExpire;
-    // await user.save({ validateBeforeSave: false });
+    // Save to user
+    (user as any).resetPasswordToken = resetPasswordToken;
+    (user as any).resetPasswordExpire = resetPasswordExpire;
+    await (user as any).save({ validateBeforeSave: false });
 
     // TODO: Send email with reset token
-    // For now, just return success
+    // For now, just return the token for testing purposes (remove in production)
     res.status(200).json({
       success: true,
-      message: 'Password reset email sent'
+      message: 'Password reset email sent',
+      ...(process.env.NODE_ENV === 'development' && { resetToken }) // Only in development
     });
   } catch (error) {
     next(error);
@@ -238,27 +239,33 @@ export const resetPassword = async (
       .update(req.params.token)
       .digest('hex');
 
-    // TODO: Find user by reset token and check if not expired
-    // const user = await User.findOne({
-    //   resetPasswordToken,
-    //   resetPasswordExpire: { $gt: Date.now() }
-    // });
+    // Find user by reset token and check if not expired
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
 
-    // if (!user) {
-    //   return next(new AppError('Invalid token', 400));
-    // }
+    if (!user) {
+      return next(new AppError('Invalid or expired token', 400));
+    }
+
+    // Validate new password
+    if (!req.body.password) {
+      return next(new AppError('Password is required', 400));
+    }
+
+    if (req.body.password.length < 6) {
+      return next(new AppError('Password must be at least 6 characters', 400));
+    }
 
     // Set new password
-    // user.password = req.body.password;
-    // user.resetPasswordToken = undefined;
-    // user.resetPasswordExpire = undefined;
-    // await user.save();
+    (user as any).password = req.body.password;
+    (user as any).resetPasswordToken = undefined;
+    (user as any).resetPasswordExpire = undefined;
+    await (user as any).save();
 
-    // For now, just return success
-    res.status(200).json({
-      success: true,
-      message: 'Password reset successful'
-    });
+    // Send token response
+    sendTokenResponse(user, 200, res);
   } catch (error) {
     next(error);
   }

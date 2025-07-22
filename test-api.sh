@@ -4,11 +4,37 @@
 # This script tests all the API endpoints that our debug page would test
 
 API_URL="http://localhost:3000"
-FRONTEND_URL="http://localhost:3002"
+FRONTEND_URL="http://localhost:3001"
 
 echo "🚀 Starting API Debug Tests..."
 echo "API URL: $API_URL"
 echo "Frontend URL: $FRONTEND_URL"
+echo "================================"
+
+# Pre-flight checks
+echo "🔍 Pre-flight Connectivity Checks..."
+echo "================================="
+
+# Check if backend is running
+echo "🔧 Checking if backend server is accessible..."
+if curl -s --connect-timeout 5 "$API_URL" > /dev/null 2>&1; then
+    echo "✅ Backend server is responding"
+else
+    echo "❌ Backend server is not accessible at $API_URL"
+    echo "💡 Start backend with: npm run dev:server"
+    echo ""
+fi
+
+# Check if frontend is running  
+echo "🔧 Checking if frontend server is accessible..."
+if curl -s --connect-timeout 5 "$FRONTEND_URL" > /dev/null 2>&1; then
+    echo "✅ Frontend server is responding"
+else
+    echo "❌ Frontend server is not accessible at $FRONTEND_URL"
+    echo "💡 Start frontend with: npm run dev:frontend"
+    echo ""
+fi
+
 echo "================================"
 
 # Test 1: Health Check
@@ -132,234 +158,6 @@ DEBUG_HTML_RESPONSE=$(curl -s -w "\nHTTP_CODE:%{http_code}" "$FRONTEND_URL/debug
 echo "Response: $DEBUG_HTML_RESPONSE"
 echo ""
 
-# Test 13: Test if Node.js and required tools are available for browser automation
-echo "1️⃣3️⃣ Checking Browser Automation Capabilities..."
-if command -v node >/dev/null 2>&1; then
-  echo "✅ Node.js is available"
-  
-  # Check if we can install puppeteer for browser testing
-  echo "📦 Checking if we can test JavaScript execution in debug pages..."
-  
-  # Create a temporary test script to check if the debug pages actually work
-  cat > /tmp/debug-page-test.js << 'EOF'
-const puppeteer = require('puppeteer');
-
-(async () => {
-  let browser;
-  try {
-    console.log('🚀 Starting browser automation test...');
-    browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-    
-    // Test static debug page
-    console.log('📄 Testing static debug-api.html page...');
-    await page.goto('http://localhost:3002/debug-api.html', { waitUntil: 'networkidle0' });
-    
-    // Check if page loaded
-    const title = await page.title();
-    console.log(`✅ Page title: ${title}`);
-    
-    // Test if health check button exists and can be clicked
-    const healthButton = await page.$('button[onclick="testHealthEndpoint()"]');
-    if (healthButton) {
-      console.log('✅ Health check button found');
-      
-      // Listen for console logs from the page
-      page.on('console', msg => console.log('🌐 Page console:', msg.text()));
-      
-      // Click the health check button
-      await healthButton.click();
-      
-      // Wait a bit for the API call to complete
-      await page.waitForTimeout(2000);
-      
-      // Check if results were added
-      const results = await page.$('#results');
-      if (results) {
-        const resultsText = await page.evaluate(el => el.textContent, results);
-        console.log('✅ Results found:', resultsText.substring(0, 100) + '...');
-      }
-    }
-    
-    // Test Next.js debug page
-    console.log('📄 Testing Next.js debug page...');
-    await page.goto('http://localhost:3002/debug', { waitUntil: 'networkidle0' });
-    
-    const debugTitle = await page.evaluate(() => document.querySelector('h1')?.textContent);
-    console.log(`✅ Debug page title: ${debugTitle}`);
-    
-    // Test API button if it exists
-    const apiButton = await page.$('button');
-    if (apiButton) {
-      console.log('✅ API test button found on debug page');
-    }
-    
-    console.log('🎉 Browser automation test completed successfully!');
-    
-  } catch (error) {
-    console.log('❌ Browser automation test failed:', error.message);
-    console.log('💡 This might be because:');
-    console.log('   - Frontend server is not running on localhost:3002');
-    console.log('   - Puppeteer is not installed');
-    console.log('   - Debug pages have JavaScript errors');
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
-  }
-})();
-EOF
-
-  # Try to run the browser test if puppeteer is available
-  if npm list puppeteer >/dev/null 2>&1 || npm list -g puppeteer >/dev/null 2>&1; then
-    echo "✅ Puppeteer is available, running browser automation test..."
-    
-    # Create a more robust test script with proper path resolution
-    cat > /tmp/debug-page-test.js << 'EOF'
-const path = require('path');
-const puppeteer = require(path.join(process.cwd(), 'node_modules', 'puppeteer'));
-
-(async () => {
-  let browser;
-  try {
-    console.log('🚀 Starting browser automation test...');
-    browser = await puppeteer.launch({ 
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-    });
-    const page = await browser.newPage();
-    
-    // Set a longer timeout
-    page.setDefaultTimeout(10000);
-    
-    // Test static debug page
-    console.log('📄 Testing static debug-api.html page...');
-    
-    try {
-      await page.goto('http://localhost:3002/debug-api.html', { 
-        waitUntil: 'networkidle0',
-        timeout: 8000
-      });
-      
-      // Check if page loaded
-      const title = await page.title();
-      console.log(`✅ Page title: ${title}`);
-      
-      // Test if health check button exists and can be clicked
-      const healthButton = await page.$('button[onclick="testHealthEndpoint()"]');
-      if (healthButton) {
-        console.log('✅ Health check button found');
-        
-        // Listen for console logs from the page
-        page.on('console', msg => {
-          if (msg.type() === 'log' || msg.type() === 'error') {
-            console.log(`🌐 Page ${msg.type()}:`, msg.text());
-          }
-        });
-        
-        // Click the health check button
-        await healthButton.click();
-        console.log('🔧 Clicked health check button');
-        
-        // Wait a bit for the API call to complete
-        await page.waitForTimeout(3000);
-        
-        // Check if results were added
-        const results = await page.$('#results');
-        if (results) {
-          const resultsText = await page.evaluate(el => el.textContent, results);
-          if (resultsText.trim()) {
-            console.log('✅ Results found:', resultsText.substring(0, 100) + '...');
-          } else {
-            console.log('⚠️  Results div is empty');
-          }
-        } else {
-          console.log('❌ Results div not found');
-        }
-        
-        // Test register button too
-        const registerButton = await page.$('button[onclick="testRegisterEndpoint()"]');
-        if (registerButton) {
-          console.log('🔧 Testing register button...');
-          await registerButton.click();
-          await page.waitForTimeout(3000);
-          
-          const newResults = await page.evaluate(() => document.querySelector('#results').textContent);
-          console.log('✅ Register test completed, results updated');
-        }
-        
-      } else {
-        console.log('❌ Health check button not found');
-      }
-    } catch (pageError) {
-      console.log('❌ Error testing static debug page:', pageError.message);
-    }
-    
-    // Test Next.js debug page
-    console.log('📄 Testing Next.js debug page...');
-    try {
-      await page.goto('http://localhost:3002/debug', { 
-        waitUntil: 'networkidle0',
-        timeout: 8000
-      });
-      
-      const debugTitle = await page.evaluate(() => document.querySelector('h1')?.textContent);
-      console.log(`✅ Debug page title: ${debugTitle}`);
-      
-      // Test API button if it exists
-      const apiButton = await page.$('button');
-      if (apiButton) {
-        console.log('✅ API test button found on debug page');
-        await apiButton.click();
-        console.log('🔧 Clicked API test button');
-        await page.waitForTimeout(2000);
-      } else {
-        console.log('⚠️  No buttons found on debug page');
-      }
-    } catch (pageError) {
-      console.log('❌ Error testing Next.js debug page:', pageError.message);
-    }
-    
-    console.log('🎉 Browser automation test completed successfully!');
-    
-  } catch (error) {
-    console.log('❌ Browser automation test failed:', error.message);
-    console.log('💡 This might be because:');
-    console.log('   - Frontend server is not running on localhost:3002');
-    console.log('   - Backend server is not running on localhost:3000');
-    console.log('   - Debug pages have JavaScript errors');
-    console.log('   - CORS issues preventing API calls');
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
-  }
-})();
-EOF
-
-    # Run the browser test with the current working directory
-    cd /Users/thomasmcavoy/GitHub/shoppingcart && node /tmp/debug-page-test.js
-  else
-    echo "⚠️  Puppeteer not found. To test JavaScript execution in debug pages, install it:"
-    echo "   npm install puppeteer"
-    echo ""
-    echo "🔧 Alternative manual test instructions:"
-    echo "   1. Open browser to: $FRONTEND_URL/debug-api.html"
-    echo "   2. Click 'Test Health Endpoint' button"
-    echo "   3. Click 'Test Register Endpoint' button"
-    echo "   4. Check console for errors and results"
-    echo ""
-    echo "   Or visit: $FRONTEND_URL/debug"
-    echo "   And click 'Test API Connection' button"
-  fi
-  
-  # Cleanup
-  rm -f /tmp/debug-page-test.js
-  
-else
-  echo "❌ Node.js not available for browser automation testing"
-fi
-
 echo ""
 echo "📋 Debug Page Test Summary:"
 echo "================================"
@@ -373,6 +171,30 @@ echo "3. Click each test button and verify:"
 echo "   - No JavaScript errors in console"
 echo "   - Results appear on page"
 echo "   - API calls succeed"
+echo "4. Also try the Next.js debug page: $FRONTEND_URL/debug"
+echo ""
+
+echo ""
+echo "🔧 Common 'Failed to Fetch' Solutions:"
+echo "================================"
+echo "1. Ensure both servers are running:"
+echo "   Backend:  npm run dev:server  (port 3000)"
+echo "   Frontend: npm run dev:frontend (port 3001)"
+echo "   Both:     npm run dev:all"
+echo ""
+echo "2. Stop all servers if needed:"
+echo "   Quick stop: npm run stop"
+echo "   Force stop: npm run kill"
+echo ""
+echo "3. Check CORS configuration in .env:"
+echo "   CORS_ORIGIN=http://localhost:3001,http://localhost:3000"
+echo ""
+echo "4. Verify network connectivity:"
+echo "   curl $API_URL/health"
+echo "   curl $FRONTEND_URL"
+echo ""
+echo "5. Clear browser cache and disable extensions"
+echo "6. Check browser console for detailed error messages"
 echo ""
 
 echo "================================"
