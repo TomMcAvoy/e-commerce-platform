@@ -1,371 +1,26 @@
+
 import { Request } from 'express';
 
-export interface IUser {
-  _id?: string;
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  isEmailVerified: boolean;
-  phoneNumber?: string;
-  dateOfBirth?: Date;
-  addresses: IAddress[];
-  
-  // Networking fields
-  bio?: string;
-  headline?: string;
-  company?: string;
-  jobTitle?: string;
-  industry?: string;
-  location?: string;
-  profileImage?: string;
-  coverImage?: string;
-  socialLinks?: {
-    linkedin?: string;
-    twitter?: string;
-    instagram?: string;
-    facebook?: string;
-    website?: string;
-  };
-  interests?: string[];
-  skills?: string[];
-  networkingPreferences?: {
-    isProfilePublic: boolean;
-    allowConnectionRequests: boolean;
-    showContactInfo: boolean;
-    notifyOnNewConnections: boolean;
-    notifyOnMessages: boolean;
-  };
-  connectionCount?: number;
-  followerCount?: number;
-  followingCount?: number;
-  profileViews?: number;
-  lastActiveAt?: Date;
-  
-  resetPasswordToken?: string;
-  resetPasswordExpire?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-// Express Request Extensions
-export interface AuthenticatedRequest extends Request {
-  user: IUser;
-}
-
-export interface OptionalAuthRequest extends Request {
-  user?: IUser;
-}
-
-export interface IVendor {
-  _id?: string;
-  userId: string;
-  businessName: string;
-  businessEmail: string;
-  businessPhone: string;
-  businessAddress: IAddress;
-  taxId?: string;
-  bankAccount?: IBankAccount;
-  isVerified: boolean;
-  rating: number;
-  totalSales: number;
-  commission: number;
-  products: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface IProduct {
-  _id?: string;
-  vendorId: string;
-  name: string;
-  description: string;
-  category: string;
-  subcategory?: string;
-  price: number;
-  compareAtPrice?: number;
-  cost: number;
-  sku: string;
-  barcode?: string;
-  inventory: IInventory;
-  images: string[];
-  variants: IProductVariant[];
-  attributes: IProductAttribute[];
-  tags: string[];
-  isActive: boolean;
-  isFeatured: boolean;
-  weight?: number;
-  dimensions?: IDimensions;
-  shippingClass?: string;
-  dropshipping?: IDropshippingInfo;
-  seo: ISEOInfo;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface IProductVariant {
-  _id?: string;
-  name: string;
-  options: IVariantOption[];
-  price?: number;
-  compareAtPrice?: number;
-  cost?: number;
-  sku?: string;
-  barcode?: string;
-  inventory?: IInventory;
-  images?: string[];
-  weight?: number;
-  dimensions?: IDimensions;
-}
-
-export interface IVariantOption {
-  name: string;
-  value: string;
-}
-
-export interface IProductAttribute {
-  name: string;
-  value: string;
-  isFilter: boolean;
-}
-
-export interface IInventory {
-  quantity: number;
-  trackQuantity: boolean;
-  allowBackorder: boolean;
-  lowStockThreshold?: number;
-}
-
-export interface IDimensions {
-  length: number;
-  width: number;
-  height: number;
-  unit: string;
-}
-
-export interface IDropshippingInfo {
-  supplier: string;
-  supplierProductId: string;
-  supplierPrice: number;
-  processingTime: number;
-  shippingTime: number;
-  apiEndpoint?: string;
-}
-
-export interface ISEOInfo {
-  metaTitle?: string;
-  metaDescription?: string;
-  slug: string;
-  keywords?: string[];
-}
-
-export interface ICategory {
-  _id?: string;
-  name: string;
-  slug: string;
-  description?: string;
-  parentCategory?: string;
-  image?: string;
-  isActive: boolean;
-  sortOrder: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface IOrder {
-  _id?: string;
-  orderNumber: string;
-  userId: string;
-  vendorOrders: IVendorOrder[];
-  subtotal: number;
-  tax: number;
-  shipping: number;
-  discount: number;
-  total: number;
-  currency: string;
-  status: OrderStatus;
-  paymentStatus: PaymentStatus;
-  paymentMethod: string;
-  shippingAddress: IAddress;
-  billingAddress: IAddress;
-  notes?: string;
-  trackingNumbers: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface IVendorOrder {
-  vendorId: string;
-  items: IOrderItem[];
-  subtotal: number;
-  tax: number;
-  shipping: number;
-  total: number;
-  status: OrderStatus;
-  trackingNumber?: string;
-  fulfillmentDate?: Date;
-}
-
-export interface IOrderItem {
-  productId: string;
-  variantId?: string;
-  name: string;
-  sku: string;
-  price: number;
-  quantity: number;
-  total: number;
-  image?: string;
-}
-
-export interface ICart {
-  _id?: string;
-  userId?: string;
-  sessionId?: string;
-  items: ICartItem[];
-  subtotal: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface ICartItem {
-  productId: string;
-  variantId?: string;
-  quantity: number;
-  price: number;
-  name: string;
-  image?: string;
-  sku: string;
-}
-
-export interface IAddress {
-  firstName: string;
-  lastName: string;
-  company?: string;
-  address1: string;
-  address2?: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  phone?: string;
-  isDefault: boolean;
-}
-
-export interface IBankAccount {
-  accountNumber: string;
-  routingNumber: string;
-  accountType: string;
-  bankName: string;
-}
-
-export interface IPayment {
-  _id?: string;
-  orderId: string;
-  amount: number;
-  currency: string;
-  method: PaymentMethod;
-  status: PaymentStatus;
-  transactionId: string;
-  gatewayResponse?: any;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface IReview {
-  _id?: string;
-  productId: string;
-  userId: string;
-  orderId: string;
-  rating: number;
-  title?: string;
-  comment?: string;
-  images?: string[];
-  isVerified: boolean;
-  isHelpful: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface IWishlist {
-  _id?: string;
-  userId: string;
-  products: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface ICoupon {
-  _id?: string;
-  code: string;
-  type: CouponType;
-  value: number;
-  minimumAmount?: number;
-  maximumDiscount?: number;
-  usageLimit?: number;
-  usedCount: number;
-  vendorId?: string;
-  applicableProducts?: string[];
-  applicableCategories?: string[];
-  startDate: Date;
-  endDate: Date;
-  isActive: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-// Enums
+// User role enum (not just type) for runtime usage
 export enum UserRole {
-  CUSTOMER = 'customer',
-  VENDOR = 'vendor',
   ADMIN = 'admin',
-  MODERATOR = 'moderator'
+  VENDOR = 'vendor',
+  CUSTOMER = 'user', // Maps to 'user' for backward compatibility
+  USER = 'user'
 }
 
-export enum OrderStatus {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  PROCESSING = 'processing',
-  SHIPPED = 'shipped',
-  DELIVERED = 'delivered',
-  CANCELLED = 'cancelled',
-  REFUNDED = 'refunded'
-}
-
-export enum PaymentStatus {
-  PENDING = 'pending',
-  PAID = 'paid',
-  FAILED = 'failed',
-  REFUNDED = 'refunded',
-  PARTIALLY_REFUNDED = 'partially_refunded'
-}
-
-export enum PaymentMethod {
-  CREDIT_CARD = 'credit_card',
-  DEBIT_CARD = 'debit_card',
-  PAYPAL = 'paypal',
-  STRIPE = 'stripe',
-  APPLE_PAY = 'apple_pay',
-  GOOGLE_PAY = 'google_pay',
-  BANK_TRANSFER = 'bank_transfer'
-}
-
-export enum CouponType {
-  PERCENTAGE = 'percentage',
-  FIXED_AMOUNT = 'fixed_amount',
-  FREE_SHIPPING = 'free_shipping'
-}
-
-// API Response Types
+// Standard API Response pattern from copilot instructions
 export interface ApiResponse<T = any> {
   success: boolean;
-  data?: T;
   message?: string;
+  data?: T;
   error?: string;
-  errors?: any;
+  timestamp?: string;
+  stack?: string; // For development error responses
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+// Paginated response pattern for list endpoints
+export interface PaginatedResponse<T = any> extends ApiResponse<T> {
   pagination: {
     page: number;
     limit: number;
@@ -374,13 +29,52 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
   };
 }
 
-// Request Types
+// JWT Authentication types following copilot auth patterns
+export interface JWTPayload {
+  id: string;
+  email: string;
+  role: string;
+  iat: number;
+  exp: number;
+}
+
+// Request interfaces for protected routes with proper nullability guards
+export interface AuthenticatedRequest extends Request {
+  user: {
+    id: string;
+    _id: string; // MongoDB ObjectId compatibility
+    email: string;
+    role: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    phoneNumber?: string;
+    [key: string]: any;
+  };
+}
+
+export interface OptionalAuthRequest extends Request {
+  user?: {
+    id: string;
+    _id: string;
+    email: string;
+    role: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    phoneNumber?: string;
+    [key: string]: any;
+  };
+}
+
+// Auth request types with all required fields
 export interface RegisterRequest {
+  name: string;
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  role?: UserRole;
+  firstName?: string; // Optional for backward compatibility
+  lastName?: string;  // Optional for backward compatibility
+  role?: 'user' | 'vendor' | 'admin';
 }
 
 export interface LoginRequest {
@@ -388,26 +82,346 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface ProductSearchQuery {
-  q?: string;
-  category?: string;
-  subcategory?: string;
-  vendor?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  tags?: string[];
-  attributes?: { [key: string]: string };
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  page?: number;
-  limit?: number;
-  provider?: string; // For dropshipping searches
+// User types following database model pattern with all required fields
+export interface IUser {
+  name: string;
+  email: string;
+  password: string;
+  firstName?: string; // Added for controller compatibility
+  lastName?: string;  // Added for controller compatibility
+  phoneNumber?: string; // Added for controller compatibility
+  role: UserRole | 'user' | 'vendor' | 'admin'; // Union type for flexibility
+  isEmailVerified: boolean;
+  avatar?: string;
+  phone?: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface JWTPayload {
-  userId: string;
+export interface User {
+  id: string;
+  name: string;
   email: string;
-  role: UserRole;
-  iat: number;
-  exp: number;
+  password: string;
+  role: UserRole | 'user' | 'vendor' | 'admin';
+  isEmailVerified: boolean;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Product search and filtering types with all properties
+export interface ProductSearchQuery {
+  q?: string; // search query
+  category?: string;
+  subcategory?: string; // Added missing property
+  minPrice?: number;
+  maxPrice?: number;
+  vendor?: string;
+  provider?: string; // Added missing property for dropshipping
+  inStock?: boolean;
+  tags?: string[]; // Added missing property
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+// Product interfaces for e-commerce following copilot patterns
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  compareAtPrice?: number;
+  images: string[];
+  category: string;
+  vendor: string;
+  vendorId?: string;
+  sku: string;
+  stock: number;
+  isActive: boolean;
+  tags: string[];
+  weight?: number;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  seoTitle?: string;
+  seoDescription?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// CRM and Customer Data types
+export interface CustomerData {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  address?: any;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderDate?: Date;
+  status: string;
+  tags?: string[];
+  notes?: string;
+}
+
+// Financial and Transaction types
+export interface Transaction {
+  type: 'credit' | 'debit' | 'refund' | 'payout';
+  amount: number;
+  currency: string;
+  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PayoutRequest {
+  vendorId: string;
+  amount: number;
+  requestDate: Date;
+  status: 'pending' | 'approved' | 'rejected' | 'paid';
+  notes?: string;
+}
+
+// Shipping and Fulfillment types
+export interface ShipmentData {
+  _id: string;
+  orderId: string;
+  carrier: string;
+  status: 'pending' | 'shipped' | 'in_transit' | 'delivered' | 'failed';
+  trackingNumber?: string;
+  shippedDate?: Date;
+  deliveryDate?: Date;
+  estimatedDelivery?: Date;
+  shippingAddress: any;
+  items: any[];
+}
+
+// Production and Manufacturing types
+export interface IProductionOrder {
+  orderNumber: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  status: 'pending' | 'in_production' | 'quality_check' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  startDate?: Date;
+  expectedCompletion?: Date;
+  actualCompletion?: Date;
+  assignedTo?: string;
+  materials: any[];
+  notes?: string;
+  qualityChecks: any[];
+  createdAt: Date;
+  updatedAt: Date;
+  vendorId?: string;
+  customerId?: string;
+  specifications?: any;
+  cost?: number;
+  margin?: number;
+  batchNumber?: string;
+  parentOrderId?: string;
+  childOrders?: string[];
+  attachments?: string[];
+  timeline?: any[];
+  alerts?: any[];
+  metrics?: any;
+  requirements?: any;
+  compliance?: any;
+  workflow?: any;
+  approvals?: any[];
+  revisions?: any[];
+  dependencies?: string[];
+  resources?: any[];
+  constraints?: any;
+  risks?: any[];
+  mitigations?: any[];
+  kpis?: any;
+  budget?: any;
+  forecast?: any;
+  performance?: any;
+  feedback?: any[];
+  lessons?: any[];
+  documentation?: any[];
+  certifications?: any[];
+  testing?: any[];
+  validation?: any[];
+  deployment?: any;
+  maintenance?: any;
+  support?: any;
+  training?: any[];
+  integration?: any;
+  migration?: any;
+  backup?: any;
+  recovery?: any;
+  monitoring?: any;
+  analytics?: any;
+  reporting?: any;
+  automation?: any;
+  optimization?: any;
+  scalability?: any;
+  security?: any;
+  compliance_check?: any;
+  audit?: any[];
+  governance?: any;
+}
+
+// Purchase Order types
+export interface PurchaseOrder {
+  vendorId: string;
+  items: any[];
+  totalAmount: number;
+  status: 'draft' | 'sent' | 'acknowledged' | 'fulfilled' | 'cancelled';
+  orderDate: Date;
+  expectedDelivery?: Date;
+  notes?: string;
+}
+
+// Quality Control types
+export interface QualityInspection {
+  inspectionNumber: string;
+  productId: string;
+  inspectionType: 'incoming' | 'in_process' | 'final' | 'random';
+  inspectionDate: Date;
+  inspector: string;
+  status: 'passed' | 'failed' | 'pending' | 'conditional';
+  findings?: string;
+  recommendations?: string;
+}
+
+// Order and Cart types
+export interface CartItem {
+  productId: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Cart {
+  _id: string;
+  userId: string;
+  items: CartItem[];
+  total: number;
+  updatedAt: Date;
+}
+
+// Vendor types
+export interface Vendor {
+  _id: string;
+  userId: string;
+  businessName: string;
+  description?: string;
+  logo?: string;
+  contactEmail: string;
+  contactPhone?: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  businessLicense?: string;
+  taxId?: string;
+  isVerified: boolean;
+  rating: number;
+  totalSales: number;
+  commissionRate: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Category types
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  parentCategory?: string;
+  isActive: boolean;
+  sortOrder: number;
+  seoTitle?: string;
+  seoDescription?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Error handling types
+export interface AppErrorType extends Error {
+  statusCode: number;
+  status: string;
+  isOperational: boolean;
+}
+
+// Dropshipping types based on DropshippingService.test.ts requirements
+export enum OrderStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled',
+  FAILED = 'failed',
+}
+
+export interface DropshipProduct {
+  id: string;
+  name: string;
+  price: number;
+  variants: any[];
+}
+
+export interface DropshipOrderData {
+  externalOrderId: string;
+  customer: {
+    name: string;
+    email: string;
+    // Corrected: Changed address from string to a structured object to match test data
+    address: {
+      street1: string;
+      city: string;
+      state: string;
+      zip: string;
+      country: string;
+    };
+  };
+  items: {
+    productId: string;
+    quantity: number;
+  }[];
+  shippingMethod: string;
+}
+
+export interface DropshipOrderResult {
+  success: boolean;
+  orderId: string;
+  providerOrderId?: string; // Corrected: Added optional providerOrderId to match test data
+  trackingNumber?: string;
+  status: OrderStatus;
+  message?: string;
+}
+
+export interface IDropshippingProvider {
+  name: string;
+  isEnabled: boolean;
+  getProducts(): Promise<DropshipProduct[]>;
+  getProduct(id: string): Promise<DropshipProduct | null>;
+  createOrder(orderData: DropshipOrderData): Promise<DropshipOrderResult>;
+  getOrderStatus(orderId: string): Promise<OrderStatus>;
+  getTrackingInfo(orderId: string): Promise<{ trackingNumber: string; url: string } | null>;
+  cancelOrder(orderId: string): Promise<{ success: boolean; message?: string }>;
 }

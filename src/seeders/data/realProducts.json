@@ -1,0 +1,217 @@
+[
+  {
+    "name": "Apple iPhone 15 Pro Max 256GB Natural Titanium",
+    "description": "iPhone 15 Pro Max. Forged in titanium and featuring the groundbreaking A17 Pro chip, a customizable Action Button, and the most powerful iPhone camera system ever.",
+    "price": 1199.99,
+    "cost": 899.99,
+    "category": "electronics",
+    "subcategory": "smartphones",
+    "brand": "Apple",
+    "upc": "194253777175",
+    "bulletPoints": [
+      "FORGED IN TITANIUM — iPhone 15 Pro Max has a strong and light aerospace-grade titanium design with a textured matte-glass back",
+      "ADVANCED DISPLAY — The 6.7″ Super Retina XDR display with ProMotion ramps up refresh rates to 120Hz when you need exceptional graphics performance",
+      "GAME-CHANGING A17 PRO CHIP — A more efficient Neural Engine powers advanced computational photography features like Smart HDR and next-generation portraits",
+      "POWERFUL PRO CAMERA SYSTEM — Get incredible framing flexibility with 7 pro lenses. Capture super high-resolution photos with more color and detail",
+      "CUSTOMIZABLE ACTION BUTTON — Action Button is a fast track to your favorite feature"
+    ],
+    "specifications": {
+      "Display": "6.7-inch Super Retina XDR OLED",
+      "Storage": "256GB",
+      "Camera": "48MP Main, 12MP Ultra Wide, 12MP Telephoto",
+      "Processor": "A17 Pro chip",
+      "Battery": "Up to 29 hours video playback",
+      "Operating System": "iOS 17",
+      "5G": "Yes"
+    },
+    "searchTerms": ["iphone 15", "apple", "smartphone", "titanium", "a17 pro", "5g"],
+    "images": [
+      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop&crop=top"
+    ],
+    "inventory": {
+      "quantity": 45,
+      "lowStock": 10,
+      "inStock": true,
+      "fulfillmentType": "FBA"
+    },
+    "discountPercent": 0,
+    "primeEligible": true,
+    "reviewCount": 2847,
+    "averageRating": 4.5,
+    "salesRank": 1,
+    "vendorEmail": "electronics@vendor.com"
+  },
+  {
+    "name": "Sony WH-1000XM5 Wireless Industry Leading Noise Canceling Headphones",
+    "description": "Industry-leading noise canceling with Dual Noise Sensor technology. Next-level music with Edge-AI, for the ultimate listening experience.",
+    "price": 349.99,
+    "cost": 199.99,
+    "category": "electronics",
+    "subcategory": "headphones", 
+    "brand": "Sony",
+    "upc": "027242920002",
+    "bulletPoints": [
+      "INDUSTRY LEADING NOISE CANCELING: Two processors control 8 microphones for unprecedented noise canceling",
+      "INCREDIBLE SOUND QUALITY: Specially designed 30mm drivers with LDAC deliver exceptional sound quality",
+      "CRYSTAL CLEAR HANDS-FREE CALLING: 4 beamforming microphones and precise voice pickup technology",
+      "UP TO 30-HOUR BATTERY LIFE: Up to 30 hours of battery life with quick charge",
+      "ULTRA COMFORTABLE: Redesigned case is 20% smaller than previous generation"
+    ],
+    "specifications": {
+      "Driver": "30mm dome type",
+      "Frequency Response": "4 Hz-40,000 Hz",
+      "Battery Life": "30 hours with ANC on",
+      "Charging Time": "3 hours (quick charge: 3 min for 3 hours playback)",
+      "Weight": "250g",
+      "Bluetooth": "5.2",
+      "Codecs": "LDAC, AAC, SBC"
+    },
+    "searchTerms": ["sony headphones", "noise canceling", "wireless", "wh-1000xm5", "bluetooth"],
+    "images": [
+      "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&h=400&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&h=400&fit=crop&crop=top"
+    ],
+    "inventory": {
+      "quantity": 75,
+      "lowStock": 15,
+      "inStock": true,
+      "fulfillmentType": "FBA"
+    },
+    "discountPercent": 15,
+    "primeEligible": true,
+    "reviewCount": 4521,
+    "averageRating": 4.7,
+    "salesRank": 3,
+    "vendorEmail": "electronics@vendor.com"
+  },
+  {
+    "name": "Levi's Men's 511 Slim Fit Jeans",
+    "description": "The Levi's 511 Slim Fit Jeans are cut close to the body with a slim leg from hip to ankle. Made with comfortable stretch denim.",
+    "price": 69.50,
+    "cost": 35.00,
+    "category": "clothing",
+    "subcategory": "jeans",
+    "brand": "Levi's",
+    "upc": "192505643924",
+    "bulletPoints": [
+      "SLIM FIT: Cut close to the body with a slim leg from hip to ankle",
+      "STRETCH DENIM: Made with comfortable stretch denim for all-day comfort",
+      "CLASSIC 5-POCKET STYLING: Traditional jean design with timeless appeal",
+      "VERSATILE: Perfect for casual or dressed-up occasions",
+      "AUTHENTIC LEVI'S: Classic Levi's quality and craftsmanship"
+    ],
+    "specifications": {
+      "Fit": "Slim",
+      "Material": "99% Cotton, 1% Elastane",
+      "Rise": "Mid Rise",
+      "Leg Opening": "14.75 inches",
+      "Inseam": "32 inches",
+      "Care": "Machine wash cold",
+      "Origin": "Imported"
+    },
+    "searchTerms": ["levis 511", "slim jeans", "mens jeans", "denim", "levi strauss"],
+    "images": [
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop&crop=top"
+    ],
+    "inventory": {
+      "quantity": 120,
+      "lowStock": 25,
+      "inStock": true,
+      "fulfillmentType": "FBM"
+    },
+    "discountPercent": 20,
+    "primeEligible": false,
+    "reviewCount": 8934,
+    "averageRating": 4.3,
+    "salesRank": 12,
+    "vendorEmail": "fashion@vendor.com"
+  },
+  {
+    "name": "Instant Pot Duo 7-in-1 Electric Pressure Cooker, 8 Quart",
+    "description": "America's #1 multi-cooker brand, the Instant Pot Duo 7-in-1 replaces 7 kitchen appliances: pressure cooker, slow cooker, rice cooker, steamer, sauté pan, yogurt maker and food warmer.",
+    "price": 99.95,
+    "cost": 59.99,
+    "category": "home",
+    "subcategory": "kitchen",
+    "brand": "Instant Pot",
+    "upc": "810020980059",
+    "bulletPoints": [
+      "7-IN-1 FUNCTIONALITY: Pressure cooker, slow cooker, rice cooker, steamer, sauté pan, yogurt maker, and food warmer",
+      "QUICK ONE-TOUCH COOKING: 13+ customizable smart programs for ribs, soups, beans, rice, poultry, yogurt, desserts and more",
+      "COOK FAST OR SLOW: Pressure cook delicious one-pot meals up to 70% faster than traditional cooking methods",
+      "LARGE CAPACITY: Cook for up to 8 people – perfect for larger families, or meal prepping and batch cooking",
+      "SAFE AND CONVENIENT: Built with 10+ safety features and overheat protection"
+    ],
+    "specifications": {
+      "Capacity": "8 Quarts",
+      "Functions": "7-in-1 Multi-Cooker",
+      "Material": "Stainless Steel",
+      "Programs": "13 Smart Programs",
+      "Pressure Settings": "High/Low",
+      "Timer": "Up to 24 hours",
+      "Warranty": "1 Year"
+    },
+    "searchTerms": ["instant pot", "pressure cooker", "multi cooker", "kitchen appliance", "8 quart"],
+    "images": [
+      "https://images.unsplash.com/photo-1556909114-4dca813a0c6d?w=400&h=400&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1556909114-4dca813a0c6d?w=400&h=400&fit=crop&crop=top"
+    ],
+    "inventory": {
+      "quantity": 85,
+      "lowStock": 20,
+      "inStock": true,
+      "fulfillmentType": "FBA"
+    },
+    "discountPercent": 25,
+    "primeEligible": true,
+    "reviewCount": 12847,
+    "averageRating": 4.6,
+    "salesRank": 2,
+    "vendorEmail": "home@vendor.com"
+  },
+  {
+    "name": "Nike Air Force 1 '07 Men's Shoes",
+    "description": "The radiance lives on in the Nike Air Force 1 '07, the basketball original that puts a fresh spin on what you know best: durably stitched overlays, clean finishes and the perfect amount of flash.",
+    "price": 90.00,
+    "cost": 45.00,
+    "category": "clothing",
+    "subcategory": "shoes",
+    "brand": "Nike",
+    "upc": "195866133709",
+    "bulletPoints": [
+      "LEATHER UPPER: Real and synthetic leather upper provides durability and easy care",
+      "AIR-SOLE UNIT: Nike Air cushioning provides lightweight comfort",
+      "RUBBER OUTSOLE: Rubber outsole provides traction and durability", 
+      "CLASSIC DESIGN: Timeless basketball-inspired design",
+      "VERSATILE STYLE: Perfect for casual wear and street fashion"
+    ],
+    "specifications": {
+      "Upper Material": "Leather and synthetic leather",
+      "Sole Material": "Rubber",
+      "Closure Type": "Lace-up",
+      "Cushioning": "Nike Air",
+      "Style": "Low-top sneaker",
+      "Care": "Spot clean",
+      "Origin": "Imported"
+    },
+    "searchTerms": ["nike air force 1", "nike shoes", "sneakers", "basketball shoes", "white shoes"],
+    "images": [
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop&crop=top"
+    ],
+    "inventory": {
+      "quantity": 200,
+      "lowStock": 40,
+      "inStock": true,
+      "fulfillmentType": "FBA"
+    },
+    "discountPercent": 10,
+    "primeEligible": true,
+    "reviewCount": 15623,
+    "averageRating": 4.4,
+    "salesRank": 5,
+    "vendorEmail": "fashion@vendor.com"
+  }
+]

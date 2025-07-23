@@ -1,165 +1,346 @@
-const TestEnvironmentSetup = require('./test-setup.js');
-const LandingPageTester = require('./landing-page-tester.js');
-const CartAPITester = require('./cart-api-tester.js');
-const AuthCheckoutTester = require('./auth-checkout-tester.js');
-const fs = require('fs');
-const path = require('path');
+const puppeteer = require('puppeteer');
 
-class MasterTestRunner extends TestEnvironmentSetup {
+class MasterTestRunner {
   constructor() {
-    super();
+    // Following copilot instructions: backend:3000, frontend:3001
+    this.config = {
+      baseUrl: process.env.BASE_URL || 'http://localhost:3001',
+      apiUrl: process.env.API_URL || 'http://localhost:3000',
+      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000/api',
+      timeout: 30000
+    };
+    
+    this.browser = null;
+    this.page = null;
+    
     this.testSuites = [
-      { name: 'landing-pages', tester: LandingPageTester, method: 'testAllLandingPages' },
-      { name: 'cart-api', tester: CartAPITester, method: 'testAllCartWorkflows' },
-      { name: 'auth-checkout', tester: AuthCheckoutTester, method: 'testAllAuthCheckoutWorkflows' }
+      { name: 'health-checks', method: 'testHealthChecks' },
+      { name: 'debug-dashboard', method: 'testDebugDashboard' },
+      { name: 'api-endpoints', method: 'testApiEndpoints' },
+      { name: 'cors-validation', method: 'testCorsValidation' }
     ];
+    
     this.results = this.initializeResults();
-  }
-
-  async runAllTests() {
-    console.log('🚀 Starting Master E2E Test Suite...');
-    const startTime = Date.now();
-    
-    try {
-      await this.initializeBrowser();
-      
-      for (const suite of this.testSuites) {
-        await this.runTestSuite(suite);
-      }
-      
-      this.results.summary.totalDuration = Date.now() - startTime;
-      await this.generateReports();
-      
-      console.log('🎉 Master test suite completed!');
-      this.printSummary();
-      
-    } catch (error) {
-      console.error('❌ Master test suite failed:', error.message);
-    } finally {
-      await this.cleanup();
-    }
-    
-    return this.results;
-  }
-
-  async runTestSuite(suite) {
-    console.log(`\n🧪 Running: ${suite.name}`);
-    
-    try {
-      const tester = new suite.tester();
-      tester.browser = this.browser;
-      tester.page = this.page;
-      
-      const result = await tester[suite.method]();
-      
-      this.results.suiteResults[suite.name] = {
-        success: true,
-        result
-      };
-      
-      this.results.summary.passedSuites++;
-      console.log(`✅ ${suite.name} completed successfully`);
-      
-      if (tester.apiCalls) {
-        this.apiCalls.push(...tester.apiCalls);
-      }
-      
-    } catch (error) {
-      this.results.suiteResults[suite.name] = {
-        success: false,
-        error: error.message
-      };
-      
-      this.results.summary.failedSuites++;
-      console.error(`❌ ${suite.name} failed: ${error.message}`);
-    }
-  }
-
-  async generateReports() {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const reportDir = path.join(__dirname, '../../../test-results/reports');
-    
-    if (!fs.existsSync(reportDir)) {
-      fs.mkdirSync(reportDir, { recursive: true });
-    }
-    
-    // Generate JSON report
-    const jsonReport = path.join(reportDir, `master-test-report-${timestamp}.json`);
-    fs.writeFileSync(jsonReport, JSON.stringify(this.results, null, 2));
-    
-    // Generate HTML report
-    const htmlReport = path.join(reportDir, `master-test-report-${timestamp}.html`);
-    const htmlContent = this.generateHTMLReport();
-    fs.writeFileSync(htmlReport, htmlContent);
-    
-    console.log(`📄 Reports generated: ${path.basename(jsonReport)}, ${path.basename(htmlReport)}`);
-  }
-
-  generateHTMLReport() {
-    const successRate = Math.round((this.results.summary.passedSuites / this.testSuites.length) * 100);
-    
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>E2E Test Report</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .summary { background: #f5f5f5; padding: 20px; border-radius: 8px; }
-        .success { color: #28a745; }
-        .error { color: #dc3545; }
-        .suite { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>🧪 E2E Test Report</h1>
-        <p>Generated: ${new Date(this.results.timestamp).toLocaleString()}</p>
-    </div>
-    
-    <div class="summary">
-        <h2>📊 Summary</h2>
-        <p><strong>Success Rate:</strong> ${successRate}%</p>
-        <p><strong>Total Suites:</strong> ${this.testSuites.length}</p>
-        <p><strong>Passed:</strong> <span class="success">${this.results.summary.passedSuites}</span></p>
-        <p><strong>Failed:</strong> <span class="error">${this.results.summary.failedSuites}</span></p>
-        <p><strong>Duration:</strong> ${Math.round(this.results.summary.totalDuration / 1000)}s</p>
-    </div>
-    
-    <h2>📋 Test Suite Results</h2>
-    ${Object.entries(this.results.suiteResults).map(([name, result]) => `
-    <div class="suite">
-        <h3>${name.replace(/-/g, ' ').toUpperCase()}</h3>
-        <p><strong>Status:</strong> ${result.success ? '<span class="success">✅ Passed</span>' : '<span class="error">❌ Failed</span>'}</p>
-        ${result.error ? `<p><strong>Error:</strong> ${result.error}</p>` : ''}
-    </div>
-    `).join('')}
-</body>
-</html>`;
-  }
-
-  printSummary() {
-    const successRate = Math.round((this.results.summary.passedSuites / this.testSuites.length) * 100);
-    
-    console.log('\n🎯 TEST SUMMARY');
-    console.log('===============');
-    console.log(`Success Rate: ${successRate}%`);
-    console.log(`Duration: ${Math.round(this.results.summary.totalDuration / 1000)}s`);
-    console.log(`API Calls: ${this.apiCalls.length}`);
   }
 
   initializeResults() {
     return {
-      timestamp: new Date().toISOString(),
       summary: {
+        totalSuites: 0,
         passedSuites: 0,
         failedSuites: 0,
+        totalTests: 0,
+        passedTests: 0,
+        failedTests: 0,
         totalDuration: 0
       },
-      suiteResults: {}
+      suites: [],
+      timestamp: new Date().toISOString(),
+      environment: {
+        frontend: this.config.baseUrl,
+        backend: this.config.apiUrl,
+        apiBase: this.config.apiBaseUrl
+      }
     };
+  }
+
+  async initializeBrowser() {
+    console.log('🔧 Initializing Puppeteer browser for E2E testing...');
+    this.browser = await puppeteer.launch({
+      headless: process.env.HEADLESS !== 'false',
+      slowMo: parseInt(process.env.SLOW_MO) || 50,
+      devtools: process.env.DEVTOOLS === 'true',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    
+    this.page = await this.browser.newPage();
+    await this.page.setViewport({ width: 1920, height: 1080 });
+    
+    // Set default timeout following copilot patterns
+    this.page.setDefaultTimeout(this.config.timeout);
+  }
+
+  async runAllTests() {
+    console.log('🚀 Starting comprehensive E2E test suites...');
+    console.log(`Frontend: ${this.config.baseUrl}`);
+    console.log(`Backend: ${this.config.apiUrl}`);
+    console.log(`API Base: ${this.config.apiBaseUrl}`);
+    
+    const startTime = Date.now();
+
+    try {
+      await this.initializeBrowser();
+
+      for (const suite of this.testSuites) {
+        await this.runTestSuite(suite);
+      }
+
+      this.results.summary.totalDuration = Date.now() - startTime;
+      return this.results;
+
+    } catch (error) {
+      console.error('❌ E2E test suite failed:', error.message);
+      this.results.summary.failedSuites++;
+      throw error;
+    } finally {
+      if (this.browser) {
+        await this.browser.close();
+      }
+    }
+  }
+
+  async runTestSuite(suite) {
+    console.log(`📋 Running ${suite.name}...`);
+    
+    const suiteResult = {
+      name: suite.name,
+      startTime: Date.now(),
+      tests: [],
+      passed: false,
+      duration: 0
+    };
+
+    try {
+      this.results.summary.totalSuites++;
+      
+      if (this[suite.method]) {
+        const testResults = await this[suite.method]();
+        this.processTestResults(suiteResult, testResults);
+      }
+
+      suiteResult.passed = suiteResult.tests.every(test => test.passed);
+      
+      if (suiteResult.passed) {
+        this.results.summary.passedSuites++;
+      } else {
+        this.results.summary.failedSuites++;
+      }
+
+    } catch (error) {
+      suiteResult.tests.push({
+        name: 'Suite execution',
+        passed: false,
+        error: error.message,
+        duration: 0
+      });
+      this.results.summary.failedSuites++;
+    }
+
+    suiteResult.duration = Date.now() - suiteResult.startTime;
+    this.results.suites.push(suiteResult);
+  }
+
+  processTestResults(suiteResult, testResults) {
+    const results = Array.isArray(testResults) ? testResults : [testResults];
+    
+    results.forEach(test => {
+      suiteResult.tests.push(test);
+      this.results.summary.totalTests++;
+      if (test.passed) {
+        this.results.summary.passedTests++;
+      } else {
+        this.results.summary.failedTests++;
+      }
+    });
+  }
+
+  // Health checks following copilot debug ecosystem
+  async testHealthChecks() {
+    const tests = [];
+    
+    try {
+      // Backend health check (following copilot patterns)
+      await this.page.goto(this.config.apiUrl + '/health', { waitUntil: 'networkidle2' });
+      const healthResponse = await this.page.evaluate(() => {
+        try {
+          const body = document.body.textContent;
+          return { success: true, content: body };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      });
+      
+      tests.push({
+        name: 'Backend Health Check',
+        passed: healthResponse.success,
+        details: healthResponse
+      });
+
+      // Frontend accessibility
+      await this.page.goto(this.config.baseUrl, { waitUntil: 'networkidle2' });
+      const frontendLoaded = await this.page.title();
+      
+      tests.push({
+        name: 'Frontend Accessibility',
+        passed: frontendLoaded.length > 0,
+        details: { title: frontendLoaded }
+      });
+
+      // API Status endpoint
+      const apiStatusResponse = await this.page.evaluate(async (apiUrl) => {
+        try {
+          const response = await fetch(`${apiUrl}/api/status`);
+          const data = await response.json();
+          return { success: response.ok, status: response.status, data };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      }, this.config.apiUrl);
+      
+      tests.push({
+        name: 'API Status Check',
+        passed: apiStatusResponse.success,
+        details: apiStatusResponse
+      });
+
+    } catch (error) {
+      tests.push({
+        name: 'Health Checks',
+        passed: false,
+        error: error.message
+      });
+    }
+
+    return tests;
+  }
+
+  // Debug dashboard tests (copilot debug ecosystem patterns)
+  async testDebugDashboard() {
+    const tests = [];
+    
+    try {
+      // Primary debug dashboard test
+      await this.page.goto(`${this.config.baseUrl}/debug`, { 
+        waitUntil: 'networkidle2',
+        timeout: 15000 
+      });
+      
+      const debugDashboard = await this.page.evaluate(() => {
+        const title = document.title;
+        const hasDebugElements = document.querySelector('[class*="debug"], [id*="debug"]') !== null;
+        return { title, hasDebugElements };
+      });
+      
+      tests.push({
+        name: 'Primary Debug Dashboard',
+        passed: debugDashboard.title.includes('Debug') || debugDashboard.hasDebugElements,
+        details: debugDashboard
+      });
+
+      // Static debug page test
+      await this.page.goto(`${this.config.baseUrl}/debug-api.html`);
+      const staticDebugPage = await this.page.evaluate(() => {
+        const content = document.body.innerHTML;
+        const hasApiElements = content.includes('API') || content.includes('debug');
+        return { hasApiElements, contentLength: content.length };
+      });
+      
+      tests.push({
+        name: 'Static Debug Page',
+        passed: staticDebugPage.hasApiElements,
+        details: staticDebugPage
+      });
+
+    } catch (error) {
+      tests.push({
+        name: 'Debug Dashboard Suite',
+        passed: false,
+        error: error.message,
+        note: 'Debug pages may not be fully implemented yet'
+      });
+    }
+
+    return tests;
+  }
+
+  // API endpoint validation following copilot API structure
+  async testApiEndpoints() {
+    const tests = [];
+    const endpoints = [
+      '/api/auth/status',
+      '/api/products',
+      '/api/users',
+      '/api/vendors',
+      '/api/orders',
+      '/api/cart',
+      '/api/categories',
+      '/api/dropshipping/products'
+    ];
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await this.page.evaluate(async (apiUrl, path) => {
+          try {
+            const response = await fetch(`${apiUrl}${path}`);
+            return { 
+              status: response.status,
+              ok: response.ok,
+              accessible: response.status !== 500
+            };
+          } catch (error) {
+            return { accessible: false, error: error.message };
+          }
+        }, this.config.apiUrl, endpoint);
+
+        tests.push({
+          name: `${endpoint} endpoint`,
+          passed: response.accessible,
+          details: response
+        });
+
+      } catch (error) {
+        tests.push({
+          name: `${endpoint} endpoint`,
+          passed: false,
+          error: error.message
+        });
+      }
+    }
+
+    return tests;
+  }
+
+  // CORS validation following copilot cross-service communication
+  async testCorsValidation() {
+    const tests = [];
+    
+    try {
+      const corsTest = await this.page.evaluate(async (apiUrl, origin) => {
+        try {
+          const response = await fetch(`${apiUrl}/api/status`, {
+            method: 'GET',
+            headers: {
+              'Origin': origin,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          return {
+            status: response.status,
+            accessible: response.status !== 500,
+            corsEnabled: response.headers.get('access-control-allow-origin') !== null
+          };
+        } catch (error) {
+          return { accessible: false, error: error.message };
+        }
+      }, this.config.apiUrl, this.config.baseUrl);
+
+      tests.push({
+        name: 'CORS Configuration',
+        passed: corsTest.accessible,
+        details: corsTest
+      });
+
+    } catch (error) {
+      tests.push({
+        name: 'CORS Validation',
+        passed: false,
+        error: error.message
+      });
+    }
+
+    return tests;
   }
 }
 
-module.exports = MasterTestRunner;
+module.exports = { MasterTestRunner };

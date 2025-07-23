@@ -1,6 +1,11 @@
+
 const { MasterTestRunner } = require('./helpers/master-test-runner.js');
 
 async function runTests() {
+    console.log('🚀 Starting E2E Tests');
+    console.log('Backend: http://localhost:3000');
+    console.log('Frontend: http://localhost:3001');
+    
     const runner = new MasterTestRunner();
     
     try {

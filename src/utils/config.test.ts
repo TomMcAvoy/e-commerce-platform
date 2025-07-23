@@ -1,12 +1,27 @@
-import { getConfig, setConfig } from './config';
+import { config } from './config';
 
-test('getConfig returns default config', () => {
-    const config = getConfig();
-    expect(config).toEqual({}); // Assuming default config is an empty object
-});
+describe('Config', () => {
+  it('should have required environment variables', () => {
+    expect(config).toBeDefined();
+    expect(config.port).toBeDefined();
+    expect(config.nodeEnv).toBeDefined();
+  });
 
-test('setConfig updates the config', () => {
-    setConfig({ key: 'value' });
-    const config = getConfig();
-    expect(config).toEqual({ key: 'value' });
+  it('should have database configuration', () => {
+    expect(config.mongoUri).toBeDefined();
+  });
+
+  it('should have JWT configuration', () => {
+    expect(config.jwtSecret).toBeDefined();
+    expect(config.jwtExpire).toBeDefined();
+  });
+
+  it('should have proper environment setup', () => {
+    expect(['development', 'production', 'test']).toContain(config.nodeEnv);
+  });
+
+  it('should have valid port number', () => {
+    expect(typeof config.port).toBe('number');
+    expect(config.port).toBeGreaterThan(0);
+  });
 });

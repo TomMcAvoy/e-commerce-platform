@@ -1,11 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    domains: ['localhost', 'placeholder.com'],
-  },
   env: {
-    NEXT_PUBLIC_API_URL: 'http://localhost:3010/api',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
   },
-}
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:3000/api/:path*',
+      },
+    ];
+  },
+  experimental: {
+    // Future features
+  },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

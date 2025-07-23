@@ -1,218 +1,96 @@
-import express from 'express';
+
+import express, { Express, Request, Response, NextFunction } from 'express';
+import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
-import compression from 'compression';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import { createClient } from 'redis';
+import rateLimit from 'express-rate-limit'; // Added for security
+import path from 'path'; // Added for serving static files
+import { connectDB } from './config/db';
+import AppError from './utils/AppError';
+import errorHandler from './middleware/errorHandler';
+import apiRoutes from './routes/index';
 
-// Import routes
-import authRoutes from './routes/auth';
-import productRoutes from './routes/products';
-import userRoutes from './routes/users';
-import orderRoutes from './routes/orders';
-import vendorRoutes from './routes/vendors';
-import categoryRoutes from './routes/categories';
-import cartRoutes from './routes/cart';
-import dropshippingRoutes from './routes/dropshipping';
-import networkingRoutes from './routes/networking';
-import inventoryRoutes from './routes/inventory';
-import crmRoutes from './routes/crm';
-import purchaseOrderRoutes from './routes/purchaseOrders';
-import fulfillmentRoutes from './routes/fulfillment';
-import analyticsRoutes from './routes/analytics';
-import financialRoutes from './routes/financial';
-import hrRoutes from './routes/hr';
-import productionRoutes from './routes/production';
-import qualityRoutes from './routes/quality';
-
-// Import middleware
-import { errorHandler } from './middleware/errorHandler';
-import { notFound } from './middleware/notFound';
-
-// Import utilities
-import { logger } from './utils/logger';
-import { config } from './utils/config';
-
-// Load environment variables
 dotenv.config();
+connectDB();
 
-class Server {
-  public app: express.Application;
-  private redisClient: any;
+const app: Express = express();
 
-  constructor() {
-    this.app = express();
-    this.connectToDatabase();
-    this.connectToRedis();
-    this.setupMiddleware();
-    this.setupRoutes();
-    this.setupErrorHandling();
-  }
+// --- Core Middleware ---
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+  credentials: true,
+}));
 
-  private async connectToDatabase(): Promise<void> {
-    try {
-      const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/shoppingcart';
-      await mongoose.connect(mongoUri);
-      console.log('✅ Connected to MongoDB');
-    } catch (error) {
-      console.error('❌ MongoDB connection error:', error);
-      process.exit(1);
-    }
-  }
+// Set security HTTP headers according to best practices
+app.use(helmet());
 
-  private async connectToRedis(): Promise<void> {
-    try {
-      this.redisClient = createClient({
-        url: process.env.REDIS_URL || 'redis://localhost:6379'
-      });
+// Body parser, reading data from body into req.body
+app.use(express.json({ limit: '10kb' }));
 
-      this.redisClient.on('error', (err: Error) => console.error('Redis Client Error', err));
-      await this.redisClient.connect();
-      console.log('✅ Connected to Redis');
-    } catch (error) {
-      console.error('❌ Redis connection error:', error);
-    }
-  }
-
-  private setupMiddleware(): void {
-    // Security middleware
-    this.app.use(helmet());
-    
-    // CORS configuration
-    const corsOrigins = process.env.CORS_ORIGIN 
-      ? process.env.CORS_ORIGIN.split(',')
-      : [
-          process.env.FRONTEND_URL || 'http://localhost:3011',
-          'http://localhost:3010' // Backend URL for debugging
-        ];
-
-    this.app.use(cors({
-      origin: corsOrigins,
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-      exposedHeaders: ['X-Total-Count']
-    }));
-
-    // Rate limiting
-    const limiter = rateLimit({
-      windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW!) || 15) * 60 * 1000,
-      max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS!) || 100,
-      message: 'Too many requests from this IP, please try again later.'
-    });
-    this.app.use(limiter);
-
-    // Body parsing middleware
-    this.app.use(express.json({ limit: '10mb' }));
-    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-    // Compression middleware
-    this.app.use(compression());
-
-    // Custom request logging middleware
-    this.app.use(logger.requestLogger());
-
-    // Logging middleware
-    if (process.env.NODE_ENV === 'development') {
-      this.app.use(morgan('dev'));
-    } else {
-      this.app.use(morgan('combined'));
-    }
-
-    // Static files
-    this.app.use('/uploads', express.static('uploads'));
-  }
-
-  private setupRoutes(): void {
-    // Health check endpoint
-    this.app.get('/health', (req, res) => {
-      res.status(200).json({
-        status: 'OK',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        version: process.env.npm_package_version || '1.0.0',
-        environment: process.env.NODE_ENV || 'development',
-        services: {
-          database: 'connected', // TODO: Add actual MongoDB health check
-          redis: this.redisClient?.isOpen ? 'connected' : 'disconnected'
-        }
-      });
-    });
-
-    // API status endpoint
-    this.app.get('/api/status', (req, res) => {
-      res.status(200).json({
-        api: 'E-Commerce Platform API',
-        version: '1.0.0',
-        documentation: '/api/docs',
-        endpoints: {
-          auth: '/api/auth',
-          products: '/api/products',
-          users: '/api/users',
-          orders: '/api/orders',
-          vendors: '/api/vendors',
-          categories: '/api/categories',
-          cart: '/api/cart',
-          dropshipping: '/api/dropshipping',
-          networking: '/api/networking',
-          inventory: '/api/inventory',
-          crm: '/api/crm',
-          purchaseOrders: '/api/purchase-orders',
-          fulfillment: '/api/fulfillment',
-          analytics: '/api/analytics',
-          financial: '/api/financial',
-          hr: '/api/hr',
-          production: '/api/production',
-          quality: '/api/quality'
-        }
-      });
-    });
-
-    // API routes
-    this.app.use('/api/auth', authRoutes);
-    this.app.use('/api/products', productRoutes);
-    this.app.use('/api/users', userRoutes);
-    this.app.use('/api/orders', orderRoutes);
-    this.app.use('/api/vendors', vendorRoutes);
-    this.app.use('/api/categories', categoryRoutes);
-    this.app.use('/api/cart', cartRoutes);
-    this.app.use('/api/dropshipping', dropshippingRoutes);
-    this.app.use('/api/networking', networkingRoutes);
-    this.app.use('/api/inventory', inventoryRoutes);
-    this.app.use('/api/crm', crmRoutes);
-    this.app.use('/api/purchase-orders', purchaseOrderRoutes);
-    this.app.use('/api/fulfillment', fulfillmentRoutes);
-    this.app.use('/api/analytics', analyticsRoutes);
-    this.app.use('/api/financial', financialRoutes);
-    this.app.use('/api/hr', hrRoutes);
-    this.app.use('/api/production', productionRoutes);
-    this.app.use('/api/quality', qualityRoutes);
-  }
-
-  private setupErrorHandling(): void {
-    this.app.use(notFound);
-    this.app.use(errorHandler);
-  }
-
-  public start(): void {
-    const port = process.env.PORT || 3010;
-    this.app.listen(port, () => {
-      logger.info(`🚀 Server running on port ${port}`);
-      logger.info(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
-      logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3011'}`);
-    });
-  }
-
-  public getRedisClient() {
-    return this.redisClient;
-  }
+// Development logging
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
 }
 
-// Start server
-const server = new Server();
-server.start();
+// --- Rate Limiting ---
+// As per security instructions, apply rate limiting to all API routes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again after 15 minutes.',
+});
+app.use('/api', limiter);
 
-export default server;
+// --- Static File Serving ---
+// As per file upload instructions, serve the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+
+// --- Health & API Routes ---
+app.get('/health', (req: Request, res: Response) => {
+    res.status(200).json({
+        success: true,
+        message: 'E-Commerce Platform API is healthy',
+        version: process.env.npm_package_version,
+        environment: process.env.NODE_ENV,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Main API routes
+app.use('/api', apiRoutes);
+
+
+// --- Error Handling ---
+// Handle 404 for routes not found, according to the AppError pattern
+app.all('*', (req: Request, res: Response, next: NextFunction) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+// Global error handling middleware
+app.use(errorHandler);
+
+
+// --- Server Initialization ---
+const PORT = process.env.PORT || 3000;
+
+// Start server only if not in a test environment
+if (process.env.NODE_ENV !== 'test') {
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  });
+
+  // Handle unhandled promise rejections for a graceful shutdown
+  process.on('unhandledRejection', (err: Error) => {
+    console.error('UNHANDLED REJECTION! 💥 Shutting down...');
+    console.error(err.name, err.message);
+    server.close(() => {
+      process.exit(1);
+    });
+  });
+}
+
+export default app;

@@ -1,93 +1,130 @@
-// API configuration utility
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+// filepath: /Users/thomasmcavoy/GitHub/shoppingcart/frontend/lib/api.ts
 
-// Debug logging in development
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  console.log('API_BASE_URL:', API_BASE_URL)
-  console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL)
+/**
+ * Secure API Client following Cross-Service Communication patterns
+ * All sensitive logic is handled server-side via backend API endpoints
+ */
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
 }
 
-export const apiConfig = {
-  baseURL: API_BASE_URL,
-  endpoints: {
-    auth: {
-      register: `${API_BASE_URL}/auth/register`,
-      login: `${API_BASE_URL}/auth/login`,
-      logout: `${API_BASE_URL}/auth/logout`,
-    },
-    users: `${API_BASE_URL}/users`,
-    vendors: `${API_BASE_URL}/vendors`,
-    products: `${API_BASE_URL}/products`,
-    categories: `${API_BASE_URL}/categories`,
-    orders: `${API_BASE_URL}/orders`,
-    cart: `${API_BASE_URL}/cart`,
-    dropshipping: `${API_BASE_URL}/dropshipping`,
-  }
-}
+class ApiClient {
+  private baseUrl: string;
 
-// Helper function for making API requests
-export const apiRequest = async (url: string, options: RequestInit = {}) => {
-  const defaultHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
   }
 
-  // Get token from localStorage if available
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  if (token) {
-    defaultHeaders['Authorization'] = `Bearer ${token}`
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
+    try {
+      const url = `${this.baseUrl}${endpoint}`;
+      const config: RequestInit = {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        ...options,
+      };
+
+      const response = await fetch(url, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'API request failed');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
   }
 
-  const config = {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-  }
-
-  try {
-    const response = await fetch(url, config)
+  // Product endpoints following API Endpoints Structure
+  async getProductsByCategory(category: string, filters: any = {}) {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
+        params.append(key, filters[key].toString());
+      }
+    });
     
-    // Handle non-JSON responses
-    const contentType = response.headers.get('content-type')
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error(`Server returned ${response.status}: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`)
-    }
-
-    return data
-  } catch (error) {
-    // Handle network errors and other fetch failures
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Network error: Unable to connect to server. Please check if the server is running.')
-    }
-    throw error
+    const queryString = params.toString();
+    const endpoint = `/products/category/${category}${queryString ? `?${queryString}` : ''}`;
+    
+    return this.request(endpoint);
   }
-}
 
-// Logout utility function
-export const logout = async () => {
-  try {
-    // Call logout endpoint to clear server-side session/cookie
-    await apiRequest(apiConfig.endpoints.auth.logout, {
+  async getFeaturedProducts(limit?: number) {
+    const endpoint = `/products/featured${limit ? `?limit=${limit}` : ''}`;
+    return this.request(endpoint);
+  }
+
+  async getCategories() {
+    return this.request('/products/categories');
+  }
+
+  async searchProducts(query: string) {
+    return this.request(`/products/search?query=${encodeURIComponent(query)}`);
+  }
+
+  // Authentication endpoints (existing)
+  async login(credentials: { email: string; password: string }) {
+    return this.request('/auth/login', {
       method: 'POST',
-    })
-  } catch (error) {
-    // Even if the server request fails, we should still clear local storage
-    console.error('Logout request failed:', error)
-  } finally {
-    // Always clear local storage
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      
-      // Redirect to home page
-      window.location.href = '/'
-    }
+      body: JSON.stringify(credentials),
+    });
+  }
+
+  async register(userData: any) {
+    return this.request('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async logout() {
+    return this.request('/auth/logout', {
+      method: 'POST',
+    });
+  }
+
+  // Cart endpoints (secure server-side)
+  async getCart() {
+    return this.request('/cart');
+  }
+
+  async addToCart(item: any) {
+    return this.request('/cart/add', {
+      method: 'POST',
+      body: JSON.stringify(item),
+    });
+  }
+
+  async removeFromCart(itemId: string) {
+    return this.request(`/cart/remove/${itemId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateCartItem(itemId: string, quantity: number) {
+    return this.request(`/cart/update/${itemId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ quantity }),
+    });
   }
 }
+
+export const apiClient = new ApiClient(API_BASE_URL);

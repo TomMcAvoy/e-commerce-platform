@@ -1,457 +1,288 @@
-'use client'
-import Link from 'next/link'
-import { useState } from 'react'
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Users, TrendingUp, Star, ExternalLink, ShoppingCart, User } from 'lucide-react'
-import { useIsClient } from '../lib/hooks'
-import { useCart } from '../contexts/CartContext'
-import { useToast } from '../contexts/ToastContext'
+'use client';
 
-export default function Home() {
-  const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set())
-  const isClient = useIsClient()
-  const { addToCart } = useCart()
-  const { addToast } = useToast()
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Navigation } from '../components/navigation/Navigation';
+import { AffiliateSidebar } from '../components/affiliate/AffiliateSidebar';
+import { apiClient } from '../lib/api';
+import { ShieldCheckIcon, LockClosedIcon, CheckBadgeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
-  const toggleLike = (postId: number) => {
-    const newLikedPosts = new Set(likedPosts)
-    if (newLikedPosts.has(postId)) {
-      newLikedPosts.delete(postId)
-    } else {
-      newLikedPosts.add(postId)
+export default function HomePage() {
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    vendors: 0,
+    orders: 0,
+    satisfied: 98
+  });
+  const [showAffiliateSidebar, setShowAffiliateSidebar] = useState(true);
+
+  useEffect(() => {
+    loadFeaturedProducts();
+    loadStats();
+  }, []);
+
+  const loadFeaturedProducts = async () => {
+    try {
+      const response = await apiClient.getFeaturedProducts();
+      if (response.success) {
+        setFeaturedProducts(response.data?.slice(0, 8) || []);
+      }
+    } catch (error) {
+      console.error('Failed to load featured products:', error);
     }
-    setLikedPosts(newLikedPosts)
-  }
+  };
 
-  const socialPosts = [
+  const loadStats = async () => {
+    // Mock stats following API Endpoints Structure
+    setStats({
+      totalProducts: 50000,
+      vendors: 1500,
+      orders: 125000,
+      satisfied: 98
+    });
+  };
+
+  const categories = [
     {
-      id: 1,
-      author: "Sarah Chen",
-      avatar: "SC",
-      time: "2h",
-      content: "Just discovered these amazing wireless headphones! The sound quality is incredible and they're perfect for my daily workouts. Highly recommend! 🎧💪",
-      likes: 47,
-      comments: 12,
-      shares: 5,
-      isAffiliate: true,
-      productName: "Premium Wireless Headphones",
-      price: 79.99,
-      originalPrice: 129.99,
-      affiliateLink: "/products/1",
-      image: "/api/placeholder/600/400",
-      category: "Electronics"
+      title: 'Secure Mens Fashion',
+      subtitle: 'Verified premium clothing & accessories',
+      href: '/mens',
+      color: 'from-gray-800 to-gray-600',
+      stats: '15K+ Verified Products',
+      icon: <ShieldCheckIcon className="w-8 h-8 text-white mb-4" />
     },
     {
-      id: 2,
-      author: "Mike Rodriguez",
-      avatar: "MR",
-      time: "4h",
-      content: "This organic cotton t-shirt is so comfortable! Perfect for casual days and the quality is outstanding. Plus it's sustainable! 🌱👕",
-      likes: 32,
-      comments: 8,
-      shares: 3,
-      isAffiliate: true,
-      productName: "Organic Cotton Basic Tee",
-      price: 24.99,
-      originalPrice: 39.99,
-      affiliateLink: "/products/2",
-      image: "/api/placeholder/600/400",
-      category: "Fashion"
+      title: 'Secure Sports Equipment',
+      subtitle: 'Authenticated professional grade gear',
+      href: '/sports', 
+      color: 'from-green-600 to-emerald-500',
+      stats: '8K+ Certified Products',
+      icon: <CheckBadgeIcon className="w-8 h-8 text-white mb-4" />
     },
     {
-      id: 3,
-      author: "Emily Johnson",
-      avatar: "EJ",
-      time: "6h",
-      content: "Upgraded my home gym with this fitness tracker! Love how it monitors my heart rate and sleep patterns. Game changer for my fitness journey! 📱💚",
-      likes: 68,
-      comments: 15,
-      shares: 9,
-      isAffiliate: true,
-      productName: "Smart Fitness Tracker",
-      price: 89.99,
-      originalPrice: 129.99,
-      affiliateLink: "/products/3",
-      image: "/api/placeholder/600/400",
-      category: "Sports & Fitness"
+      title: 'Secure Hardware Tools',
+      subtitle: 'Validated professional & DIY tools',
+      href: '/hardware',
+      color: 'from-red-600 to-orange-500',
+      stats: '12K+ Verified Products',
+      icon: <LockClosedIcon className="w-8 h-8 text-white mb-4" />
     }
-  ]
+  ];
 
-  const handleAddToCart = (post: typeof socialPosts[0]) => {
-    addToCart({
-      id: `social-${post.id}`,
-      name: post.productName,
-      price: post.price,
-      image: post.image,
-      category: post.category
-    })
-    
-    addToast({
-      type: 'success',
-      title: 'Added to Cart!',
-      message: `${post.productName} has been added to your cart`,
-      duration: 3000
-    })
-  }
-
-  const trendingProducts = [
-    { id: 1, name: "Wireless Earbuds Pro", price: "$89.99", originalPrice: "$129.99", rating: 4.8, reviews: 2341, discount: "31% off" },
-    { id: 2, name: "Smart Home Hub", price: "$149.99", originalPrice: "$199.99", rating: 4.6, reviews: 1456, discount: "25% off" },
-    { id: 3, name: "Portable Charger", price: "$34.99", originalPrice: "$49.99", rating: 4.7, reviews: 892, discount: "30% off" },
-    { id: 4, name: "Bluetooth Speaker", price: "$59.99", originalPrice: "$89.99", rating: 4.5, reviews: 1203, discount: "33% off" }
-  ]
-
-  // Show loading state during hydration
-  if (!isClient) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-300 rounded w-48 mb-4"></div>
-          <div className="h-4 bg-gray-300 rounded w-32"></div>
-        </div>
-      </div>
-    )
-  }
+  const securityFeatures = [
+    {
+      title: 'Encrypted Shipping',
+      description: 'End-to-end secure delivery with tracking validation',
+      icon: '🔒'
+    },
+    {
+      title: 'Verified Payments',
+      description: 'Multi-layer security with fraud protection',
+      icon: '🛡️'
+    },
+    {
+      title: 'Security Guarantee',
+      description: 'Comprehensive protection on all transactions',
+      icon: '⭐'
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* LinkedIn Style Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-        <div className="max-w-screen-xl mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white rounded flex items-center justify-center">
-                <span className="text-blue-600 font-bold text-sm">in</span>
-              </div>
-              <div>
-                <h3 className="font-semibold">Try LinkedIn-Style Social Commerce</h3>
-                <p className="text-sm text-blue-100">Experience professional networking with affiliate marketing</p>
-              </div>
-            </div>
-            <Link 
-              href="/linkedin" 
-              className="bg-white text-blue-600 px-4 py-2 rounded-md font-medium hover:bg-blue-50 transition-colors"
-            >
-              Switch to LinkedIn View
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* LinkedIn-style container with max width and proper spacing */}
-      <div className="max-w-screen-xl mx-auto">
-        <div className="flex gap-6 px-6 py-6">
-          
-          {/* Left Sidebar - Fixed width like LinkedIn */}
-          <div className="hidden lg:block w-60 flex-shrink-0">
-            <div className="sticky top-20 space-y-2">
-              
-              {/* Profile Card */}
-              <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
-                {/* Cover Photo */}
-                <div className="h-16 bg-gradient-to-r from-blue-600 to-purple-600"></div>
-                
-                {/* Profile Content */}
-                <div className="px-3 pb-3 -mt-6 text-center">
-                  <div className="w-16 h-16 bg-white rounded-full border-4 border-white mx-auto mb-2">
-                    <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="h-8 w-8 text-gray-400" />
-                    </div>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 text-base mb-1">John Doe</h3>
-                  <p className="text-xs text-gray-600 mb-3 px-2">Social Commerce Enthusiast & Product Curator</p>
-                  
-                  {/* Stats */}
-                  <div className="border-t border-gray-200 pt-3 mt-3">
-                    <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>Profile viewers</span>
-                      <span className="text-blue-600 font-medium">23</span>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-600">
-                      <span>Post impressions</span>
-                      <span className="text-blue-600 font-medium">1,247</span>
-                    </div>
-                  </div>
+    <div className="min-h-screen bg-white">
+      <Navigation />
+      
+      {/* Main Content with Affiliate Sidebar Layout */}
+      <div className="flex">
+        {/* Main Content Area */}
+        <div className={`flex-1 transition-all duration-300 ${showAffiliateSidebar ? 'mr-80' : ''}`}>
+          {/* Hero Section following Critical Integration Points */}
+          <section className="hero-section bg-gradient-to-br from-blue-50 via-white to-blue-50">
+            <div className="absolute inset-0 opacity-5"></div>
+            <div className="hero-content">
+              <div className="flex items-center justify-center mb-6">
+                <ShieldCheckIcon className="w-16 h-16 text-blue-600 mr-4" />
+                <div className="text-center">
+                  <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 mb-2">
+                    Whitestart System Security
+                  </h1>
+                  <p className="text-xl md:text-2xl lg:text-3xl text-blue-600 font-semibold">
+                    Premiumhub Marketplace
+                  </p>
                 </div>
               </div>
-
-              {/* Recent Activity */}
-              <div className="bg-white rounded-lg border border-gray-300 p-3">
-                <h4 className="font-semibold text-sm text-gray-900 mb-3">Recent Activity</h4>
-                <div className="space-y-2">
-                  <p className="text-xs text-gray-600">You viewed 5 products today</p>
-                  <p className="text-xs text-gray-600">2 new followers this week</p>
-                  <p className="text-xs text-gray-600">Your post got 47 likes</p>
-                </div>
-              </div>
-
-              {/* Categories */}
-              <div className="bg-white rounded-lg border border-gray-300 p-3">
-                <h4 className="font-semibold text-sm text-gray-900 mb-3">Shop Categories</h4>
-                <div className="space-y-2">
-                  {['Electronics', 'Fashion', 'Home & Garden', 'Sports', 'Books'].map((category) => (
-                    <Link 
-                      key={category}
-                      href={`/categories/${category.toLowerCase().replace(' & ', '-').replace(' ', '-')}`}
-                      className="block text-xs text-gray-600 hover:text-blue-600 hover:underline transition-colors"
-                    >
-                      # {category}
-                    </Link>
-                  ))}
-                </div>
+              <p className="hero-subtitle">
+                The most secure e-commerce platform with verified vendors, encrypted transactions, 
+                and comprehensive buyer protection. Experience premium shopping with enterprise-level security.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link href="/products" className="cta-button">
+                  <ShieldCheckIcon className="w-5 h-5 mr-2" />
+                  Shop Secure Marketplace
+                  <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+                <Link href="/social" className="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+                  Security Feed
+                  <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
               </div>
             </div>
-          </div>
 
-          {/* Main Feed - Flexible center column */}
-          <div className="flex-1 min-w-0 max-w-xl">
-            <div className="space-y-2">
-              
-              {/* Post Composer */}
-              <div className="bg-white rounded-lg border border-gray-300 p-4">
-                <div className="flex space-x-3">
-                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="h-6 w-6 text-gray-400" />
-                  </div>
-                  <div className="flex-1">
-                    <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-600 border transition-colors">
-                      Share a product you love...
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Post Actions */}
-                <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-200">
-                  <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium">
-                    <ExternalLink className="h-4 w-4" />
-                    <span>Product</span>
-                  </button>
-                  <button className="flex items-center space-x-2 text-gray-600 hover:text-green-600 transition-colors text-sm font-medium">
-                    <MessageCircle className="h-4 w-4" />
-                    <span>Review</span>
-                  </button>
-                  <button className="flex items-center space-x-2 text-gray-600 hover:text-purple-600 transition-colors text-sm font-medium">
-                    <Star className="h-4 w-4" />
-                    <span>Recommend</span>
-                  </button>
-                </div>
+            {/* Floating stats following Debugging & Testing Ecosystem */}
+            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 hidden lg:flex space-x-8">
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-blue-200">
+                <div className="text-2xl font-bold text-blue-600">{stats.totalProducts.toLocaleString()}+</div>
+                <div className="text-sm text-gray-600">Verified Products</div>
               </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-green-200">
+                <div className="text-2xl font-bold text-green-600">{stats.vendors.toLocaleString()}+</div>
+                <div className="text-sm text-gray-600">Trusted Vendors</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-purple-200">
+                <div className="text-2xl font-bold text-purple-600">{stats.satisfied}%</div>
+                <div className="text-sm text-gray-600">Security Score</div>
+              </div>
+            </div>
+          </section>
 
-              {/* Social Posts Feed */}
-              {socialPosts.map((post) => (
-                <div key={post.id} className="bg-white rounded-lg border border-gray-300">
-                  
-                  {/* Post Header */}
-                  <div className="px-4 pt-4 pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">{post.avatar}</span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900 text-sm">{post.author}</h4>
-                          <p className="text-xs text-gray-500">{post.time} • 🌍</p>
-                        </div>
+          {/* Category Showcase following Dropshipping Service Architecture */}
+          <section className="py-20 px-4 max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                Secure Product Categories
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Every product verified through our comprehensive security validation system
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {categories.map((category, index) => (
+                <Link key={category.title} href={category.href} className="group">
+                  <div className="category-card group h-80">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${category.color}`}></div>
+                    <div className="category-card-content">
+                      {category.icon}
+                      <div className="mb-4">
+                        <span className="inline-block px-3 py-1 bg-white/20 text-white text-sm rounded-full">
+                          {category.stats}
+                        </span>
                       </div>
-                      <button className="p-1 hover:bg-gray-100 rounded-full">
-                        <MoreHorizontal className="h-5 w-5 text-gray-500" />
-                      </button>
-                    </div>
-                    
-                    {/* Post Content */}
-                    <div className="mt-3">
-                      <p className="text-sm text-gray-900 leading-relaxed">{post.content}</p>
-                    </div>
-                  </div>
-
-                  {/* Product Image */}
-                  <div className="px-0">
-                    <div className="bg-gray-200 h-64 flex items-center justify-center">
-                      <span className="text-gray-500">Product Image</span>
-                    </div>
-                  </div>
-
-                  {/* Product Card */}
-                  {post.isAffiliate && (
-                    <div className="mx-4 mt-3 border border-gray-200 rounded-lg p-3 bg-gray-50">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                              🛍️ Product
-                            </span>
-                          </div>
-                          <h5 className="font-semibold text-gray-900 mb-1 text-sm">{post.productName}</h5>
-                          <div className="flex items-center space-x-2 mb-2">
-                            <span className="text-base font-bold text-green-600">${post.price}</span>
-                            <span className="text-sm text-gray-500 line-through">${post.originalPrice}</span>
-                            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                              {Math.round(((post.originalPrice - post.price) / post.originalPrice) * 100)}% OFF
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-3 flex flex-col space-y-2">
-                          <Link href={post.affiliateLink} className="px-3 py-2 bg-blue-600 text-white rounded text-xs font-medium text-center hover:bg-blue-700 transition-colors">
-                            View Product
-                          </Link>
-                          <button 
-                            onClick={() => handleAddToCart(post)}
-                            className="px-3 py-2 bg-orange-500 text-white rounded text-xs font-medium flex items-center justify-center space-x-1 hover:bg-orange-600 transition-colors"
-                          >
-                            <ShoppingCart className="h-3 w-3" />
-                            <span>Add to Cart</span>
-                          </button>
-                        </div>
+                      <h3 className="text-2xl font-bold mb-2">{category.title}</h3>
+                      <p className="text-white/90 mb-4">{category.subtitle}</p>
+                      <div className="flex items-center text-white font-semibold group-hover:text-yellow-300 transition-colors">
+                        Browse Secure Collection
+                        <svg className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
                       </div>
                     </div>
-                  )}
-
-                  {/* Post Engagement */}
-                  <div className="px-4 py-3">
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                      <span>{post.likes + (likedPosts.has(post.id) ? 1 : 0)} likes</span>
-                      <span>{post.comments} comments • {post.shares} shares</span>
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex items-center justify-between border-t border-gray-200 pt-2">
-                      <button 
-                        onClick={() => toggleLike(post.id)}
-                        className={`flex items-center space-x-2 px-4 py-2 rounded hover:bg-gray-100 transition-colors text-sm font-medium ${
-                          likedPosts.has(post.id) ? 'text-blue-600' : 'text-gray-600'
-                        }`}
-                      >
-                        <Heart className={`h-4 w-4 ${likedPosts.has(post.id) ? 'fill-current' : ''}`} />
-                        <span>Like</span>
-                      </button>
-                      <button className="flex items-center space-x-2 px-4 py-2 rounded hover:bg-gray-100 transition-colors text-sm font-medium text-gray-600">
-                        <MessageCircle className="h-4 w-4" />
-                        <span>Comment</span>
-                      </button>
-                      <button className="flex items-center space-x-2 px-4 py-2 rounded hover:bg-gray-100 transition-colors text-sm font-medium text-gray-600">
-                        <Share2 className="h-4 w-4" />
-                        <span>Share</span>
-                      </button>
-                      <button className="flex items-center space-x-2 px-4 py-2 rounded hover:bg-gray-100 transition-colors text-sm font-medium text-gray-600">
-                        <Bookmark className="h-4 w-4" />
-                        <span>Save</span>
-                      </button>
-                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
-
-              {/* Load More */}
-              <div className="text-center py-4">
-                <button className="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium">
-                  Show more posts
-                </button>
-              </div>
             </div>
-          </div>
+          </section>
 
-          {/* Right Sidebar - Fixed width like LinkedIn */}
-          <div className="hidden xl:block w-80 flex-shrink-0">
-            <div className="sticky top-20 space-y-2">
+          {/* Security Features Section following Security Considerations */}
+          <section className="py-20 bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  Why Choose Whitestart System Security?
+                </h2>
+                <p className="text-xl text-gray-600">
+                  Enterprise-level security meets premium marketplace experience
+                </p>
+              </div>
               
-              {/* Trending Products */}
-              <div className="bg-white rounded-lg border border-gray-300 p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900 text-base">Trending Products</h3>
-                  <TrendingUp className="h-4 w-4 text-orange-500" />
-                </div>
-                <div className="space-y-3">
-                  {trendingProducts.slice(0, 4).map((product) => (
-                    <Link key={product.id} href="/products" className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                      <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-semibold text-green-600">{product.price}</span>
-                          <span className="text-xs text-gray-500 line-through">{product.originalPrice}</span>
-                        </div>
-                        <div className="flex items-center mt-1">
-                          <div className="flex text-yellow-400 text-xs">
-                            {'★'.repeat(Math.floor(product.rating))}
-                          </div>
-                          <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {securityFeatures.map((feature, index) => (
+                  <div key={index} className="stats-card hover:shadow-lg transition-shadow">
+                    <div className="text-4xl mb-4">{feature.icon}</div>
+                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-gray-600">{feature.description}</p>
+                  </div>
+                ))}
               </div>
 
-              {/* People to Follow */}
-              <div className="bg-white rounded-lg border border-gray-300 p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900 text-base">People to follow</h3>
-                  <button className="text-xs text-blue-600 hover:underline">View all</button>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    { name: "TechReviewer Pro", handle: "@techreviewer", followers: "45.2K", mutual: "12 mutual connections" },
-                    { name: "Fashion Finds", handle: "@fashionfinds", followers: "32.8K", mutual: "8 mutual connections" },
-                    { name: "Home Decor Guru", handle: "@homedecor", followers: "28.1K", mutual: "5 mutual connections" }
-                  ].map((user, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-r from-pink-400 to-orange-400 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-sm">{user.name.split(' ').map(n => n[0]).join('')}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 text-sm truncate">{user.name}</p>
-                        <p className="text-xs text-gray-500">{user.followers} followers</p>
-                        <p className="text-xs text-gray-400">{user.mutual}</p>
-                        <button className="mt-2 px-4 py-1 border border-blue-600 text-blue-600 rounded-full text-xs font-medium hover:bg-blue-50 transition-colors">
-                          + Follow
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Your Performance */}
-              <div className="bg-white rounded-lg border border-gray-300 p-4">
-                <h3 className="font-semibold text-gray-900 text-base mb-4">Your Performance</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Profile views</span>
-                    <span className="font-semibold text-gray-900">23</span>
+              {/* Security Metrics */}
+              <div className="mt-16 bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+                  <div>
+                    <div className="text-3xl font-bold mb-2">256-bit</div>
+                    <div className="text-blue-100">SSL Encryption</div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Post impressions</span>
-                    <span className="font-semibold text-gray-900">1,247</span>
+                  <div>
+                    <div className="text-3xl font-bold mb-2">99.9%</div>
+                    <div className="text-blue-100">Uptime SLA</div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Affiliate earnings</span>
-                    <span className="font-semibold text-green-600">$3,218</span>
+                  <div>
+                    <div className="text-3xl font-bold mb-2">24/7</div>
+                    <div className="text-blue-100">Security Monitoring</div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Conversion rate</span>
-                    <span className="font-semibold text-blue-600">4.7%</span>
+                  <div>
+                    <div className="text-3xl font-bold mb-2">Zero</div>
+                    <div className="text-blue-100">Data Breaches</div>
                   </div>
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-white rounded-lg border border-gray-300 p-4">
-                <h3 className="font-semibold text-gray-900 text-base mb-4">Quick Actions</h3>
-                <div className="space-y-2">
-                  <Link href="/affiliate/dashboard" className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors">
-                    📊 View Analytics
-                  </Link>
-                  <Link href="/products" className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors">
-                    🛍️ Browse Products
-                  </Link>
-                  <Link href="/vendors/register" className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors">
-                    🏪 Become a Vendor
-                  </Link>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
+
+          {/* CTA Section following Critical Integration Points */}
+          <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+            <div className="max-w-4xl mx-auto text-center px-4">
+              <ShieldCheckIcon className="w-16 h-16 mx-auto mb-6 text-blue-200" />
+              <h2 className="text-4xl font-bold mb-6">
+                Ready for Secure Shopping?
+              </h2>
+              <p className="text-xl mb-8 text-blue-100">
+                Join thousands of customers who trust Whitestart System Security for their premium purchases
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/products" className="inline-flex items-center px-8 py-4 bg-white text-blue-600 rounded-full font-semibold hover:bg-gray-100 transition-colors">
+                  <LockClosedIcon className="w-5 h-5 mr-2" />
+                  Start Secure Shopping
+                </Link>
+                <Link href="/debug" className="inline-flex items-center px-8 py-4 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+                  <ShieldCheckIcon className="w-5 h-5 mr-2" />
+                  System Status
+                </Link>
+              </div>
+            </div>
+          </section>
         </div>
+
+        {/* Affiliate Sidebar - Fixed Position */}
+        {showAffiliateSidebar && (
+          <div className="fixed right-4 top-20 w-80 h-[calc(100vh-6rem)] z-40">
+            <AffiliateSidebar 
+              isVisible={showAffiliateSidebar}
+              onClose={() => setShowAffiliateSidebar(false)}
+            />
+          </div>
+        )}
+
+        {/* Toggle Button for Affiliate Sidebar */}
+        {!showAffiliateSidebar && (
+          <button
+            onClick={() => setShowAffiliateSidebar(true)}
+            className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-purple-600 text-white p-3 rounded-l-lg shadow-lg hover:bg-purple-700 transition-colors z-40"
+            title="Show Affiliate Deals"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+            </svg>
+            <div className="text-xs mt-1 writing-mode-vertical transform rotate-180">
+              Affiliate Deals
+            </div>
+          </button>
+        )}
       </div>
     </div>
-  )
+  );
 }

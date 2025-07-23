@@ -1,129 +1,70 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import User from '../models/User';
-import Category from '../models/Category';
-import { UserRole } from '../types';
+import { config } from './config';
 
-// Load environment variables
-dotenv.config();
-
-const seedData = async () => {
+const seedUsers = async (): Promise<void> => {
   try {
-    // Connect to MongoDB
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/shoppingcart';
-    await mongoose.connect(mongoUri);
-    console.log('✅ Connected to MongoDB');
-
-    // Clear existing data
+    // Clear existing users
     await User.deleteMany({});
-    await Category.deleteMany({});
-    console.log('🗑️  Cleared existing data');
 
     // Create admin user
-    const adminUser = await User.create({
-      email: 'admin@shopcart.com',
-      password: 'admin123',
+    await User.create({
+      name: 'Admin User',
       firstName: 'Admin',
       lastName: 'User',
-      role: UserRole.ADMIN,
+      email: 'admin@ecommerce.com',
+      password: 'password123',
+      role: 'admin', // Use string value directly
       isEmailVerified: true
     });
 
-    // Create sample vendor
-    const vendorUser = await User.create({
-      email: 'vendor@shopcart.com',
-      password: 'vendor123',
-      firstName: 'John',
-      lastName: 'Vendor',
-      role: UserRole.VENDOR,
+    // Create vendor user
+    await User.create({
+      name: 'Vendor User',
+      firstName: 'Vendor',
+      lastName: 'User',
+      email: 'vendor@ecommerce.com',
+      password: 'password123',
+      role: 'vendor', // Use string value directly
       isEmailVerified: true
     });
 
-    // Create sample customer
-    const customerUser = await User.create({
-      email: 'customer@shopcart.com',
-      password: 'customer123',
-      firstName: 'Jane',
-      lastName: 'Customer',
-      role: UserRole.CUSTOMER,
+    // Create customer user
+    await User.create({
+      name: 'Customer User',
+      firstName: 'Customer',
+      lastName: 'User',
+      email: 'customer@ecommerce.com',
+      password: 'password123',
+      role: 'user', // Use string value directly
       isEmailVerified: true
     });
 
-    console.log('👥 Created sample users:');
-    console.log(`   Admin: ${adminUser.email}`);
-    console.log(`   Vendor: ${vendorUser.email}`);
-    console.log(`   Customer: ${customerUser.email}`);
-
-    // Create categories
-    const fashionCategory = await Category.create({
-      name: 'Fashion & Apparel',
-      slug: 'fashion-apparel',
-      description: 'Latest trends in clothing and accessories',
-      isActive: true,
-      sortOrder: 1
-    });
-
-    const beautyCategory = await Category.create({
-      name: 'Beauty & Makeup',
-      slug: 'beauty-makeup',
-      description: 'Premium cosmetics and skincare products',
-      isActive: true,
-      sortOrder: 2
-    });
-
-    const electronicsCategory = await Category.create({
-      name: 'Electronics',
-      slug: 'electronics',
-      description: 'Latest gadgets and tech accessories',
-      isActive: true,
-      sortOrder: 3
-    });
-
-    // Create subcategories
-    await Category.create({
-      name: 'Women\'s Clothing',
-      slug: 'womens-clothing',
-      description: 'Trendy women\'s fashion',
-      parentCategory: fashionCategory._id?.toString(),
-      isActive: true,
-      sortOrder: 1
-    });
-
-    await Category.create({
-      name: 'Men\'s Clothing',
-      slug: 'mens-clothing',
-      description: 'Stylish men\'s fashion',
-      parentCategory: fashionCategory._id?.toString(),
-      isActive: true,
-      sortOrder: 2
-    });
-
-    await Category.create({
-      name: 'Skincare',
-      slug: 'skincare',
-      description: 'Premium skincare products',
-      parentCategory: beautyCategory._id?.toString(),
-      isActive: true,
-      sortOrder: 1
-    });
-
-    await Category.create({
-      name: 'Makeup',
-      slug: 'makeup',
-      description: 'Professional makeup products',
-      parentCategory: beautyCategory._id?.toString(),
-      isActive: true,
-      sortOrder: 2
-    });
-
-    console.log('📂 Created sample categories');
-
-    console.log('✅ Database seeded successfully!');
-    process.exit(0);
+    console.log('✅ Users seeded successfully');
   } catch (error) {
-    console.error('❌ Error seeding database:', error);
+    console.error('❌ Error seeding users:', error);
+    throw error;
+  }
+};
+
+const connectAndSeed = async (): Promise<void> => {
+  try {
+    await mongoose.connect(config.mongoUri);
+    console.log('✅ Connected to MongoDB for seeding');
+    
+    await seedUsers();
+    
+    await mongoose.disconnect();
+    console.log('✅ Seeding completed and disconnected from MongoDB');
+  } catch (error) {
+    console.error('❌ Seeding failed:', error);
     process.exit(1);
   }
 };
 
-seedData();
+// Run seeding if this file is executed directly
+if (require.main === module) {
+  connectAndSeed();
+}
+
+export { seedUsers, connectAndSeed };
