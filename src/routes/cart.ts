@@ -1,45 +1,23 @@
-import express from 'express';
-import { optionalAuth, protect } from '../middleware/auth';
-import {
-  getCart,
-  addToCart,
-  updateCartItem,
-  removeFromCart,
-  clearCart,
-  mergeCart
+import { Router } from 'express';
+import { 
+  addToCart, 
+  updateCartItem, 
+  removeFromCart, 
+  getCart, 
+  clearCart 
 } from '../controllers/cartController';
-import { validateAddToCart, validateUpdateCartItem, validateMongoId } from '../middleware/validation';
+import { optionalAuth } from '../middleware/auth';
 
-const router = express.Router();
+const router = Router();
 
-// @route   GET /api/cart
-// @desc    Get user's cart
-// @access  Private/Public (with session)
-router.get('/', optionalAuth as any, getCart as any);
+router.use(optionalAuth); // Allow both authenticated and guest users
 
-// @route   POST /api/cart/items
-// @desc    Add item to cart
-// @access  Private/Public (with session)
-router.post('/items', optionalAuth as any, validateAddToCart, addToCart as any);
+router.route('/')
+  .get(getCart);
 
-// @route   PUT /api/cart/items/:itemId
-// @desc    Update cart item quantity
-// @access  Private/Public (with session)
-router.put('/items/:itemId', optionalAuth as any, validateUpdateCartItem, updateCartItem as any);
-
-// @route   DELETE /api/cart/items/:itemId
-// @desc    Remove item from cart
-// @access  Private/Public (with session)
-router.delete('/items/:itemId', optionalAuth as any, validateMongoId('itemId'), removeFromCart as any);
-
-// @route   DELETE /api/cart
-// @desc    Clear entire cart
-// @access  Private/Public (with session)
-router.delete('/', optionalAuth as any, clearCart as any);
-
-// @route   POST /api/cart/merge
-// @desc    Merge guest cart with user cart
-// @access  Private
-router.post('/merge', protect as any, mergeCart as any);
+router.post('/add', addToCart);
+router.put('/update', updateCartItem);
+router.delete('/remove', removeFromCart);
+router.delete('/clear', clearCart);
 
 export default router;

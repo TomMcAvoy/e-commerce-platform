@@ -1,0 +1,6 @@
+const { setup } = require('jest-playwright');
+
+module.exports = async () => {
+    await setup();
+    // Additional setup can be added here
+};

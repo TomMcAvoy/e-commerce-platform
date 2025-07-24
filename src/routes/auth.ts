@@ -1,15 +1,17 @@
-import express from 'express';
-import { register, login, getMe, getStatus } from '../controllers/authController';
+import { Router } from 'express';
+import { register, login, getAuthStatus } from '../controllers/authController';
 import { protect } from '../middleware/auth';
 
-const router = express.Router();
+const router = Router();
 
-// Auth routes following copilot authentication patterns
 router.post('/register', register);
 router.post('/login', login);
-router.get('/status', getStatus);
-router.get('/me', protect, getMe);
+router.get('/status', getAuthStatus);
+router.get('/me', protect, (req, res) => {
+  res.json({
+    success: true,
+    data: req.user
+  });
+});
 
-// Export using CommonJS for Jest compatibility
-module.exports = router;
 export default router;

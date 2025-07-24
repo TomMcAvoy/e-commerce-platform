@@ -1,0 +1,27 @@
+testDir: 'tests',
+timeout: 30000,
+use: {
+    headless: true,
+    actionTimeout: 0,
+    ignoreHTTPSErrors: true,
+    video: 'retain-on-failure',
+    trace: 'on-first-retry',
+},
+projects: [
+    {
+        name: 'chromium',
+        use: { browserName: 'chromium' },
+    },
+    {
+        name: 'firefox',
+        use: { browserName: 'firefox' },
+    },
+    {
+        name: 'webkit',
+        use: { browserName: 'webkit' },
+    },
+],
+reporter: [['list'], ['html', { outputFolder: 'test-results' }]],
+globalSetup: require.resolve('./tests/global-setup'),
+globalTeardown: require.resolve('./tests/global-teardown'),
+};

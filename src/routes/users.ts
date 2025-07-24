@@ -1,11 +1,14 @@
-import express from 'express';
-import { protect } from '../middleware/auth';
+import { Router } from 'express';
+import { getUsers, getUser, updateUser } from '../controllers/userController';
+import { protect, authorize } from '../middleware/auth';
 
-const router = express.Router();
+const router = Router();
 
-// User routes will be implemented later
-router.get('/profile', protect as any, (req: any, res: any) => {
-  res.json({ message: 'User routes coming soon' });
-});
+router.route('/')
+  .get(protect, authorize('admin'), getUsers);
+
+router.route('/:id')
+  .get(protect, getUser)
+  .put(protect, updateUser);
 
 export default router;

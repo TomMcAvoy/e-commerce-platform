@@ -1,0 +1,17 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const routes = require('./routes/index');
+
+const app = express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+mongoose.connect(process.env.TEST_DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connected to test database'))
+    .catch(err => console.error('Could not connect to test database', err));
+
+app.use('/api', routes);
+
+module.exports = app;
