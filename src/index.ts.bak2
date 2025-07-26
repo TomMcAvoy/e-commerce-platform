@@ -1,0 +1,107 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
+import connectDB from './config/database';
+import routes from './routes';
+import { errorHandler } from './middleware/errorHandler';
+
+// Load environment variables following Environment & Configuration
+dotenv.config();
+
+const app = express();
+app.use(tenantResolver);
+const PORT = process.env.PORT || 3000;
+
+// Connect to database following Database Patterns
+connectDB();
+
+// Security middleware following Security Considerations
+app.use(helmet());
+
+// CORS configuration following Cross-Service Communication
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URL 
+    : 'http://localhost:3001',
+  credentials: true
+}));
+
+// Rate limiting following Security Considerations
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api/', limiter);
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Logging middleware following Debugging & Testing Ecosystem
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+// Health check endpoint following API Endpoints Structure
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Routes middleware with validation following Backend Structure
+console.log('🔍 Validating routes middleware...');
+console.log('Routes type:', typeof routes);
+
+if (typeof routes !== 'function') {
+  console.error('❌ Routes is not a valid middleware function:', typeof routes);
+  process.exit(1);
+}
+
+// API routes following API Endpoints Structure
+app.use('/api', routes);
+
+// 404 handler following Error Handling Pattern
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Global error handler following Error Handling Pattern
+app.use(errorHandler);
+
+// Start server following Server Management patterns
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔗 API base: http://localhost:${PORT}/api`);
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🐛 Debug dashboard: http://localhost:3001/debug');
+  }
+});
+
+// Graceful shutdown following Server Management
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  process.exit(0);
+});
+
+export default app;
+

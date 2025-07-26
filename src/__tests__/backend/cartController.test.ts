@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../../index';
+import app from '../test-app-setup';
 import User, { IUser, IUserDocument } from '../../models/User';
 import Product, { IProduct, IProductDocument } from '../../models/Product';
 import Cart, { ICart } from '../../models/Cart';

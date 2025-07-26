@@ -1,0 +1,8 @@
+class SpocketProvider {
+    constructor(apiKey, statusCode) {
+        this.apiKey = apiKey;
+        this.statusCode = statusCode;
+    }
+
+    // Implement other methods required by IDropshippingProvider
+}

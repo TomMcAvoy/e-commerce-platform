@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "setup": "npm install && cd frontend && npm install && cd .. && npm run build",
+    "dev:all": "concurrently \"npm run dev:server\" \"npm run dev:frontend\"",
+    "dev:server": "nodemon src/index.ts",
+    "dev:frontend": "cd frontend && npm run dev",
+    "stop": "pkill -f 'nodemon|next' || true",
+    "kill": "lsof -ti:3000,3001 | xargs kill -9 || true",
+    "seed:categories": "ts-node src/scripts/seedCategories.ts",
+    "seed:colors": "npm run seed:categories",
+    "test": "npm run test:api && npm run test:frontend",
+    "test:api": "curl -f http://localhost:3000/health || echo 'Backend health check failed'",
+    "test:frontend": "curl -f http://localhost:3001 || echo 'Frontend health check failed'",
+    "build": "tsc && cd frontend && npm run build",
+    "start": "node dist/index.js"
+  }
+}

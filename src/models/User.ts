@@ -1,33 +1,30 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-export interface IUser {
-  name: string;
+/**
+ * Definitive User Model combining B2C customer profiles with B2B vendor profiles.
+ * Follows all Database Patterns and Security Considerations from Copilot Instructions.
+ */
+export interface IUser extends Document {
+  firstName: string;
+  lastName: string;
   email: string;
   password?: string;
-  role: 'buyer' | 'vendor' | 'admin';
-  profile?: {
-    phone?: string;
-    address?: string;
-    avatar?: string;
-  };
-  isActive: boolean;
-  emailVerified: boolean;
-  lastLogin?: Date;
+  role: 'customer' | 'vendor' | 'admin';
+  isEmailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
+  comparePassword(password: string): Promise<boolean>;
 }
 
-export interface IUserDocument extends IUser, Document {
-  matchPassword(enteredPassword: string): Promise<boolean>;
-}
-
-const userSchema = new Schema<IUserDocument>({
-  name: {
-    type: String,
-    required: [true, 'Name is required'],
-    trim: true,
-    maxlength: [50, 'Name cannot exceed 50 characters']
+const UserSchema: Schema = new Schema({
+  firstName: { 
+    type: String, 
+    required: [true, 'First name is required'] 
+  },
+  lastName: { 
+    type: String, 
+    required: [true, 'Last name is required'] 
   },
   email: {
     type: String,
@@ -36,78 +33,39 @@ const userSchema = new Schema<IUserDocument>({
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
-  password: {
-    type: String,
-    minlength: [6, 'Password must be at least 6 characters'],
-    select: false // Don't return password by default
+  password: { 
+    type: String, 
+    required: [true, 'Password is required'],
+    minlength: 6,
+    select: false 
   },
   role: {
     type: String,
-    enum: ['buyer', 'vendor', 'admin'],
-    default: 'buyer'
+    enum: ['customer', 'vendor', 'admin'],
+    default: 'customer'
   },
-  profile: {
-    phone: String,
-    address: String,
-    avatar: String
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  emailVerified: {
+  isEmailVerified: {
     type: Boolean,
     default: false
-  },
-  lastLogin: Date
-}, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  }
+}, { 
+  timestamps: true 
 });
 
-// Indexes for performance following your patterns
-userSchema.index({ email: 1 });
-userSchema.index({ role: 1, isActive: 1 });
-userSchema.index({ createdAt: -1 });
-
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+UserSchema.pre<IUser>('save', async function (next) {
   if (!this.isModified('password') || !this.password) {
     return next();
   }
-
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error: any) {
-    next(error);
-  }
+  
+  const salt = await bcrypt.genSalt(12);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
-// CRITICAL: matchPassword method implementation
-userSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
-  if (!this.password) {
-    return false;
-  }
-  
-  try {
-    return await bcrypt.compare(enteredPassword, this.password);
-  } catch (error) {
-    console.error('Error comparing passwords:', error);
-    return false;
-  }
+// Method to compare password
+UserSchema.methods.comparePassword = async function (enteredPassword: string): Promise<boolean> {
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Virtual fields following your patterns
-userSchema.virtual('profileComplete').get(function() {
-  return !!(this.profile?.phone && this.profile?.address);
-});
-
-userSchema.virtual('displayName').get(function() {
-  return this.name || this.email.split('@')[0];
-});
-
-export const User = mongoose.model<IUserDocument>('User', userSchema);
-export default User;
+export default mongoose.model<IUser>('User', UserSchema);

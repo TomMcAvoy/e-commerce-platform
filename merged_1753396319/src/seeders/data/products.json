@@ -1,0 +1,260 @@
+[
+  {
+    "name": "iPhone 15 Pro Max",
+    "description": "Latest flagship iPhone with A17 Pro chip, titanium design, and advanced camera system. Perfect for professionals and tech enthusiasts.",
+    "price": 1199,
+    "cost": 899,
+    "category": "electronics",
+    "images": [
+      "https://via.placeholder.com/400x400?text=iPhone+15+Pro+Max",
+      "https://via.placeholder.com/400x400?text=iPhone+Camera",
+      "https://via.placeholder.com/400x400?text=iPhone+Display"
+    ],
+    "inventory": {
+      "quantity": 50,
+      "lowStock": 10,
+      "inStock": true
+    },
+    "seo": {
+      "title": "iPhone 15 Pro Max - Latest Flagship Smartphone",
+      "description": "Buy the newest iPhone 15 Pro Max with A17 Pro chip and titanium design. Free shipping and warranty included.",
+      "keywords": ["iphone", "smartphone", "apple", "flagship", "mobile"]
+    },
+    "discountPercent": 5,
+    "vendorEmail": "electronics@vendor.com"
+  },
+  {
+    "name": "MacBook Air M3",
+    "description": "Ultra-thin laptop powered by M3 chip. Perfect for students, professionals, and creative work with all-day battery life.",
+    "price": 1299,
+    "cost": 999,
+    "category": "electronics",
+    "images": [
+      "https://via.placeholder.com/400x400?text=MacBook+Air+M3",
+      "https://via.placeholder.com/400x400?text=MacBook+Keyboard",
+      "https://via.placeholder.com/400x400?text=MacBook+Screen"
+    ],
+    "inventory": {
+      "quantity": 25,
+      "lowStock": 5,
+      "inStock": true
+    },
+    "seo": {
+      "title": "MacBook Air M3 - Ultra-Thin Laptop Computer",
+      "description": "Experience the power of M3 chip in ultra-portable MacBook Air. Perfect for work and creativity.",
+      "keywords": ["macbook", "laptop", "apple", "m3", "ultrabook"]
+    },
+    "discountPercent": 10,
+    "vendorEmail": "electronics@vendor.com"
+  },
+  {
+    "name": "Wireless Noise-Canceling Headphones",
+    "description": "Premium over-ear headphones with active noise cancellation, 30-hour battery life, and studio-quality sound.",
+    "price": 349,
+    "cost": 199,
+    "category": "electronics",
+    "images": [
+      "https://via.placeholder.com/400x400?text=Wireless+Headphones",
+      "https://via.placeholder.com/400x400?text=Headphone+Case"
+    ],
+    "inventory": {
+      "quantity": 100,
+      "lowStock": 20,
+      "inStock": true
+    },
+    "seo": {
+      "title": "Premium Wireless Noise-Canceling Headphones",
+      "description": "Enjoy crystal-clear audio with active noise cancellation. 30-hour battery and premium comfort.",
+      "keywords": ["headphones", "wireless", "noise-canceling", "audio", "bluetooth"]
+    },
+    "discountPercent": 15,
+    "vendorEmail": "electronics@vendor.com"
+  },
+  {
+    "name": "Designer Leather Jacket",
+    "description": "Genuine leather jacket with modern cut and premium finish. Perfect for casual and semi-formal occasions.",
+    "price": 299,
+    "cost": 149,
+    "category": "clothing",
+    "images": [
+      "https://via.placeholder.com/400x400?text=Leather+Jacket",
+      "https://via.placeholder.com/400x400?text=Jacket+Details",
+      "https://via.placeholder.com/400x400?text=Jacket+Back"
+    ],
+    "inventory": {
+      "quantity": 40,
+      "lowStock": 8,
+      "inStock": true
+    },
+    "seo": {
+      "title": "Premium Designer Leather Jacket - Genuine Leather",
+      "description": "Stylish genuine leather jacket with modern design. Perfect for fashion-forward individuals.",
+      "keywords": ["leather", "jacket", "fashion", "designer", "clothing"]
+    },
+    "discountPercent": 20,
+    "vendorEmail": "fashion@vendor.com"
+  },
+  {
+    "name": "Organic Cotton T-Shirt Collection",
+    "description": "Set of 3 premium organic cotton t-shirts in various colors. Soft, comfortable, and environmentally friendly.",
+    "price": 89,
+    "cost": 35,
+    "category": "clothing",
+    "images": [
+      "https://via.placeholder.com/400x400?text=Cotton+T-Shirts",
+      "https://via.placeholder.com/400x400?text=T-Shirt+Colors"
+    ],
+    "inventory": {
+      "quantity": 200,
+      "lowStock": 50,
+      "inStock": true
+    },
+    "seo": {
+      "title": "Organic Cotton T-Shirt Collection - 3-Pack",
+      "description": "Premium organic cotton t-shirts. Comfortable, sustainable, and stylish for everyday wear.",
+      "keywords": ["t-shirt", "organic", "cotton", "clothing", "sustainable"]
+    },
+    "discountPercent": 0,
+    "vendorEmail": "fashion@vendor.com"
+  },
+  {
+    "name": "Smart Home Security System",
+    "description": "Complete wireless security system with cameras, sensors, and mobile app control. Easy DIY installation.",
+    "price": 499,
+    "cost": 299,
+    "category": "home",
+    "images": [
+      "https://via.placeholder.com/400x400?text=Security+System",
+      "https://via.placeholder.com/400x400?text=Security+Camera",
+      "https://via.placeholder.com/400x400?text=Mobile+App"
+    ],
+    "inventory": {
+      "quantity": 30,
+      "lowStock": 5,
+      "inStock": true
+    },
+    "seo": {
+      "title": "Smart Home Security System - Wireless & Easy Setup",
+      "description": "Protect your home with our complete wireless security system. Mobile app control and professional monitoring.",
+      "keywords": ["security", "home", "smart", "camera", "wireless"]
+    },
+    "discountPercent": 25,
+    "vendorEmail": "home@vendor.com"
+  },
+  {
+    "name": "Ergonomic Office Chair",
+    "description": "Professional ergonomic chair with lumbar support, adjustable height, and breathable mesh fabric. Perfect for long work hours.",
+    "price": 399,
+    "cost": 199,
+    "category": "home",
+    "images": [
+      "https://via.placeholder.com/400x400?text=Office+Chair",
+      "https://via.placeholder.com/400x400?text=Chair+Features"
+    ],
+    "inventory": {
+      "quantity": 60,
+      "lowStock": 10,
+      "inStock": true
+    },
+    "seo": {
+      "title": "Ergonomic Office Chair - Professional Comfort",
+      "description": "Work comfortably with our ergonomic office chair. Lumbar support and adjustable features for all-day comfort.",
+      "keywords": ["office", "chair", "ergonomic", "furniture", "workspace"]
+    },
+    "discountPercent": 30,
+    "vendorEmail": "home@vendor.com"
+  },
+  {
+    "name": "Professional Tennis Racket",
+    "description": "High-performance tennis racket used by professionals. Perfect balance of power and control for competitive players.",
+    "price": 249,
+    "cost": 124,
+    "category": "sports",
+    "images": [
+      "https://via.placeholder.com/400x400?text=Tennis+Racket",
+      "https://via.placeholder.com/400x400?text=Racket+Details"
+    ],
+    "inventory": {
+      "quantity": 35,
+      "lowStock": 7,
+      "inStock": true
+    },
+    "seo": {
+      "title": "Professional Tennis Racket - Tournament Quality",
+      "description": "Elevate your game with our professional tennis racket. Perfect balance and control for serious players.",
+      "keywords": ["tennis", "racket", "sports", "professional", "equipment"]
+    },
+    "discountPercent": 12,
+    "vendorEmail": "sports@vendor.com"
+  },
+  {
+    "name": "Fitness Tracking Smartwatch",
+    "description": "Advanced fitness tracker with heart rate monitoring, GPS, sleep tracking, and 7-day battery life.",
+    "price": 299,
+    "cost": 149,
+    "category": "sports",
+    "images": [
+      "https://via.placeholder.com/400x400?text=Fitness+Watch",
+      "https://via.placeholder.com/400x400?text=Watch+Features",
+      "https://via.placeholder.com/400x400?text=Health+Metrics"
+    ],
+    "inventory": {
+      "quantity": 80,
+      "lowStock": 15,
+      "inStock": true
+    },
+    "seo": {
+      "title": "Fitness Tracking Smartwatch - Advanced Health Monitoring",
+      "description": "Track your fitness goals with our advanced smartwatch. Heart rate, GPS, and comprehensive health metrics.",
+      "keywords": ["smartwatch", "fitness", "tracker", "health", "sports"]
+    },
+    "discountPercent": 18,
+    "vendorEmail": "sports@vendor.com"
+  },
+  {
+    "name": "Programming Fundamentals: Complete Guide",
+    "description": "Comprehensive guide to programming covering multiple languages, algorithms, and best practices. Perfect for beginners and professionals.",
+    "price": 89,
+    "cost": 35,
+    "category": "books",
+    "images": [
+      "https://via.placeholder.com/400x400?text=Programming+Book",
+      "https://via.placeholder.com/400x400?text=Book+Contents"
+    ],
+    "inventory": {
+      "quantity": 150,
+      "lowStock": 30,
+      "inStock": true
+    },
+    "seo": {
+      "title": "Programming Fundamentals Complete Guide - Learn to Code",
+      "description": "Master programming with our comprehensive guide. Covers multiple languages and industry best practices.",
+      "keywords": ["programming", "book", "coding", "software", "development"]
+    },
+    "discountPercent": 0,
+    "vendorEmail": "books@vendor.com"
+  },
+  {
+    "name": "Entrepreneurship Success Stories",
+    "description": "Inspiring collection of successful entrepreneur stories and business strategies. Learn from industry leaders and innovators.",
+    "price": 59,
+    "cost": 25,
+    "category": "books",
+    "images": [
+      "https://via.placeholder.com/400x400?text=Business+Book",
+      "https://via.placeholder.com/400x400?text=Success+Stories"
+    ],
+    "inventory": {
+      "quantity": 120,
+      "lowStock": 25,
+      "inStock": true
+    },
+    "seo": {
+      "title": "Entrepreneurship Success Stories - Business Inspiration",
+      "description": "Get inspired by successful entrepreneur stories. Learn winning strategies and business insights.",
+      "keywords": ["entrepreneurship", "business", "success", "startup", "leadership"]
+    },
+    "discountPercent": 15,
+    "vendorEmail": "books@vendor.com"
+  }
+]

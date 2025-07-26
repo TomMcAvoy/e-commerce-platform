@@ -1,0 +1,32 @@
+-e 
+import mongoose, { Document, Schema } from "mongoose";
+
+export interface ITenant extends Document {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  sso?: {
+    provider: "oidc" | "saml";
+    issuerUrl: string;
+    clientId: string;
+    clientSecret: string;
+    callbackUrl: string;
+  };
+}
+
+const TenantSchema = new Schema<ITenant>({
+  name: { type: String, required: true, trim: true },
+  slug: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+  isActive: { type: Boolean, default: true, index: true },
+  sso: {
+    provider: { type: String, enum: ["oidc", "saml"] },
+    issuerUrl: String,
+    clientId: String,
+    clientSecret: String,
+    callbackUrl: String,
+  }
+}, { timestamps: true });
+
+export default mongoose.model<ITenant>("Tenant", TenantSchema);
+

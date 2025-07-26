@@ -1,6 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IVendor extends Document {
+  tenantId: mongoose.Types.ObjectId; // Add this line
+  userId: mongoose.Types.ObjectId;
   name: string;
   description: string;
   contact: {
@@ -34,6 +36,7 @@ const AddressSchema = new Schema({
 });
 
 const VendorSchema = new Schema({
+  tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true }, // Add this line
   userId: {
     type: String,
     required: true,
@@ -97,6 +100,8 @@ VendorSchema.index({ userId: 1 });
 VendorSchema.index({ businessName: 1 });
 VendorSchema.index({ isVerified: 1 });
 VendorSchema.index({ rating: -1 });
+// Add a compound unique index for businessName per tenant
+VendorSchema.index({ businessName: 1, tenantId: 1 }, { unique: true });
 
 
 export default mongoose.model('Vendor', VendorSchema);

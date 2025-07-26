@@ -1,58 +1,140 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import eventService, { EventNames } from "../services/eventService";
 
-export interface IProductVariant {
-  _id: mongoose.Types.ObjectId;
-  value: string;
-  price: number;
-  sku: string;
-  stock: number;
-}
-
-export interface IProduct {
+export interface IProduct extends Document {
+  tenantId: mongoose.Types.ObjectId;
   _id: mongoose.Types.ObjectId;
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
   category: string;
-  vendor: mongoose.Types.ObjectId;
-  stock: number;
-  variants?: IProductVariant[];
-  images?: string[];
-  sku?: string;
-  isArchived?: boolean;
-  isActive?: boolean;
+  subcategory?: string;
+  brand: string;
+  vendorId: mongoose.Types.ObjectId;
+  sku: string;
+  asin: string;
+  images: string[];
+  inventory: {
+    quantity: number;
+    lowStock: number;
+    inStock: boolean;
+  };
+  features?: string[];
+  sizes?: string[];
+  colors?: string[];
+  gender?: string;
+  seasonalTags?: string[];
+  sport?: string;
+  fitnessLevel?: string;
+  room?: string;
+  materials?: string[];
+  seasonalAvailability?: string[];
+  skinType?: string;
+  productType?: string;
+  fdaCompliant?: boolean;
+  mediaType?: string;
+  genre?: string;
+  ageRange?: string;
+  safetyCertifications?: string[];
+  compatibility?: Array<{ make: string; model: string; year: number; }>;
+  seo?: { title?: string; description?: string; keywords?: string[]; };
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface IProductDocument extends IProduct, Document {
-  variants: mongoose.Types.DocumentArray<IProductVariant>;
-}
-
-const productVariantSchema = new Schema({
-  value: { type: String, required: true },
-  price: { type: Number, required: true },
-  sku: { type: String, required: true },
-  stock: { type: Number, required: true, default: 0 }
-});
-
-const productSchema = new Schema<IProductDocument>({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  price: { type: Number, required: true },
-  category: { type: String, required: true },
-  vendor: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  stock: { type: Number, required: true, default: 0 },
-  variants: [productVariantSchema],
-  images: [{ type: String }],
-  sku: { type: String },
-  isArchived: { type: Boolean, default: false },
+const ProductSchema = new Schema({
+  tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true, index: true },
+  name: { type: String, required: [true, 'Product name is required'], trim: true, maxlength: [200, 'Product name cannot exceed 200 characters'] },
+  description: { type: String, required: [true, 'Product description is required'], maxlength: [2000, 'Description cannot exceed 2000 characters'] },
+  price: { type: Number, required: [true, 'Price is required'], min: [0, 'Price cannot be negative'] },
+  originalPrice: { type: Number, min: [0, 'Original price cannot be negative'] },
+  category: { type: String, required: [true, 'Category is required'], trim: true, lowercase: true },
+  subcategory: { type: String, trim: true, lowercase: true },
+  brand: { type: String, required: [true, 'Brand is required'], trim: true, maxlength: [100, 'Brand name cannot exceed 100 characters'] },
+  vendorId: { type: Schema.Types.ObjectId, ref: 'User', required: [true, 'Vendor is required'] },
+  sku: { type: String, required: [true, 'SKU is required'], trim: true, uppercase: true },
+  asin: { type: String, required: [true, 'ASIN is required'], trim: true, uppercase: true },
+  images: [{ type: String, trim: true }],
+  inventory: {
+    quantity: { type: Number, required: [true, 'Inventory quantity is required'], min: [0, 'Quantity cannot be negative'], default: 0 },
+    lowStock: { type: Number, default: 10 },
+    inStock: { type: Boolean, default: true }
+  },
+  features: [{ type: String, trim: true }],
+  sizes: [{ type: String, trim: true }],
+  colors: [{ type: String, trim: true }],
+  gender: { type: String, enum: ['male', 'female', 'unisex'], lowercase: true },
+  seasonalTags: [{ type: String, trim: true, lowercase: true }],
+  sport: { type: String, trim: true, lowercase: true },
+  fitnessLevel: { type: String, trim: true, lowercase: true },
+  room: { type: String, trim: true, lowercase: true },
+  materials: [{ type: String, trim: true, lowercase: true }],
+  seasonalAvailability: [{ type: String, trim: true, lowercase: true }],
+  skinType: { type: String, trim: true, lowercase: true },
+  productType: { type: String, trim: true, lowercase: true },
+  fdaCompliant: { type: Boolean, default: false },
+  mediaType: { type: String, trim: true, lowercase: true },
+  genre: { type: String, trim: true, lowercase: true },
+  ageRange: { type: String, trim: true },
+  safetyCertifications: [{ type: String, trim: true, uppercase: true }],
+  compatibility: [{ make: { type: String, required: true, trim: true }, model: { type: String, required: true, trim: true }, year: { type: Number, required: true } }],
+  seo: { title: { type: String, maxlength: 60 }, description: { type: String, maxlength: 160 }, keywords: [{ type: String, trim: true, lowercase: true }] },
   isActive: { type: Boolean, default: true }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Performance indexes for multi-vendor queries
-productSchema.index({ vendor: 1, category: 1 });
-productSchema.index({ isArchived: 1, vendor: 1 });
-productSchema.index({ isActive: 1, category: 1 });
+// --- PERFORMANCE INDEXES ---
+ProductSchema.index({ vendorId: 1, isActive: 1 });
+ProductSchema.index({ brand: 1, isActive: 1 });
+ProductSchema.index({ price: 1 });
+ProductSchema.index({ name: 'text', description: 'text' });
+ProductSchema.index({ category: 1, subcategory: 1, isActive: 1 });
+ProductSchema.index({ sku: 1, tenantId: 1 }, { unique: true }); // Tenant-aware unique index
+ProductSchema.index({ asin: 1, tenantId: 1 }, { unique: true }); // Tenant-aware unique index
 
-export default mongoose.model<IProductDocument>('Product', productSchema);
+// --- VIRTUALS ---
+ProductSchema.virtual('discountPercentage').get(function() {
+  if (this.originalPrice && this.originalPrice > this.price) {
+    return Math.round(((this.originalPrice - this.price) / this.originalPrice) * 100);
+  }
+  return 0;
+});
+
+// --- MIDDLEWARE ---
+ProductSchema.pre('save', function(next) {
+  this.inventory.inStock = this.inventory.quantity > 0;
+  next();
+});
+
+// --- EVENT-DRIVEN ARCHITECTURE HOOKS ---
+ProductSchema.post("save", function(doc, next) {
+  try {
+    // isNew is a Mongoose internal flag available in pre-save, but not post-save.
+    // A common workaround is to check if createdAt and updatedAt are the same.
+    const isNew = doc.createdAt.getTime() === doc.updatedAt.getTime();
+    if (isNew) {
+      eventService.emit(EventNames.PRODUCT_CREATED, doc);
+    } else {
+      eventService.emit(EventNames.PRODUCT_UPDATED, doc);
+    }
+  } catch (error) {
+    console.error("Error emitting product save event:", error);
+  }
+  next();
+});
+
+ProductSchema.post("remove", function(doc, next) {
+  try {
+    eventService.emit(EventNames.PRODUCT_DELETED, doc);
+  } catch (error) {
+    console.error("Error emitting product delete event:", error);
+  }
+  next();
+});
+
+export default mongoose.model<IProduct>('Product', ProductSchema);

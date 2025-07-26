@@ -1,0 +1,17 @@
+import { EventEmitter } from "events";
+
+// For type safety, define all possible event names
+export const EventNames = {
+  PRODUCT_CREATED: "product.created",
+  PRODUCT_UPDATED: "product.updated",
+  PRODUCT_DELETED: "product.deleted",
+  USER_CREATED: "user.created",
+  ORDER_PLACED: "order.placed",
+};
+
+class EventService extends EventEmitter {}
+
+// Export a singleton instance to act as the central event bus
+const eventService = new EventService();
+export default eventService;
+

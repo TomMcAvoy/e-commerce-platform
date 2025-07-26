@@ -1,6 +1,5 @@
 import request from 'supertest';
-import app from '../../../index';
-
+import app from '../../test-app-setup';
 describe('Books & Media Category API Tests', () => {
   describe('GET /api/products/category/books-media', () => {
     it('should return books and media products', async () => {

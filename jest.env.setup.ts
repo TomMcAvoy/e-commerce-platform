@@ -1,41 +1,20 @@
-// Environment variables for testing - loaded before any tests run
+// ✅ Environment setup that runs before jest.setup.ts
+
+// Prevent any real server startup
 process.env.NODE_ENV = 'test';
+process.env.PORT = '3000'; // ✅ Set to valid port number for config tests
+process.env.SKIP_SERVER_START = 'true';
 
-// JWT Configuration (following your auth patterns)
-process.env.JWT_SECRET = 'test-jwt-secret-for-testing-only-very-long-and-secure';
+// Set test-specific MongoDB URI (will be overridden by MongoMemoryServer)
+process.env.MONGODB_URI = 'mongodb://localhost:27017/test-placeholder';
+
+// Mock other environment variables following project patterns
+process.env.JWT_SECRET = 'test-secret-key-for-testing';
 process.env.JWT_EXPIRE = '30d';
+process.env.BCRYPT_ROUNDS = '1'; // Faster for tests
 
-// Database Configuration (using test database)
-process.env.MONGODB_URI = 'mongodb://localhost:27017/shoppingcart-test';
-process.env.REDIS_URL = 'redis://localhost:6379/1';
+// API configuration for testing
+process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000/api';
 
-// Server Configuration (different port to avoid conflicts)
-process.env.PORT = '3002';
+console.log('🧪 Jest environment variables configured for testing');
 
-// Dropshipping Provider API Keys (from your instructions)
-process.env.PRINTFUL_API_KEY = 'test-printful-api-key';
-process.env.SPOCKET_API_KEY = 'test-spocket-api-key';
-
-// Disable features that can interfere with testing
-process.env.RATE_LIMIT_ENABLED = 'false';
-process.env.CORS_ENABLED = 'true';
-process.env.HELMET_ENABLED = 'false';
-
-// Email Service (mock for tests)
-process.env.EMAIL_SERVICE = 'test';
-process.env.FROM_EMAIL = 'test@shoppingcart.com';
-
-// File Upload Configuration
-process.env.UPLOAD_PATH = './uploads/test';
-process.env.MAX_FILE_SIZE = '5000000';
-
-// Frontend API URL (following your CORS patterns)
-process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3002/api';
-
-// Database connection options for testing
-process.env.DB_OPTIONS = JSON.stringify({
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  bufferCommands: false,
-  bufferMaxEntries: 0
-});

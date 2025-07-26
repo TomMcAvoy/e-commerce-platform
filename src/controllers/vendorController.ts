@@ -1,304 +1,103 @@
-import { Request, Response, NextFunction } from 'express'
-import { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types'
-import Vendor from '../models/Vendor'
-import User from '../models/User'
-import AppError from '../utils/AppError'
+import { Request, Response, NextFunction } from 'express';
+import { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types';
+import Vendor from '../models/Vendor';
+import User from '../models/User';
+import AppError from '../utils/AppError';
+import { TenantRequest } from '../middleware/tenantResolver';
 
-// @desc    Register new vendor
+// @desc    Register new vendor for the current tenant
 // @route   POST /api/vendors/register
-// @access  Public
-export const registerVendor = async (
-  req: Request,
-  res: Response<ApiResponse>,
-  next: NextFunction
-): Promise<void> => {
+export const registerVendor = async (req: Request, res: Response<ApiResponse>, next: NextFunction): Promise<void> => {
   try {
-    const {
-      // Personal Information
-      firstName,
-      lastName,
-      email,
-      password,
-      phone,
-      
-      // Business Information
-      businessName,
-      businessType,
-      businessDescription,
-      businessAddress,
-      city,
-      state,
-      country,
-      zipCode,
-      taxId
-    } = req.body
-
-    // Validate required fields
-    if (!firstName || !lastName || !email || !password || !businessName) {
-      return next(new AppError('Please provide all required fields', 400))
+    const { firstName, lastName, email, password, businessName, ...rest } = req.body;
+    if (!req.tenantId) {
+      return next(new AppError('Tenant could not be identified for registration.', 400));
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email })
-    if (existingUser) {
-      return next(new AppError('User already exists with this email', 400))
-    }
+    // Check if user or vendor already exists within this tenant
+    const existingUser = await User.findOne({ email, tenantId: req.tenantId });
+    if (existingUser) return next(new AppError('User with this email already exists in this tenant', 400));
 
-    // Check if business name is already taken
-    const existingVendor = await Vendor.findOne({ businessName })
-    if (existingVendor) {
-      return next(new AppError('Business name is already taken', 400))
-    }
+    const existingVendor = await Vendor.findOne({ businessName, tenantId: req.tenantId });
+    if (existingVendor) return next(new AppError('Business name is already taken in this tenant', 400));
 
-    // Create user account with vendor role
-    const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      password,
-      phoneNumber: phone,
-      role: 'vendor'
-    })
+    // Create user and vendor within the same tenant
+    const user = await User.create({ firstName, lastName, email, password, role: 'vendor', tenantId: req.tenantId });
+    const vendor = await Vendor.create({ userId: user._id, businessName, businessEmail: email, tenantId: req.tenantId, ...rest });
 
-    // Create vendor profile
-    const vendor = await Vendor.create({
-      userId: user._id,
-      businessName,
-      businessEmail: email,
-      businessPhone: phone,
-      businessAddress: {
-        firstName,
-        lastName,
-        address1: businessAddress,
-        city,
-        state,
-        postalCode: zipCode,
-        country,
-        isDefault: true
-      },
-      taxId,
-      isVerified: false // Will need admin approval
-    })
-
-    res.status(201).json({
-      success: true,
-      data: {
-        user: {
-          _id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          role: user.role
-        },
-        vendor: {
-          _id: vendor._id,
-          businessName: vendor.businessName,
-          isVerified: vendor.isVerified
-        }
-      },
-      message: 'Vendor registration successful. Your account is pending approval.'
-    })
+    res.status(201).json({ success: true, data: { user, vendor }, message: 'Vendor registration successful.' });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
-// @desc    Get all vendors
+// @desc    Get all vendors for the tenant
 // @route   GET /api/vendors
-// @access  Public
-export const getVendors = async (
-  req: Request,
-  res: Response<PaginatedResponse<any>>,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 10
-    const skip = (page - 1) * limit
-
-    const query: any = {}
-    
-    // Only show verified vendors to public
-    if (req.query.verified !== 'false') {
-      query.isVerified = true
+export const getVendors = async (req: TenantRequest, res: Response, next: NextFunction) => {
+    try {
+        const vendors = await Vendor.find({ tenantId: req.tenantId }).populate('user', 'name email');
+        res.status(200).json({ success: true, count: vendors.length, data: vendors });
+    } catch (error: any) {
+        next(new AppError(error.message, 500));
     }
-
-    const vendors = await Vendor.find(query)
-      .populate('userId', 'firstName lastName')
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 })
-
-    const total = await Vendor.countDocuments(query)
-
-    res.status(200).json({
-      success: true,
-      data: vendors,
-      pagination: {
-        page,
-        pages: Math.ceil(total / limit),
-        total,
-        limit
-      }
-    })
-  } catch (error) {
-    next(error)
-  }
-}
+};
 
 // @desc    Get single vendor
 // @route   GET /api/vendors/:id
-// @access  Public
-export const getVendor = async (
-  req: Request,
-  res: Response<ApiResponse>,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const vendor = await Vendor.findById(req.params.id)
-      .populate('userId', 'firstName lastName email')
-
-    if (!vendor) {
-      return next(new AppError('Vendor not found', 404))
+export const getVendor = async (req: TenantRequest, res: Response, next: NextFunction) => {
+    try {
+        const vendor = await Vendor.findOne({ _id: req.params.id, tenantId: req.tenantId }).populate('user', 'name email');
+        if (!vendor) {
+            return next(new AppError(`Vendor not found with id of ${req.params.id}`, 404));
+        }
+        res.status(200).json({ success: true, data: vendor });
+    } catch (error: any) {
+        next(new AppError(error.message, 500));
     }
+};
 
-    res.status(200).json({
-      success: true,
-      data: vendor
-    })
-  } catch (error) {
-    next(error)
-  }
-}
+// @desc    Create a new vendor (Admin only)
+// @route   POST /api/vendors
+export const createVendor = async (req: TenantRequest, res: Response, next: NextFunction) => {
+    try {
+        // A user must exist before they can be promoted to a vendor
+        const vendor = await Vendor.create({ ...req.body, tenantId: req.tenantId });
+        res.status(201).json({ success: true, data: vendor });
+    } catch (error: any) {
+        next(new AppError(error.message, 500));
+    }
+};
 
-// @desc    Update vendor profile
+// @desc    Update vendor profile for the current tenant
 // @route   PUT /api/vendors/:id
-// @access  Private (Vendor/Admin)
-export const updateVendor = async (
-  req: AuthenticatedRequest,
-  res: Response<ApiResponse>,
-  next: NextFunction
-): Promise<void> => {
+export const updateVendor = async (req: AuthenticatedRequest, res: Response<ApiResponse>, next: NextFunction): Promise<void> => {
   try {
-    const vendor = await Vendor.findById(req.params.id)
+    // Scope query to the tenant
+    const vendor = await Vendor.findOne({ _id: req.params.id, tenantId: req.tenantId });
+    if (!vendor) return next(new AppError('Vendor not found in this tenant', 404));
 
-    if (!vendor) {
-      return next(new AppError('Vendor not found', 404))
+    if (vendor.userId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return next(new AppError('Not authorized to update this vendor profile', 403));
     }
 
-    // Check if user owns this vendor profile or is admin
-    if (vendor.userId !== req.user._id && req.user.role !== 'admin') {
-      return next(new AppError('Not authorized to update this vendor profile', 403))
-    }
-
-    const updatedVendor = await Vendor.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    ).populate('userId', 'firstName lastName email')
-
-    res.status(200).json({
-      success: true,
-      data: updatedVendor
-    })
+    const updatedVendor = await Vendor.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    res.status(200).json({ success: true, data: updatedVendor });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
-// @desc    Delete vendor
+// @desc    Delete vendor for the current tenant
 // @route   DELETE /api/vendors/:id
-// @access  Private (Admin only)
-export const deleteVendor = async (
-  req: AuthenticatedRequest,
-  res: Response<ApiResponse>,
-  next: NextFunction
-): Promise<void> => {
+export const deleteVendor = async (req: AuthenticatedRequest, res: Response<ApiResponse>, next: NextFunction): Promise<void> => {
   try {
-    const vendor = await Vendor.findById(req.params.id)
-
-    if (!vendor) {
-      return next(new AppError('Vendor not found', 404))
-    }
-
-    await vendor.deleteOne()
-
-    res.status(200).json({
-      success: true,
-      message: 'Vendor deleted successfully'
-    })
+    // Scope query to the tenant
+    const vendor = await Vendor.findOneAndDelete({ _id: req.params.id, tenantId: req.tenantId });
+    if (!vendor) return next(new AppError('Vendor not found in this tenant', 404));
+    // Also delete the associated user
+    await User.findByIdAndDelete(vendor.userId);
+    res.status(200).json({ success: true, message: 'Vendor and associated user deleted successfully' });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
-
-// @desc    Verify vendor (Admin only)
-// @route   PUT /api/vendors/:id/verify
-// @access  Private (Admin only)
-export const verifyVendor = async (
-  req: AuthenticatedRequest,
-  res: Response<ApiResponse>,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const vendor = await Vendor.findByIdAndUpdate(
-      req.params.id,
-      { isVerified: true },
-      { new: true, runValidators: true }
-    ).populate('userId', 'firstName lastName email')
-
-    if (!vendor) {
-      return next(new AppError('Vendor not found', 404))
-    }
-
-    res.status(200).json({
-      success: true,
-      data: vendor,
-      message: 'Vendor verified successfully'
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-// @desc    Get vendor dashboard stats
-// @route   GET /api/vendors/:id/stats
-// @access  Private (Vendor/Admin)
-export const getVendorStats = async (
-  req: AuthenticatedRequest,
-  res: Response<ApiResponse>,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const vendor = await Vendor.findById(req.params.id)
-
-    if (!vendor) {
-      return next(new AppError('Vendor not found', 404))
-    }
-
-    // Check if user owns this vendor profile or is admin
-    if (vendor.userId !== req.user._id && req.user.role !== 'admin') {
-      return next(new AppError('Not authorized to view this vendor stats', 403))
-    }
-
-    // TODO: Implement actual stats calculation when Product and Order models are ready
-    const stats = {
-      totalProducts: vendor.products.length,
-      totalSales: vendor.totalSales,
-      rating: vendor.rating,
-      isVerified: vendor.isVerified,
-      // These would be calculated from actual data:
-      // monthlyRevenue: 0,
-      // totalOrders: 0,
-      // pendingOrders: 0,
-      // completedOrders: 0
-    }
-
-    res.status(200).json({
-      success: true,
-      data: stats
-    })
-  } catch (error) {
-    next(error)
-  }
-}
+};

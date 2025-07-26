@@ -1,45 +1,61 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
-import { useCart } from '../../context/CartContext';
-import { ShoppingCartIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { usePathname } from 'next/navigation';
 
-/**
- * Navigation Component following Component Organization from Copilot Instructions
- */
+export function Navigation() {
+  const pathname = usePathname();
 
-export const Navigation: React.FC = () => {
-  const { state } = useCart();
+  const navItems = [
+    { href: '/', label: 'Home' },
+    { href: '/products', label: 'Products' },
+    { href: '/categories', label: 'Categories' },
+    { href: '/cart', label: 'Cart' },
+    { href: '/debug', label: 'Debug' },
+  ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center space-x-2">
-            <HomeIcon className="w-6 h-6 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">Whitestart</span>
-          </Link>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
+            <Link href="/" className="text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors">
+              Whitestart Security
+            </Link>
+          </div>
           
-          <div className="flex items-center space-x-6">
-            <Link href="/categories" className="text-gray-700 hover:text-blue-600">
-              Categories
+          <div className="hidden md:flex items-center space-x-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname === item.href
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <Link
+              href="/auth/login"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Login
             </Link>
-            <Link href="/debug" className="text-gray-700 hover:text-blue-600">
-              Debug
-            </Link>
-            <Link href="/cart" className="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
-              <ShoppingCartIcon className="w-5 h-5" />
-              <span>Cart</span>
-              {state.totalItems > 0 && (
-                <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {state.totalItems}
-                </span>
-              )}
+            <Link
+              href="/auth/register"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Register
             </Link>
           </div>
         </div>
       </div>
     </nav>
   );
-};
+}

@@ -1,6 +1,5 @@
 import request from 'supertest';
-import app from '../../index';
-
+import app from '../test-app-setup';
 describe('Authentication Tests', () => {
     it('should register a new user', async () => {
         const response = await request(app)

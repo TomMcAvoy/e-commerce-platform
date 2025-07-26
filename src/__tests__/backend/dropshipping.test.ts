@@ -1,6 +1,5 @@
 import request from 'supertest';
-import app from '../../index';
-
+import app from '../test-app-setup';
 describe('Dropshipping Service', () => {
     test('should return dropshipping data', async () => {
         const response = await request(app).get('/api/dropshipping'); // Adjust the endpoint as necessary

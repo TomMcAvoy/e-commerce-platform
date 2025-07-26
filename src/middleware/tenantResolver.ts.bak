@@ -1,0 +1,39 @@
+-e 
+import { Request, Response, NextFunction } from "express";
+import Tenant from "../models/Tenant";
+import AppError from "../utils/AppError";
+
+declare global {
+  namespace Express {
+    export interface Request {
+      tenantId?: string;
+    }
+  }
+}
+
+export const tenantResolver = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.path.startsWith("/api")) {
+    if (req.path === "/api/status" || req.path === "/health" || req.path.startsWith("/api/auth/sso")) {
+      return next();
+    }
+
+    const tenantSlug = req.headers["x-tenant-id"] as string;
+    if (!tenantSlug) {
+      return next(new AppError("Tenant ID header (X-Tenant-ID) is required for all API requests.", 400));
+    }
+
+    try {
+      const tenant = await Tenant.findOne({ slug: tenantSlug, isActive: true }).lean();
+      if (!tenant) {
+        return next(new AppError(`Tenant not found or is inactive: ${tenantSlug}`, 404));
+      }
+      req.tenantId = tenant._id.toString();
+      next();
+    } catch (error) {
+      next(new AppError("Failed to resolve tenant.", 500));
+    }
+  } else {
+    next();
+  }
+};
+

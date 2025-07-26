@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../../../index';
+import app from '../../test-app-setup';
 import { DropshippingService } from '../../../services/dropshipping/DropshippingService';
 
 describe('Automotive Category API Tests', () => {

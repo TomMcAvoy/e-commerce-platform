@@ -1,0 +1,130 @@
+import mongoose, { Document, Schema } from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+/**
+ * Definitive User Model combining B2C customer profiles with B2B vendor profiles.
+ * Follows all Database Patterns and Security Considerations from Copilot Instructions.
+ */
+export interface IUser extends Document {\
+  tenantId: mongoose.Types.ObjectId;\
+  password?: string;\
+  authProvider: "local" | "oidc" | "saml";\
+  externalId?: string;\
+  tenantId: mongoose.Types.ObjectId;\
+  password?: string;\
+  authProvider: "local" | "oidc" | "saml";\
+  externalId?: string;\
+  tenantId: mongoose.Types.ObjectId;\
+  password?: string;\
+  authProvider: "local" | "oidc" | "saml";\
+  externalId?: string;
+  _id: mongoose.Types.ObjectId;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password?: string; // Optional because it's not always selected
+  role: 'admin' | 'vendor' | 'user';
+  isActive: boolean;
+  isEmailVerified: boolean;
+
+  // --- MERGED: Amazon/Temu Style Customer Profile ---
+  customerProfile?: {
+    savedAddresses?: {
+      alias: string;
+      street: string;
+      city: string;
+      zip: string;
+      country: string;
+    }[];
+    loyaltyTier?: 'bronze' | 'silver' | 'gold';
+    wishlist?: mongoose.Types.ObjectId[];
+    referralCode?: string;
+    coupons?: { code: string; discount: number; expiresAt: Date; }[];
+  };
+
+  // --- MERGED: Alibaba Style Vendor Profile ---
+  vendorProfile?: {
+    companyName: string;
+    businessType?: 'manufacturer' | 'trading_company' | 'distributor';
+    yearEstablished?: number;
+    verificationStatus?: 'unverified' | 'verified' | 'gold_supplier';
+    responseRate?: number; // Percentage
+    responseTime?: string; // e.g., "<24h"
+    tradeAssuranceLevel?: number; // Monetary value
+  };
+
+  // --- VIRTUALS ---
+  name: string;
+
+  // --- METHODS ---
+  matchPassword(enteredPassword: string): Promise<boolean>;
+}
+
+const UserSchema = new Schema<IUser>({
+  firstName: { type: String, required: true, trim: true },
+  lastName: { type: String, required: true, trim: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+  password: { type: String, required: true, minlength: 6, select: false },
+  role: { type: String, enum: ['admin', 'vendor', 'user'], default: 'user', index: true },
+  isActive: { type: Boolean, default: true },
+  isEmailVerified: { type: Boolean, default: false },
+
+  customerProfile: {
+    savedAddresses: [{ alias: String, street: String, city: String, zip: String, country: String }],
+    loyaltyTier: { type: String, enum: ['bronze', 'silver', 'gold'], default: 'bronze' },
+    wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+    referralCode: { type: String, unique: true, sparse: true }, // sparse allows multiple nulls
+    coupons: [{ code: String, discount: Number, expiresAt: Date }]
+  },
+
+  vendorProfile: {
+    companyName: String,
+    businessType: { type: String, enum: ['manufacturer', 'trading_company', 'distributor'] },
+    yearEstablished: Number,
+    verificationStatus: { type: String, enum: ['unverified', 'verified', 'gold_supplier'], default: 'unverified', index: true },
+    responseRate: { type: Number, min: 0, max: 100 },
+    responseTime: String,
+    tradeAssuranceLevel: Number
+  }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// --- KEPT: Virtual field for full name (Database Patterns) ---
+UserSchema.virtual('name').get(function() {
+  return `${this.firstName} ${this.lastName}`;
+});
+
+// --- KEPT: Password hashing middleware (Security Considerations) ---
+UserSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+// --- KEPT: Password matching method (Authentication Flow) ---
+UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
+  // this.password is available here despite select:false due to being a method of the document
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// --- EVENT-DRIVEN ARCHITECTURE HOOKS ---
+import eventService, { EventNames } from "../services/eventService";
+
+UserSchema.post("save", function(doc, next) {
+  try {
+    if (this.isNew) {
+      eventService.emit(EventNames.USER_CREATED, doc);
+    }
+  } catch (error) {
+    console.error("Error emitting user created event:", error);
+  }
+  next();
+});
+
+export default mongoose.model<IUser>("User", UserSchema);

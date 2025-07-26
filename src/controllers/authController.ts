@@ -1,58 +1,71 @@
 import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcryptjs';
 import User from '../models/User';
-import { sendTokenResponse } from '../utils/auth';
 import AppError from '../utils/AppError';
+import { sendTokenResponse } from '../utils/sendTokenResponse';
+import { TenantRequest } from '../middleware/tenantResolver';
 
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+// @desc    Register user
+// @route   POST /api/auth/register
+export const register = async (req: TenantRequest, res: Response, next: NextFunction) => {
+  const { firstName, lastName, email, password, role } = req.body;
+
+  if (!req.tenantId) {
+    return next(new AppError('Tenant ID is required for registration.', 400));
+  }
+
   try {
-    const { name, email, password, role = 'buyer' } = req.body;
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return next(new AppError('User already exists', 400));
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-
     const user = await User.create({
-      name,
+      tenantId: req.tenantId,
+      firstName,
+      lastName,
       email,
-      password: hashedPassword,
-      role
+      password,
+      role,
     });
 
     sendTokenResponse(user, 201, res);
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    next(new AppError(error.message, 400));
   }
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { email, password } = req.body;
+// @desc    Login user
+// @route   POST /api/auth/login
+export const login = async (req: TenantRequest, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return next(new AppError('Invalid credentials', 401));
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return next(new AppError('Invalid credentials', 401));
-    }
-
-    sendTokenResponse(user, 200, res);
-  } catch (error) {
-    next(error);
+  if (!email || !password) {
+    return next(new AppError('Please provide an email and password', 400));
   }
+  
+  if (!req.tenantId) {
+    return next(new AppError('Tenant ID is required for login.', 400));
+  }
+
+  const user = await User.findOne({ email, tenantId: req.tenantId }).select('+password');
+
+  if (!user) {
+    return next(new AppError('Invalid credentials', 401));
+  }
+
+  const isMatch = await user.comparePassword(password);
+
+  if (!isMatch) {
+    return next(new AppError('Invalid credentials', 401));
+  }
+
+  sendTokenResponse(user, 200, res);
 };
 
-export const getAuthStatus = async (req: Request, res: Response) => {
-  res.json({
-    success: true,
-    message: 'Authentication service is running',
-    timestamp: new Date().toISOString(),
-    authenticated: false
-  });
+// @desc    Get current logged in user
+// @route   GET /api/auth/me
+export const getMe = async (req: TenantRequest, res: Response, next: NextFunction) => {
+  // @ts-ignore - req.user is set by the 'protect' middleware
+  const user = await User.findById(req.user.id);
+  
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  res.status(200).json({ success: true, data: user });
 };

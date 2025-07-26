@@ -1,6 +1,5 @@
 import request from 'supertest';
-import app from '../../index';
-
+import app from '../test-app-setup';
 describe('Health Endpoints - Following Copilot Debug Patterns', () => {
   describe('GET /health', () => {
     it('should return healthy status', async () => {

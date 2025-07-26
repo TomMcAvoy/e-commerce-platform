@@ -1,6 +1,5 @@
 import request from 'supertest';
-import app from '../../index';
-
+import app from '../test-app-setup';
 describe('Integration Tests for Backend API', () => {
     it('should check Auth API health', async () => {
         const response = await request(app).get('/api/auth/status');

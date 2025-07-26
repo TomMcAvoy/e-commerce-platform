@@ -1,198 +1,85 @@
 import { Request, Response, NextFunction } from 'express';
-import { DropshippingService } from '../services/dropshipping/DropshippingService';
-import { AppError } from '../middleware/errorHandler';
-
-const dropshippingService = DropshippingService.getInstance();
-
-interface AuthRequest extends Request {
-  user?: any;
-}
+import AppError from '../utils/AppError';
+import { AuthenticatedRequest } from '../types';
+import DropshippingService from '../services/dropshipping/DropshippingService';
+import Order from '../models/Order';
 
 /**
- * Get dropshipping data - matches route import
- * Following API Endpoints Structure from Copilot instructions
+ * Dropshipping Controller following Service Architecture pattern from Copilot Instructions
+ * Uses lazy loading and proper error handling with AppError class
  */
-export const getDropshippingData = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const providers = dropshippingService.getProviderStatus();
-    const health = await dropshippingService.getProviderHealth();
 
-    res.status(200).json({
-      success: true,
-      data: {
-        providers,
-        health,
-        enabledCount: providers.filter(p => p.enabled).length,
-        timestamp: new Date().toISOString(),
-        endpoints: {
-          orders: '/api/dropshipping/orders',
-          shipping: '/api/dropshipping/shipping/calculate',
-          health: '/api/dropshipping/health'
-        }
-      },
-      message: 'Dropshipping data fetched successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
+// ✅ Use lazy loading instead of immediate instantiation to prevent test issues
+const getDropshippingService = () => {
+  return DropshippingService.getInstance();
 };
 
-/**
- * Create dropshipping order - matches route import
- * Following Authentication Flow with JWT tokens
- */
-export const createDropshippingOrder = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const createDropshipOrder = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    if (!req.user) {
-      throw new AppError('Authentication required for order creation', 401);
+    const dropshippingService = getDropshippingService();
+    const { orderData, provider } = req.body;
+    
+    if (!orderData || !provider) {
+      return next(new AppError('Order data and provider are required', 400));
     }
-
-    const { items, shippingAddress, provider } = req.body;
-
-    // Validate required fields following Project-Specific Conventions
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      throw new AppError('Order items are required and must be an array', 400);
-    }
-
-    if (!shippingAddress) {
-      throw new AppError('Shipping address is required', 400);
-    }
-
-    const orderData = {
-      items: items.map((item: any) => ({
-        productId: item.productId,
-        quantity: item.quantity || 1,
-        price: item.price,
-        name: item.name
-      })),
-      shippingAddress,
-      userId: req.user.id,
-      provider: provider || 'default',
-      metadata: {
-        createdAt: new Date().toISOString(),
-        source: 'api'
-      }
-    };
-
-    // Use DropshippingService pattern for order creation
+    
     const result = await dropshippingService.createOrder(orderData, provider);
-
-    if (!result.success) {
-      throw new AppError(result.error || 'Failed to create dropshipping order', 400);
+    
+    if (result.success) {
+      res.status(201).json({
+        success: true,
+        data: result,
+        message: 'Dropship order created successfully'
+      });
+    } else {
+      return next(new AppError(result.error || 'Failed to create dropship order', 400));
     }
-
-    // Following sendTokenResponse pattern for success responses
-    res.status(201).json({
-      success: true,
-      data: {
-        orderId: result.orderId,
-        status: result.status || 'pending',
-        provider: result.provider,
-        created: new Date().toISOString()
-      },
-      message: 'Dropshipping order created successfully'
-    });
   } catch (error) {
-    next(error);
+    next(new AppError('Error creating dropship order', 500));
   }
 };
 
-/**
- * Calculate shipping costs - matches route import
- * Following Database Patterns with performance optimization
- */
-export const calculateShipping = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getDropshipProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { items, destination, provider } = req.body;
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      throw new AppError('Items array is required for shipping calculation', 400);
+    const dropshippingService = getDropshippingService();
+    const { provider } = req.params;
+    const query = req.query;
+    
+    if (!provider) {
+      return next(new AppError('Provider parameter is required', 400));
     }
-
-    if (!destination) {
-      throw new AppError('Destination address is required', 400);
-    }
-
-    // Calculate shipping following existing patterns
-    const totalWeight = items.reduce((total: number, item: any) => {
-      const weight = parseFloat(item.weight) || 1.0;
-      const quantity = parseInt(item.quantity) || 1;
-      return total + (weight * quantity);
-    }, 0);
-
-    const totalValue = items.reduce((total: number, item: any) => {
-      const price = parseFloat(item.price) || 0;
-      const quantity = parseInt(item.quantity) || 1;
-      return total + (price * quantity);
-    }, 0);
-
-    // Base shipping calculation
-    const baseShippingCost = 9.99;
-    const weightFactor = totalWeight * 0.50;
-    const valueFactor = totalValue > 100 ? 0 : 5.99; // Free shipping over $100
-
-    const standardShipping = Math.max(baseShippingCost + weightFactor + valueFactor, 4.99);
-    const expeditedShipping = standardShipping * 2.0;
-
-    const shippingOptions = [
-      {
-        id: 'standard',
-        name: 'Standard Shipping',
-        cost: Math.round(standardShipping * 100) / 100,
-        deliveryTime: '5-7 business days',
-        description: 'Regular ground shipping'
-      },
-      {
-        id: 'expedited',
-        name: 'Express Shipping',
-        cost: Math.round(expeditedShipping * 100) / 100,
-        deliveryTime: '2-3 business days',
-        description: 'Priority express delivery'
-      }
-    ];
-
+    
+    const products = await dropshippingService.getProductsFromProvider(provider, query);
+    
     res.status(200).json({
       success: true,
-      data: {
-        shippingOptions,
-        calculations: {
-          totalWeight: Math.round(totalWeight * 100) / 100,
-          totalValue: Math.round(totalValue * 100) / 100,
-          freeShippingEligible: totalValue >= 100
-        },
-        recommendedOption: shippingOptions[0].id,
-        calculatedAt: new Date().toISOString()
-      },
-      message: 'Shipping costs calculated successfully'
+      data: products,
+      message: 'Products retrieved successfully'
     });
   } catch (error) {
-    next(error);
+    next(new AppError('Error fetching dropship products', 500));
   }
 };
 
-/**
- * Get all providers
- * Following Error Handling Pattern from Copilot instructions
- */
-export const getProviders = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getProviderHealth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const providers = dropshippingService.getProviderStatus();
+    const dropshippingService = getDropshippingService();
+    const health = await dropshippingService.getProviderHealth();
+    
+    res.status(200).json({
+      success: true,
+      data: health,
+      message: 'Provider health check completed'
+    });
+  } catch (error) {
+    next(new AppError('Error checking provider health', 500));
+  }
+};
+
+export const getAllProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const dropshippingService = getDropshippingService();
+    const providers = dropshippingService.getEnabledProviders();
     
     res.status(200).json({
       success: true,
@@ -200,448 +87,114 @@ export const getProviders = async (
       message: 'Providers retrieved successfully'
     });
   } catch (error) {
-    next(error);
+    next(new AppError('Error fetching providers', 500));
   }
 };
 
-/**
- * Search products across providers
- * Following API Endpoints Structure
- */
-export const searchProducts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getProviderStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { query, category, provider, page = 1, limit = 20 } = req.query;
+    const dropshippingService = getDropshippingService();
+    const status = dropshippingService.getProviderStatus();
     
-    if (!query) {
-      throw new AppError('Search query is required', 400);
-    }
-
-    // Mock search results - in production would query actual providers
-    const mockResults = {
-      products: [
-        {
-          id: `prod_${Date.now()}`,
-          name: `Product matching "${query}"`,
-          description: 'High-quality product from dropshipping provider',
-          price: 29.99,
-          currency: 'USD',
-          provider: provider || 'default',
-          category: category || 'general',
-          images: ['https://via.placeholder.com/300'],
-          availability: 'in_stock'
-        }
-      ],
-      pagination: {
-        currentPage: parseInt(page as string),
-        totalPages: 1,
-        totalResults: 1,
-        resultsPerPage: parseInt(limit as string)
-      }
-    };
-
     res.status(200).json({
       success: true,
-      data: mockResults,
-      message: 'Product search completed successfully'
+      data: status,
+      message: 'Provider status retrieved successfully'
     });
   } catch (error) {
-    next(error);
+    next(new AppError('Error fetching provider status', 500));
   }
 };
 
-/**
- * Get single product details
- * Following Project-Specific Conventions
- */
-export const getProduct = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+// Additional endpoints following Critical Integration Points
+export const syncProvider = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id } = req.params;
-    const { provider } = req.query;
-
-    // Mock product data - in production would fetch from provider API
-    const mockProduct = {
-      id,
-      name: 'Dropshipping Product',
-      description: 'Premium quality product available through dropshipping',
-      price: 39.99,
-      currency: 'USD',
-      provider: provider || 'default',
-      images: ['https://via.placeholder.com/400'],
-      variants: [
-        { id: 'var1', name: 'Size S', price: 39.99 },
-        { id: 'var2', name: 'Size M', price: 41.99 }
-      ],
-      availability: 'in_stock',
-      shippingInfo: {
-        weight: 1.0,
-        dimensions: { length: 10, width: 8, height: 2 }
-      }
-    };
-
+    const { provider, products } = req.body;
+    
     res.status(200).json({
       success: true,
-      data: mockProduct,
-      message: 'Product details retrieved successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Import product from provider
- * Following Authentication Flow
- */
-export const importProduct = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    if (!req.user) {
-      throw new AppError('Authentication required', 401);
-    }
-
-    const { productId, provider, customizations } = req.body;
-
-    if (!productId || !provider) {
-      throw new AppError('Product ID and provider are required', 400);
-    }
-
-    // Mock import process
-    const importedProduct = {
-      id: `imported_${Date.now()}`,
-      originalId: productId,
-      provider,
-      status: 'imported',
-      customizations,
-      importedBy: req.user.id,
-      importedAt: new Date().toISOString()
-    };
-
-    res.status(201).json({
-      success: true,
-      data: importedProduct,
-      message: 'Product imported successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Sync inventory with providers
- * Following Database Patterns
- */
-export const syncInventory = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    if (!req.user || req.user.role !== 'admin') {
-      throw new AppError('Admin access required', 403);
-    }
-
-    // Mock inventory sync
-    const syncResult = {
-      syncId: `sync_${Date.now()}`,
-      startedAt: new Date().toISOString(),
-      status: 'in_progress',
-      productsToSync: 150,
-      providersInvolved: ['printful', 'spocket']
-    };
-
-    res.status(200).json({
-      success: true,
-      data: syncResult,
-      message: 'Inventory sync initiated'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Create order (alias for createDropshippingOrder)
- */
-export const createOrder = createDropshippingOrder;
-
-/**
- * Get order status
- * Following API Endpoints Structure
- */
-export const getOrderStatus = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { orderId } = req.params;
-
-    if (!orderId) {
-      throw new AppError('Order ID is required', 400);
-    }
-
-    // Mock order status
-    const orderStatus = {
-      orderId,
-      status: 'processing',
-      trackingNumber: `TRK${Date.now()}`,
-      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      lastUpdated: new Date().toISOString()
-    };
-
-    res.status(200).json({
-      success: true,
-      data: orderStatus,
-      message: 'Order status retrieved successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Health check for dropshipping service
- * Following Debugging & Testing Ecosystem
- */
-export const healthCheck = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const health = await dropshippingService.getProviderHealth();
-    const providers = dropshippingService.getProviderStatus();
-
-    res.status(200).json({
-      success: true,
+      message: 'Provider sync initiated',
       data: {
-        health,
-        providers,
-        timestamp: new Date().toISOString(),
-        service: 'dropshipping'
+        syncId: `sync_${Date.now()}`,
+        provider: provider || 'unknown',
+        productCount: products?.length || 0,
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    next(new AppError('Error syncing provider', 500));
+  }
+};
+
+export const calculateShipping = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { provider, productId, quantity, destinationCountry, destinationZip } = req.body;
+
+    if (!provider || !productId || !quantity || !destinationCountry) {
+      return next(new AppError('Missing required fields for shipping calculation', 400));
+    }
+
+    // Mock shipping calculation following Critical Integration Points
+    const baseShipping = 4.99;
+    const perItemShipping = 1.50;
+    const internationalSurcharge = destinationCountry !== 'US' ? 5.00 : 0;
+    
+    const calculatedShipping = {
+      provider,
+      productId,
+      quantity,
+      destination: { country: destinationCountry, zip: destinationZip || null },
+      costs: {
+        baseShipping,
+        perItemCost: perItemShipping * (quantity - 1),
+        internationalSurcharge,
+        totalShipping: baseShipping + (perItemShipping * (quantity - 1)) + internationalSurcharge
       },
-      message: 'Dropshipping service health check completed'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Get product recommendations
- * Following Database Patterns with performance optimization
- */
-export const getRecommendations = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { category, limit = 10 } = req.query;
-
-    // Mock recommendations
-    const recommendations = Array.from({ length: parseInt(limit as string) }, (_, i) => ({
-      id: `rec_${Date.now()}_${i}`,
-      name: `Recommended Product ${i + 1}`,
-      price: Math.round((Math.random() * 100 + 10) * 100) / 100,
-      category: category || 'general',
-      score: Math.round((Math.random() * 0.5 + 0.5) * 100) / 100
-    }));
+      estimatedDelivery: {
+        min: destinationCountry === 'US' ? 3 : 7,
+        max: destinationCountry === 'US' ? 5 : 14,
+        unit: 'business days'
+      }
+    };
 
     res.status(200).json({
       success: true,
-      data: recommendations,
-      message: 'Product recommendations generated successfully'
+      data: calculatedShipping,
+      message: 'Shipping costs calculated successfully'
     });
   } catch (error) {
-    next(error);
+    next(new AppError('Failed to calculate shipping costs', 500));
   }
 };
 
-/**
- * Bulk import products
- * Following Authentication Flow with admin protection
- */
-export const bulkImport = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    if (!req.user || req.user.role !== 'admin') {
-      throw new AppError('Admin access required for bulk import', 403);
-    }
-
-    const { products, provider, settings } = req.body;
-
-    if (!products || !Array.isArray(products)) {
-      throw new AppError('Products array is required', 400);
-    }
-
-    // Mock bulk import
-    const importJob = {
-      jobId: `bulk_${Date.now()}`,
-      provider: provider || 'default',
-      totalProducts: products.length,
-      status: 'queued',
-      startedAt: new Date().toISOString(),
-      estimatedCompletion: new Date(Date.now() + products.length * 1000).toISOString()
-    };
-
-    res.status(202).json({
-      success: true,
-      data: importJob,
-      message: 'Bulk import job queued successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Import AliExpress catalog
- * Following Security Considerations
- */
-export const importAliExpressCatalog = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    if (!req.user || req.user.role !== 'admin') {
-      throw new AppError('Admin access required', 403);
-    }
-
-    const { categoryId, filters, limit = 100 } = req.body;
-
-    // Mock AliExpress catalog import
-    const catalogImport = {
-      importId: `aliexpress_${Date.now()}`,
-      categoryId,
-      filters,
-      limit: parseInt(limit),
-      status: 'started',
-      progress: 0,
-      startedAt: new Date().toISOString()
-    };
-
-    res.status(202).json({
-      success: true,
-      data: catalogImport,
-      message: 'AliExpress catalog import started'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Import products from AliExpress URLs
- * Following Error Handling Pattern
- */
-export const importAliExpressUrls = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    if (!req.user) {
-      throw new AppError('Authentication required', 401);
-    }
-
-    const { urls, options } = req.body;
-
-    if (!urls || !Array.isArray(urls) || urls.length === 0) {
-      throw new AppError('URLs array is required and cannot be empty', 400);
-    }
-
-    // Validate URLs
-    const invalidUrls = urls.filter(url => !url.includes('aliexpress'));
-    if (invalidUrls.length > 0) {
-      throw new AppError('All URLs must be valid AliExpress product URLs', 400);
-    }
-
-    // Mock URL import
-    const urlImport = {
-      importId: `urls_${Date.now()}`,
-      urls: urls.length,
-      options,
-      status: 'processing',
-      results: [],
-      startedAt: new Date().toISOString()
-    };
-
-    res.status(202).json({
-      success: true,
-      data: urlImport,
-      message: 'AliExpress URL import started'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Get AliExpress import guide
- * Following API Endpoints Structure
- */
-export const getAliExpressImportGuide = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const guide = {
-      steps: [
-        {
-          step: 1,
-          title: 'Find Products',
-          description: 'Browse AliExpress to find products you want to import',
-          tips: ['Look for products with good ratings', 'Check seller reputation']
-        },
-        {
-          step: 2,
-          title: 'Copy URLs',
-          description: 'Copy the product URLs from AliExpress',
-          tips: ['Use the full product URL', 'Include variant information if needed']
-        },
-        {
-          step: 3,
-          title: 'Import Products',
-          description: 'Use our import tool to add products to your store',
-          tips: ['Review product details before importing', 'Set appropriate pricing']
+// @desc    Manually trigger fulfillment for an order via the dropshipping service
+// @route   POST /api/dropshipping/fulfill/:orderId
+export const fulfillOrder = async (req: TenantRequest, res: Response, next: NextFunction) => {
+    const { orderId } = req.params;
+    try {
+        const order = await Order.findOne({ _id: orderId, tenantId: req.tenantId });
+        if (!order) {
+            return next(new AppError(`Order not found with id of ${orderId}`, 404));
         }
-      ],
-      requirements: [
-        'Valid AliExpress product URLs',
-        'Admin or vendor account permissions',
-        'Sufficient storage space for product images'
-      ],
-      supportedFeatures: [
-        'Product images and descriptions',
-        'Variant information (size, color)',
-        'Pricing and availability',
-        'Bulk import capabilities'
-      ]
-    };
 
-    res.status(200).json({
-      success: true,
-      data: guide,
-      message: 'AliExpress import guide retrieved successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
+        // In a real multi-vendor app, you'd also check if the user (vendor) owns the products in the order.
+        
+        const fulfillmentResult = await DropshippingService.getInstance().fulfillOrder(order);
+
+        res.status(200).json({ success: true, data: fulfillmentResult });
+    } catch (error: any) {
+        // Catch errors from the service layer and forward them
+        next(new AppError(error.message, error.statusCode || 500));
+    }
+};
+
+// @desc    Get the status of the configured dropshipping providers
+// @route   GET /api/dropshipping/status
+export const getProvidersStatus = async (req: TenantRequest, res: Response, next: NextFunction) => {
+    try {
+        const status = await DropshippingService.getInstance().getProvidersStatus();
+        res.status(200).json({ success: true, data: status });
+    } catch (error: any) {
+        next(new AppError(error.message, 500));
+    }
 };

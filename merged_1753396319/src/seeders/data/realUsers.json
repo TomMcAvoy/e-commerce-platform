@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Platform Admin",
+    "email": "admin@ecommerce.com",
+    "password": "Admin123!",
+    "role": "admin",
+    "isEmailVerified": true
+  },
+  {
+    "name": "TechGear Electronics",
+    "email": "electronics@vendor.com",
+    "password": "Vendor123!",
+    "role": "vendor",
+    "isEmailVerified": true
+  },
+  {
+    "name": "Fashion Forward Store",
+    "email": "fashion@vendor.com",
+    "password": "Vendor123!",
+    "role": "vendor",
+    "isEmailVerified": true
+  },
+  {
+    "name": "Home Essentials Co",
+    "email": "home@vendor.com",
+    "password": "Vendor123!",
+    "role": "vendor",
+    "isEmailVerified": true
+  },
+  {
+    "name": "John Smith",
+    "email": "john@customer.com",
+    "password": "Customer123!",
+    "role": "user",
+    "isEmailVerified": true
+  }
+]
