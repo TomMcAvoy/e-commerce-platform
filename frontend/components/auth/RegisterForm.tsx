@@ -2,163 +2,106 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { apiClient } from '@/lib/api';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
 
-/**
- * RegisterForm Component
- * Following Frontend Structure patterns with error handling
- */
 export function RegisterForm() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    // Validation following Error Handling Pattern
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setIsLoading(false);
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setIsLoading(false);
-      return;
-    }
+    setLoading(true);
+    setError(null);
 
     try {
-      // Correctly use the centralized API from lib/api.ts
-      await api.auth.register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
+      await apiClient.publicRequest('/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
       });
 
-      // Success - redirect to login with success message
-      router.push('/auth/login?message=Registration successful! Please sign in.');
+      // On successful registration, the server logs the user in and sets a cookie.
+      // Redirect to the account page and refresh to update auth state.
+      router.push('/account');
+      router.refresh();
 
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Registration failed');
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-900 border border-red-700 text-red-400 px-4 py-3 rounded">
-          {error}
+        <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+          <p className="text-sm">{error}</p>
         </div>
       )}
-      
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-gray-300">
-            First Name
-          </label>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            required
-            value={formData.firstName}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="John"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="lastName" className="block text-sm font-medium text-gray-300">
-            Last Name
-          </label>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            required
-            value={formData.lastName}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Doe"
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="name">Full Name</Label>
+        <Input
+          id="name"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          placeholder="John Doe"
+          disabled={loading}
+        />
       </div>
-      
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-          Email Address
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="email">Email Address</Label>
+        <Input
           id="email"
-          name="email"
           type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
-          value={formData.email}
-          onChange={handleInputChange}
-          className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="john.doe@example.com"
+          placeholder="you@example.com"
+          disabled={loading}
         />
       </div>
-      
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-          Password
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input
           id="password"
-          name="password"
           type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
-          value={formData.password}
-          onChange={handleInputChange}
-          className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter your password"
+          disabled={loading}
         />
       </div>
-      
-      <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
-          Confirm Password
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Input
           id="confirmPassword"
-          name="confirmPassword"
           type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           required
-          value={formData.confirmPassword}
-          onChange={handleInputChange}
-          className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Confirm your password"
+          disabled={loading}
         />
       </div>
-
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isLoading ? 'Creating Account...' : 'Create Account'}
-      </button>
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? 'Creating Account...' : 'Sign Up'}
+      </Button>
     </form>
   );
 }

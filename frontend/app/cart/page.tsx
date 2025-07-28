@@ -2,140 +2,81 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Navigation } from '../../components/navigation/Navigation';
 import { useCart } from '../../context/CartContext';
-import { TrashIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { Navigation } from '../../components/navigation/Navigation';
 
 /**
- * Cart Page following Frontend Structure from Copilot Instructions
+ * Shopping Cart Page - A Client Component using the CartContext.
+ * Allows users to view, update, and remove items from their cart.
  */
-
 export default function CartPage() {
-  const { state, removeItem, updateQuantity, clearCart } = useCart();
+  const { state, dispatch } = useCart();
 
-  if (state.items.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <main className="pt-16">
-          <div className="container mx-auto px-4 py-16 text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
-            <p className="text-gray-600 mb-8">Add some products to your cart to get started.</p>
-            <Link href="/categories" className="btn-primary">
-              Shop Now
-            </Link>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  const handleQuantityChange = (productId: string, quantity: number) => {
+    if (quantity > 0) {
+      dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, quantity } });
+    } else {
+      dispatch({ type: 'REMOVE_ITEM', payload: { productId } });
+    }
+  };
+
+  const handleRemoveItem = (productId: string) => {
+    dispatch({ type: 'REMOVE_ITEM', payload: { productId } });
+  };
+
+  const subtotal = state.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       <Navigation />
-      
-      <main className="pt-16">
-        <section className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Shopping Cart ({state.totalItems} items)
-          </h1>
-
-          {state.error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {state.error}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-4">
-              {state.items.map((item) => (
-                <div key={item.id} className="bg-white rounded-lg shadow-sm border p-6">
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={item.image || '/api/placeholder/80/80'}
-                      alt={item.name}
-                      className="w-20 h-20 object-cover rounded"
+      <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '2rem' }}>
+        <h1>Your Shopping Cart</h1>
+        {state.items.length === 0 ? (
+          <div>
+            <p>Your cart is empty.</p>
+            <Link href="/products" style={{ color: '#0070f3', textDecoration: 'none' }}>
+              Continue Shopping
+            </Link>
+          </div>
+        ) : (
+          <div>
+            <div style={{ borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1rem' }}>
+              {state.items.map(item => (
+                <div key={item.product._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <img src={item.product.images?.[0] || '/placeholder.png'} alt={item.product.name} style={{ width: '80px', height: '80px', objectFit: 'cover', marginRight: '1rem' }} />
+                    <div>
+                      <h3 style={{ margin: 0 }}>{item.product.name}</h3>
+                      <p style={{ margin: '0.25rem 0', color: '#666' }}>${item.product.price.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => handleQuantityChange(item.product._id, parseInt(e.target.value, 10))}
+                      style={{ width: '60px', textAlign: 'center', marginRight: '1rem' }}
                     />
-                    
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                      {item.description && (
-                        <p className="text-sm text-gray-600">{item.description}</p>
-                      )}
-                      <p className="font-bold text-blue-600">${item.price}</p>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                        disabled={state.isLoading}
-                      >
-                        <MinusIcon className="w-4 h-4" />
-                      </button>
-                      <span className="w-12 text-center">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                        disabled={state.isLoading}
-                      >
-                        <PlusIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                    
-                    <div className="text-right">
-                      <p className="font-bold">${(item.price * item.quantity).toFixed(2)}</p>
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-red-600 hover:text-red-800 text-sm flex items-center mt-1"
-                        disabled={state.isLoading}
-                      >
-                        <TrashIcon className="w-4 h-4 mr-1" />
-                        Remove
-                      </button>
-                    </div>
+                    <button onClick={() => handleRemoveItem(item.product._id)} style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}>
+                      Remove
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-24">
-                <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between">
-                    <span>Subtotal ({state.totalItems} items)</span>
-                    <span>${state.totalPrice.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Shipping</span>
-                    <span className="text-green-600">Free</span>
-                  </div>
-                  <div className="border-t pt-2 flex justify-between font-bold text-lg">
-                    <span>Total</span>
-                    <span>${state.totalPrice.toFixed(2)}</span>
-                  </div>
-                </div>
-                
-                <button className="w-full btn-primary mb-2">
+            <div style={{ textAlign: 'right' }}>
+              <h2 style={{ margin: '1rem 0' }}>Subtotal: ${subtotal.toFixed(2)}</h2>
+              <p style={{ color: '#666' }}>Taxes and shipping calculated at checkout.</p>
+              <Link href="/cart/checkout">
+                <button style={{ padding: '1rem 2rem', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1.2rem' }}>
                   Proceed to Checkout
                 </button>
-                
-                <button
-                  onClick={clearCart}
-                  className="w-full btn-outline"
-                  disabled={state.isLoading}
-                >
-                  Clear Cart
-                </button>
-              </div>
+              </Link>
             </div>
           </div>
-        </section>
-      </main>
+        )}
+      </div>
     </div>
   );
 }

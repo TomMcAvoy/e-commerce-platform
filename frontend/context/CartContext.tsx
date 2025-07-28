@@ -1,261 +1,145 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useReducer, useContext, ReactNode, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import { apiClient } from '../lib/api';
 
-/**
- * Cart Context following Context Pattern from Copilot Instructions
- * Updated for dynamic category pages with proper error handling
- */
-
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
+// Define the shape of a cart item and the cart's state
+interface CartItem {
+  product: any; // Replace 'any' with a proper Product type
   quantity: number;
-  image?: string;
-  description?: string;
-  category?: string;
-  vendor?: string;
 }
 
-export interface CartState {
+interface CartState {
   items: CartItem[];
-  totalItems: number;
-  totalPrice: number;
-  isLoading: boolean;
-  error: string | null;
 }
 
+// Define the actions that can be dispatched
 type CartAction =
+  | { type: 'SET_CART'; payload: CartItem[] }
   | { type: 'ADD_ITEM'; payload: CartItem }
-  | { type: 'REMOVE_ITEM'; payload: string }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
-  | { type: 'CLEAR_CART' }
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'LOAD_CART'; payload: CartItem[] };
+  | { type: 'REMOVE_ITEM'; payload: { productId: string } }
+  | { type: 'UPDATE_QUANTITY'; payload: { productId: string; quantity: number } }
+  | { type: 'CLEAR_CART' };
 
-const initialState: CartState = {
-  items: [],
-  totalItems: 0,
-  totalPrice: 0,
-  isLoading: false,
-  error: null,
-};
+// Define the type for the context value as an object
+export interface CartContextType {
+  state: CartState;
+  dispatch: React.Dispatch<CartAction>;
+}
 
-// Cart reducer following Error Handling Pattern
+// Create the context with a default value
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+// Reducer function to manage cart state
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
-    case 'ADD_ITEM': {
-      const existingItem = state.items.find(item => item.id === action.payload.id);
-      
-      let newItems: CartItem[];
-      if (existingItem) {
-        newItems = state.items.map(item =>
-          item.id === action.payload.id
-            ? { ...item, quantity: item.quantity + action.payload.quantity }
-            : item
-        );
-      } else {
-        newItems = [...state.items, action.payload];
+    case 'SET_CART':
+      return { ...state, items: action.payload };
+    case 'ADD_ITEM':
+      const existingItemIndex = state.items.findIndex(
+        item => item.product._id === action.payload.product._id
+      );
+      if (existingItemIndex > -1) {
+        const updatedItems = [...state.items];
+        updatedItems[existingItemIndex].quantity += action.payload.quantity;
+        return { ...state, items: updatedItems };
       }
-      
-      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
-      const totalPrice = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
+      return { ...state, items: [...state.items, action.payload] };
+    case 'REMOVE_ITEM':
       return {
         ...state,
-        items: newItems,
-        totalItems,
-        totalPrice: Math.round(totalPrice * 100) / 100,
-        error: null,
+        items: state.items.filter(item => item.product._id !== action.payload.productId),
       };
-    }
-    
-    case 'REMOVE_ITEM': {
-      const newItems = state.items.filter(item => item.id !== action.payload);
-      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
-      const totalPrice = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
+    case 'UPDATE_QUANTITY':
       return {
         ...state,
-        items: newItems,
-        totalItems,
-        totalPrice: Math.round(totalPrice * 100) / 100,
+        items: state.items.map(item =>
+          item.product._id === action.payload.productId
+            ? { ...item, quantity: Math.max(0, action.payload.quantity) }
+            : item
+        ).filter(item => item.quantity > 0), // Also remove if quantity is 0
       };
-    }
-    
-    case 'UPDATE_QUANTITY': {
-      const newItems = state.items.map(item =>
-        item.id === action.payload.id
-          ? { ...item, quantity: Math.max(0, action.payload.quantity) }
-          : item
-      ).filter(item => item.quantity > 0);
-      
-      const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
-      const totalPrice = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
-      return {
-        ...state,
-        items: newItems,
-        totalItems,
-        totalPrice: Math.round(totalPrice * 100) / 100,
-      };
-    }
-    
     case 'CLEAR_CART':
-      return {
-        ...state,
-        items: [],
-        totalItems: 0,
-        totalPrice: 0,
-      };
-    
-    case 'SET_LOADING':
-      return { ...state, isLoading: action.payload };
-    
-    case 'SET_ERROR':
-      return { ...state, error: action.payload, isLoading: false };
-    
-    case 'LOAD_CART': {
-      const totalItems = action.payload.reduce((sum, item) => sum + item.quantity, 0);
-      const totalPrice = action.payload.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
-      return {
-        ...state,
-        items: action.payload,
-        totalItems,
-        totalPrice: Math.round(totalPrice * 100) / 100,
-        isLoading: false,
-      };
-    }
-    
+      return { ...state, items: [] };
     default:
       return state;
   }
 };
 
-interface CartContextType {
-  state: CartState;
-  addItem: (item: CartItem) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
-  clearCart: () => void;
-  getItem: (id: string) => CartItem | undefined;
+// Debounce utility
+function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<F>): void => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), waitFor);
+  };
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+// Provider component to wrap the application
+export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const [state, dispatch] = useReducer(cartReducer, { items: [] });
+  const { isAuthenticated, isLoading } = useAuth();
 
-interface CartProviderProps {
-  children: ReactNode;
-}
-
-// CartProvider following Context Pattern from Copilot Instructions
-export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
-
-  // Load cart from localStorage following Development vs Production patterns
-  useEffect(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const savedCart = localStorage.getItem('whitestart_cart');
-        if (savedCart) {
-          const cartItems = JSON.parse(savedCart);
-          dispatch({ type: 'LOAD_CART', payload: cartItems });
+  // Debounced function to save the cart to the backend
+  const saveCartToBackend = useCallback(
+    debounce(async (items: CartItem[]) => {
+      if (isAuthenticated) {
+        try {
+          await apiClient.privateRequest('/cart', {
+            method: 'PUT',
+            body: JSON.stringify({ items }),
+          });
+        } catch (error) {
+          console.error("Failed to save cart:", error);
         }
       }
-    } catch (error) {
-      console.error('Error loading cart from localStorage:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to load saved cart' });
-    }
-  }, []);
+    }, 1000),
+    [isAuthenticated]
+  );
 
-  // Save cart to localStorage whenever it changes
+  // Effect to sync state to backend
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && state.items.length >= 0) {
-        localStorage.setItem('whitestart_cart', JSON.stringify(state.items));
+    // Don't sync the initial empty state on load
+    if (state.items.length > 0) {
+      saveCartToBackend(state.items);
+    }
+  }, [state.items, saveCartToBackend]);
+
+  // Fetch cart from backend on login
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (isAuthenticated) {
+        try {
+          const res = await apiClient.privateRequest('/cart');
+          if (res.data && res.data.items) {
+            dispatch({ type: 'SET_CART', payload: res.data.items });
+          }
+        } catch (error) {
+          console.error("Failed to fetch cart:", error);
+        }
+      } else {
+        // Clear cart on logout
+        dispatch({ type: 'CLEAR_CART' });
       }
-    } catch (error) {
-      console.error('Error saving cart to localStorage:', error);
+    };
+    if (!isLoading) {
+      fetchCart();
     }
-  }, [state.items]);
-
-  // Cart actions following API Integration patterns
-  const addItem = (item: CartItem): void => {
-    try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      dispatch({ type: 'ADD_ITEM', payload: item });
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to add item to cart' });
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  };
-
-  const removeItem = (id: string): void => {
-    try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      dispatch({ type: 'REMOVE_ITEM', payload: id });
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to remove item from cart' });
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  };
-
-  const updateQuantity = (id: string, quantity: number): void => {
-    try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to update item quantity' });
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  };
-
-  const clearCart = (): void => {
-    try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      dispatch({ type: 'CLEAR_CART' });
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to clear cart' });
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  };
-
-  const getItem = (id: string): CartItem | undefined => {
-    return state.items.find(item => item.id === id);
-  };
-
-  const contextValue: CartContextType = {
-    state,
-    addItem,
-    removeItem,
-    updateQuantity,
-    clearCart,
-    getItem,
-  };
+  }, [isAuthenticated, isLoading]);
 
   return (
-    <CartContext.Provider value={contextValue}>
+    <CartContext.Provider value={{ state, dispatch }}>
       {children}
     </CartContext.Provider>
   );
 };
 
-// Custom hook with proper error handling following Error Handling Pattern
+// Custom hook to use the cart context
 export const useCart = (): CartContextType => {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error(
-      'useCart must be used within a CartProvider. ' +
-      'Make sure your component is wrapped with <CartProvider> in the app layout.'
-    );
+    throw new Error('useCart must be used within a CartProvider');
   }
   return context;
 };
-
-export default CartContext;

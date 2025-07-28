@@ -1,5 +1,9 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Metadata } from 'next';
+import { SocialPostCard } from '@/components/social/SocialPostCard';
+import { SocialNav } from '@/components/layout/SocialNav';
+import { Button } from '@/components/ui/Button';
+import { IPost } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ChatBubbleLeftRightIcon, 
@@ -9,6 +13,11 @@ import {
   AcademicCapIcon,
   HeartIcon
 } from '@heroicons/react/24/outline';
+
+export const metadata: Metadata = {
+  title: 'Social - Community Discussions',
+  description: 'Join safe and moderated community discussions on various topics.',
+};
 
 interface SocialCategory {
   id: string;

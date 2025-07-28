@@ -1,98 +1,94 @@
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getCategoryBySlug, getProducts } from '@/lib/api';
-import { ProductCard } from '@/components/products/ProductCard';
-import { getCategoryIcon } from '@/lib/icons';
-import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
-import { PaginationControls } from '@/components/navigation/Pagination';
-import type { Metadata } from 'next';
+import { apiClient } from '../../../lib/api';
+import { ProductCard } from '../../../components/products/ProductCard';
+import { CategoryHero } from '../../../components/categories/CategoryHero';
+import { CategoryFilters } from '../../../components/categories/CategoryFilters';
+import { ICategory, IProduct } from '../../../types';
 
-type CategoryPageProps = {
-  params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
+// This interface represents the comprehensive data needed for the page
+interface CategoryPageData {
+  category: ICategory;
+  products: IProduct[];
+  brands: { _id: string; name:string }[];
+  priceRange: { min: number; max: number };
+}
 
-export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const category = await getCategoryBySlug(params.slug).catch(() => null);
-
-  if (!category) {
-    return {
-      title: 'Category Not Found',
-    };
+// Fetch all necessary data for the category page in one go
+async function getCategoryPageData(slug: string, searchParams: { [key: string]: string | string[] | undefined }): Promise<CategoryPageData | null> {
+  try {
+    const query = new URLSearchParams(searchParams as Record<string, string>).toString();
+    const response = await apiClient.publicRequest(`/categories/slug/${slug}/page-data?${query}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to fetch page data for category ${slug}:`, error);
+    return null;
   }
+}
 
+// Generate metadata for SEO
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  // A simpler fetch just for metadata to keep it fast
+  const response = await apiClient.publicRequest(`/categories/slug/${params.slug}`).catch(() => null);
+  const category = response?.data;
+  if (!category) {
+    return { title: 'Category Not Found' };
+  }
   return {
-    title: `${category.name} | Categories`,
-    description: category.description || `Browse all products in the ${category.name} category.`,
+    title: `${category.name} | Whitestart`,
+    description: category.description || `Shop for products in the ${category.name} category.`,
   };
 }
 
-export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
-  const { slug } = params;
-  const page = typeof searchParams.page === 'string' ? Number(searchParams.page) : 1;
-  const limit = typeof searchParams.limit === 'string' ? Number(searchParams.limit) : 20;
+// The Page Component
+export default async function CategoryPage({ params, searchParams }: { params: { slug: string }, searchParams: { [key: string]: string | string[] | undefined } }) {
+  const data = await getCategoryPageData(params.slug, searchParams);
 
-  const category = await getCategoryBySlug(slug).catch(e => {
-    console.error(`Failed to fetch category ${slug}:`, e);
-    return null;
-  });
-
-  if (!category) {
+  if (!data) {
     notFound();
   }
 
-  const { products, totalPages, totalProducts } = await getProducts({ 
-    category: category._id, 
-    page, 
-    limit 
-  }).catch(e => {
-    console.error(`Failed to fetch products for category ${category.name}:`, e);
-    return { products: [], totalPages: 0, totalProducts: 0 };
-  });
-
-  const IconComponent = getCategoryIcon(category.slug);
+  const { category, products, brands, priceRange } = data;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Categories', href: '/categories' },
-          { label: category.name, href: `/categories/${category.slug}`, active: true },
-        ]}
-      />
-      <header className="my-8 border-b pb-6">
-        <div className="flex items-center space-x-4">
-          <div className="bg-blue-100 p-3 rounded-lg">
-            <IconComponent className="w-10 h-10 text-blue-600" />
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold">{category.name}</h1>
-            <p className="text-lg text-gray-600 mt-1">{category.description}</p>
-          </div>
+    <div className="bg-white">
+      <CategoryHero category={category} productCount={products.length} />
+      
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-baseline justify-between border-b border-gray-200 pt-12 pb-6">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900">{category.name} Products</h1>
+          {/* TODO: Add sorting dropdown here */}
         </div>
-        <p className="text-sm text-gray-500 mt-4">{totalProducts} products found</p>
-      </header>
 
-      {products.length > 0 ? (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {products.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
+        <section className="pt-6 pb-24">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
+            {/* Filters */}
+            <div className="hidden lg:block">
+              <CategoryFilters 
+                brands={brands} 
+                minPrice={priceRange.min} 
+                maxPrice={priceRange.max} 
+              />
+            </div>
+
+            {/* Product grid */}
+            <div className="lg:col-span-3">
+              {products.length > 0 ? (
+                <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                  {products.map((product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <h3 className="text-2xl font-semibold text-gray-900">No Products Found</h3>
+                  <p className="mt-2 text-gray-500">Try adjusting your filters to find what you're looking for.</p>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="mt-12">
-            <PaginationControls
-              currentPage={page}
-              totalPages={totalPages}
-            />
-          </div>
-        </>
-      ) : (
-        <div className="text-center py-16">
-          <h2 className="text-2xl font-semibold">No Products Found</h2>
-          <p className="text-gray-500 mt-2">There are currently no products available in this category.</p>
-        </div>
-      )}
+        </section>
+      </main>
     </div>
   );
 }

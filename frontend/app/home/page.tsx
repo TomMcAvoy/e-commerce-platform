@@ -1,83 +1,93 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { Navigation } from '../components/navigation/Navigation';
-import { useCart } from '../context/CartContext';
+import React from "react";
+import { useCart } from "../../context/CartContext";
+import { Navigation } from "../../components/navigation/Navigation";
+import { ProductCard } from "../../components/products/ProductCard";
 
-/**
- * Homepage following Frontend Structure from Copilot Instructions
- */
+// Define a type for the product for clarity
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  images: string[];
+  slug: string;
+}
 
 export default function HomePage() {
-  const { state } = useCart();
+  // Correctly destructure state and dispatch from the cart context
+  const { state, dispatch } = useCart();
 
-  const categories = [
-    { name: 'Electronics', slug: 'electronics', emoji: '📱', color: 'from-blue-500 to-cyan-500' },
-    { name: 'Fashion', slug: 'fashion', emoji: '👕', color: 'from-pink-500 to-rose-500' },
-    { name: 'Sports & Fitness', slug: 'sports', emoji: '⚽', color: 'from-green-500 to-emerald-500' },
-    { name: 'Home & Garden', slug: 'home-garden', emoji: '🏠', color: 'from-orange-500 to-amber-500' },
-    { name: 'Beauty & Health', slug: 'beauty-health', emoji: '💄', color: 'from-purple-500 to-violet-500' },
-    { name: 'Automotive', slug: 'automotive', emoji: '🚗', color: 'from-red-500 to-pink-500' },
-    { name: 'Books & Media', slug: 'books-media', emoji: '📚', color: 'from-indigo-500 to-blue-500' },
-    { name: 'Toys & Games', slug: 'toys-games', emoji: '🎮', color: 'from-yellow-500 to-orange-500' },
+  // Placeholder product data - in a real app, this would be fetched from an API
+  const products: Product[] = [
+    {
+      _id: "prod_1",
+      name: "High-Performance Router",
+      price: 199.99,
+      images: ["/placeholder.png"],
+      slug: "performance-router",
+    },
+    {
+      _id: "prod_2",
+      name: "Secure VPN Gateway",
+      price: 299.99,
+      images: ["/placeholder.png"],
+      slug: "secure-gateway",
+    },
+    {
+      _id: "prod_3",
+      name: "Network Security Camera",
+      price: 149.99,
+      images: ["/placeholder.png"],
+      slug: "security-camera",
+    },
+    {
+      _id: "prod_4",
+      name: "Enterprise Firewall",
+      price: 499.99,
+      images: ["/placeholder.png"],
+      slug: "enterprise-firewall",
+    },
   ];
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      
-      <main className="pt-16">
-        {/* Hero Section */}
-        <section className="hero-section">
-          <div className="hero-content">
-            <h1 className="hero-title">
-              Welcome to <span className="text-blue-600">Whitestart</span>
-            </h1>
-            <p className="hero-subtitle">
-              Multi-vendor e-commerce platform with dropshipping integration
-            </p>
-            
-            {state.totalItems > 0 && (
-              <div className="bg-green-100 border border-green-300 rounded-lg p-4 mb-8 max-w-md mx-auto">
-                <p className="text-green-800">
-                  🛒 Cart: {state.totalItems} items (${state.totalPrice.toFixed(2)})
-                </p>
-                <Link href="/cart" className="text-green-600 hover:text-green-800 font-semibold">
-                  View Cart →
-                </Link>
-              </div>
-            )}
-            
-            <Link href="/categories" className="cta-button">
-              Explore Categories
-            </Link>
-          </div>
-        </section>
+  const handleAddToCart = (product: Product) => {
+    dispatch({
+      type: "ADD_ITEM",
+      payload: { product, quantity: 1 },
+    });
+    alert(`${product.name} has been added to your cart.`);
+  };
 
-        {/* Categories Grid */}
-        <section className="container mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Shop by Category</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category) => (
-              <Link 
-                key={category.slug}
-                href={`/${category.slug}`}
-                className="group"
+  return (
+    <div>
+      <Navigation />
+      <main className="container mx-auto px-4 py-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900">
+            Welcome to Whitestart System Security
+          </h1>
+          <p className="mt-4 text-lg text-gray-600">
+            Your trusted partner in network and system security solutions.
+          </p>
+        </div>
+
+        <h2 className="text-3xl font-bold mb-6">Featured Products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {products.map((product) => (
+            <div
+              key={product._id}
+              className="border rounded-lg p-4 shadow-sm"
+            >
+              <ProductCard product={product} />
+              <button
+                onClick={() => handleAddToCart(product)}
+                className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                <div className={`category-card h-48 bg-gradient-to-br ${category.color}`}>
-                  <div className="category-card-content">
-                    <div className="text-6xl mb-4">{category.emoji}</div>
-                    <h3 className="text-xl font-bold">{category.name}</h3>
-                    <p className="text-white/80 group-hover:text-white transition-colors">
-                      Explore collection →
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+                Add to Cart
+              </button>
+            </div>
+          ))}
+        </div>
       </main>
     </div>
   );

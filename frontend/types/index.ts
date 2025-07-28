@@ -2,18 +2,14 @@
 
 export interface ICategory {
   _id: string;
-  id?: string; // Backend also returns 'id' field
   name: string;
   slug: string;
-  description: string;
+  description?: string;
   image?: string;
-  productCount?: number;
-  
-  // Backend-specific fields from your API response
-  affiliateCode?: string;
-  affiliateUrl?: string;
+  parent?: string | ICategory;
+  children?: ICategory[];
+  products?: IProduct[]; // Add this line
   isActive: boolean;
-  parentCategory?: string | null;
   level: number;
   path: string;
   isFeatured: boolean;
@@ -124,29 +120,21 @@ export interface IVendor {
   updatedAt: string;
 }
 
+// Represents a user, often the author of a post or comment.
 export interface IUser {
   _id: string;
   name: string;
-  email: string;
-  password?: string;
-  role: 'user' | 'vendor' | 'admin';
   avatar?: string;
-  isActive: boolean;
-  isEmailVerified: boolean;
-  profile?: {
-    firstName: string;
-    lastName: string;
-    phone?: string;
-    dateOfBirth?: string;
-    gender?: 'male' | 'female' | 'other';
-  };
-  addresses: IAddress[];
-  preferences?: {
-    newsletter: boolean;
-    notifications: boolean;
-    currency: string;
-    language: string;
-  };
+}
+
+// Represents a social media post.
+export interface IPost {
+  _id: string;
+  content: string;
+  author: IUser;
+  image?: string;
+  likes: string[]; // Array of user IDs who liked the post
+  comments: any[]; // In a real app, this would be an array of IComment
   createdAt: string;
   updatedAt: string;
 }

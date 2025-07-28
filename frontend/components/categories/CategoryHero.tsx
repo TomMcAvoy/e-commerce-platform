@@ -3,12 +3,14 @@ import { Badge } from '@/components/ui/Badge';
 interface CategoryHeroProps {
   category: {
     name: string;
-    description: string;
-    isFeatured: boolean;
-    level: number;
-    path: string;
+    description?: string; // Changed to optional to match ICategory type
+    image?: string;
+    tradeAssurance?: boolean;
+    supportsCustomization?: boolean;
+    isFeatured?: boolean; // Add this property
+    level?: number;       // Add this property
   };
-  productCount: number;
+  productCount: number; // Add this prop
 }
 
 export function CategoryHero({ category, productCount }: CategoryHeroProps) {
@@ -26,9 +28,11 @@ export function CategoryHero({ category, productCount }: CategoryHeroProps) {
             {category.name}
           </h1>
           
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            {category.description}
-          </p>
+          {category.description && (
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+              {category.description}
+            </p>
+          )}
           
           <div className="flex justify-center items-center gap-4 text-gray-400">
             <span>{productCount} Products Available</span>

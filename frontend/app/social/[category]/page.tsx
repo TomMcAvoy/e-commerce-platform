@@ -1,17 +1,19 @@
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { 
   ShieldCheckIcon, 
   ChatBubbleLeftRightIcon,
   ArrowLeftIcon 
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { SocialPostCard } from '@/components/social/SocialPostCard';
+import { SocialNav } from '@/components/layout/SocialNav';
+import { Button } from '@/components/ui/Button';
+import { IPost } from '@/types';
 
 interface CategoryPageProps {
-  params: {
-    category: string;
-  };
+  params: { category: string };
 }
 
 const categoryConfig = {
@@ -76,15 +78,17 @@ function getSafetyBadge(level: 'kids' | 'teens' | 'adults') {
     default:
       return null;
   }
-}
+};
 
-// Make this a named export first, then default export
-export function CategoryPage({ params }: CategoryPageProps) {
-  const config = categoryConfig[params.category as keyof typeof categoryConfig];
-  
-  if (!config) {
+// This page component must be a default export to be recognized by Next.js.
+export default function CategoryPage({ params }: CategoryPageProps) {
+  const { category } = params;
+
+  if (!(category in categoryConfig)) {
     notFound();
   }
+
+  const config = categoryConfig[category as keyof typeof categoryConfig];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -168,12 +172,41 @@ export function CategoryPage({ params }: CategoryPageProps) {
   );
 }
 
-// Default export for Next.js page
-export default CategoryPage;
-
 // Generate static paths for known categories following your patterns
 export async function generateStaticParams() {
   return Object.keys(categoryConfig).map((category) => ({
     category: category
   }));
+}
+
+export async function generateMetadata({ params }: { params: { category: string } }): Promise<Metadata> {
+  const { category } = params;
+
+  if (!(category in categoryConfig)) {
+    return {};
+  }
+
+  const config = categoryConfig[category as keyof typeof categoryConfig];
+
+  return {
+    title: `${config.name} - Discussion Platform`,
+    description: config.description,
+    keywords: [`${config.name}`, `${config.safetyLevel}`, 'discussion', 'forum'],
+    authors: [{ name: 'Your Name', url: 'https://yourwebsite.com' }],
+    openGraph: {
+      title: `${config.name} - Discussion Platform`,
+      description: config.description,
+      url: `https://yourwebsite.com/category/${category}`,
+      siteName: 'Your Site Name',
+      locale: 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${config.name} - Discussion Platform`,
+      description: config.description,
+      site: 'https://yourwebsite.com',
+      creator: 'https://yourwebsite.com/your-profile',
+    },
+  };
 }
