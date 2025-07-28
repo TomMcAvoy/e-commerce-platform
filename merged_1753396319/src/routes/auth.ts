@@ -1,1 +1,0 @@
-import { register, login, getMe } from '../controllers/authController';

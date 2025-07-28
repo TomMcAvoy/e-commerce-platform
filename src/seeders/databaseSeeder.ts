@@ -996,9 +996,14 @@ const seedDatabase = async () => {
         console.log('open http://localhost:3001/categories');
         
         process.exit(0);
-    } catch (error) {
-        console.error('❌ Seeding failed:', error);
-        console.error('Stack trace:', error.stack);
+    } catch (error: unknown) {
+        console.error('Seeding process failed.');
+        if (error instanceof Error) {
+          console.error('Error message:', error.message);
+          console.error('Stack trace:', error.stack);
+        } else {
+          console.error('An unknown error occurred:', error);
+        }
         process.exit(1);
     }
 };

@@ -58,6 +58,7 @@ This platform includes comprehensive debugging tools for development:
 - `npm test` - Comprehensive test suite with detailed reporting
 - `npm run test:api` - Quick API endpoint validation
 - `run-all-tests.sh` - Full platform validation with health checks
+- `node scripts/check-duplicate-slugs.js` - Verify and check for duplicate slugs
 
 ## 🚀 Features
 
@@ -71,12 +72,14 @@ This platform includes comprehensive debugging tools for development:
 - **Payment Processing**: Secure payments via Stripe
 - **Search & Filtering**: Advanced product search with filters
 - **Reviews & Ratings**: Product reviews and vendor ratings system
+- **International Shopping**: Products from multiple countries with region-specific features
 
 ### Technical Features
 - **TypeScript**: Full type safety across frontend and backend
 - **RESTful API**: Well-structured API endpoints
 - **Authentication**: JWT-based authentication with role-based access
 - **Database**: MongoDB with Redis for caching and sessions
+- **SEO-Friendly URLs**: Slug-based routing with unique indexes
 - **File Upload**: Image upload and management
 - **Email Integration**: Automated emails for orders, notifications
 - **Rate Limiting**: API protection against abuse
@@ -298,8 +301,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 1. Fork the repository
 2. Create a feature branch
 3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+4. Ensure all slug fields have unique indexes
+5. Run the slug verification script: `node scripts/check-duplicate-slugs.js`
+6. Push to the branch
+7. Create a Pull Request
+
+See the [Slug Indexing Guide](./docs/slug-indexing-guide.md) for best practices on implementing slug-based routing.
 
 ## 📞 Support
 

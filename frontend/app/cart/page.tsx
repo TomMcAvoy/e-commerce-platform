@@ -1,81 +1,103 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
-import { useCart } from '../../context/CartContext';
-import { Navigation } from '../../components/navigation/Navigation';
+import Image from 'next/image';
+import { useCart } from '@/context/CartContext';
+import { Button } from '@/components/ui/Button';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
-/**
- * Shopping Cart Page - A Client Component using the CartContext.
- * Allows users to view, update, and remove items from their cart.
- */
 export default function CartPage() {
-  const { state, dispatch } = useCart();
+  // Correctly destructure the properties provided by CartContext
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal, clearCart } = useCart();
+  const total = getCartTotal();
 
-  const handleQuantityChange = (productId: string, quantity: number) => {
-    if (quantity > 0) {
-      dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, quantity } });
-    } else {
-      dispatch({ type: 'REMOVE_ITEM', payload: { productId } });
-    }
-  };
-
-  const handleRemoveItem = (productId: string) => {
-    dispatch({ type: 'REMOVE_ITEM', payload: { productId } });
-  };
-
-  const subtotal = state.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  if (cartItems.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-3xl font-bold text-gray-900">Your Cart is Empty</h1>
+        <p className="mt-4 text-gray-600">Looks like you haven't added anything to your cart yet.</p>
+        <Button asChild className="mt-6">
+          <Link href="/products">Start Shopping</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <Navigation />
-      <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '2rem' }}>
-        <h1>Your Shopping Cart</h1>
-        {state.items.length === 0 ? (
-          <div>
-            <p>Your cart is empty.</p>
-            <Link href="/products" style={{ color: '#0070f3', textDecoration: 'none' }}>
-              Continue Shopping
-            </Link>
-          </div>
-        ) : (
-          <div>
-            <div style={{ borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1rem' }}>
-              {state.items.map(item => (
-                <div key={item.product._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <img src={item.product.images?.[0] || '/placeholder.png'} alt={item.product.name} style={{ width: '80px', height: '80px', objectFit: 'cover', marginRight: '1rem' }} />
-                    <div>
-                      <h3 style={{ margin: 0 }}>{item.product.name}</h3>
-                      <p style={{ margin: '0.25rem 0', color: '#666' }}>${item.product.price.toFixed(2)}</p>
-                    </div>
+    <div className="bg-gray-50">
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Cart Items List */}
+          <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center border-b pb-4 mb-4">
+              <h2 className="text-xl font-semibold">
+                {cartItems.length} {cartItems.length === 1 ? 'Item' : 'Items'}
+              </h2>
+              <button
+                onClick={clearCart}
+                className="text-sm text-red-500 hover:text-red-700 font-medium"
+              >
+                Clear Cart
+              </button>
+            </div>
+            <div className="space-y-6">
+              {cartItems.map(({ product, quantity }) => (
+                <div key={product._id} className="flex items-center gap-4 border-b pb-6 last:border-b-0">
+                  <Image
+                    src={product.images[0] || '/placeholder.png'}
+                    alt={product.name}
+                    width={100}
+                    height={100}
+                    className="rounded-md object-cover"
+                  />
+                  <div className="flex-grow">
+                    <h3 className="font-semibold text-lg">{product.name}</h3>
+                    <p className="text-gray-500 text-sm">Price: ${product.price.toFixed(2)}</p>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div className="flex items-center gap-4">
                     <input
                       type="number"
                       min="1"
-                      value={item.quantity}
-                      onChange={(e) => handleQuantityChange(item.product._id, parseInt(e.target.value, 10))}
-                      style={{ width: '60px', textAlign: 'center', marginRight: '1rem' }}
+                      value={quantity}
+                      onChange={(e) => updateQuantity(product._id, parseInt(e.target.value, 10))}
+                      className="w-16 text-center border rounded-md"
                     />
-                    <button onClick={() => handleRemoveItem(item.product._id)} style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}>
-                      Remove
+                    <p className="font-semibold w-24 text-right">${(product.price * quantity).toFixed(2)}</p>
+                    <button onClick={() => removeFromCart(product._id)} className="text-gray-400 hover:text-red-500">
+                      <TrashIcon className="h-6 w-6" />
                     </button>
                   </div>
                 </div>
               ))}
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <h2 style={{ margin: '1rem 0' }}>Subtotal: ${subtotal.toFixed(2)}</h2>
-              <p style={{ color: '#666' }}>Taxes and shipping calculated at checkout.</p>
-              <Link href="/cart/checkout">
-                <button style={{ padding: '1rem 2rem', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1.2rem' }}>
-                  Proceed to Checkout
-                </button>
-              </Link>
+          </div>
+
+          {/* Order Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-white p-6 rounded-lg shadow-md sticky top-24">
+              <h2 className="text-xl font-semibold mb-4 border-b pb-4">Order Summary</h2>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <p className="text-gray-600">Subtotal</p>
+                  <p className="font-medium">${total.toFixed(2)}</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-gray-600">Shipping</p>
+                  <p className="font-medium">Free</p>
+                </div>
+              </div>
+              <div className="flex justify-between text-lg font-bold border-t pt-4 mt-4">
+                <p>Total</p>
+                <p>${total.toFixed(2)}</p>
+              </div>
+              <Button asChild className="w-full mt-6">
+                <Link href="/cart/checkout">Proceed to Checkout</Link>
+              </Button>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

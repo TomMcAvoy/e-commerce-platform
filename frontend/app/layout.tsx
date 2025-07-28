@@ -1,23 +1,32 @@
-import './globals.css';
-import { Inter } from 'next/font/google';
-import { AppProvider } from '../components/layout/AppProvider';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
+import { CartProvider } from "@/context/CartContext";
+import Header from "@/components/layout/Header";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
-  title: 'Whitestart System Security Inc.',
-  description: 'A leading provider of advanced security solutions and products.',
+export const metadata: Metadata = {
+  title: "Whitestart E-Commerce",
+  description: "Your one-stop e-commerce hub.",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AppProvider>{children}</AppProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            <main>{children}</main>
+            {/* A Footer component could be added here later */}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,0 +1,9 @@
+{
+  "name": "shoppingcart-scripts",
+  "version": "1.0.0",
+  "description": "Utility scripts for the shopping cart application",
+  "private": true,
+  "dependencies": {
+    "mongodb": "^5.0.0"
+  }
+}

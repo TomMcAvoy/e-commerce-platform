@@ -1,74 +1,25 @@
 # Dependencies
-node_modules/
-frontend/node_modules/
+/node_modules
+
+# Build output
+/dist
+
+# Compiled JavaScript files in source
+/src/**/*.js
+/src/**/*.js.map
 
 # Environment variables
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Build outputs
-dist/
-.next/
-out/
+.env.production
 
 # Logs
-logs/
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Uploads (keep directory, ignore contents)
-uploads/*
-!uploads/.gitkeep
-
-# IDE
-.vscode/
-.idea/
-
-# OS
+# OS generated files
 .DS_Store
 Thumbs.db
-
-# Test results
-test-results/
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Test artifacts
-coverage/
-*.test.js
-*.spec.js
-junit.xml
-test-results/
-*.backup.*
-
-# Jest cache
-.jest/
-
-# Test databases
-test-db/
-*-test.db

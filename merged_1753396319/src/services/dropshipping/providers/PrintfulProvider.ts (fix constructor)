@@ -1,8 +1,0 @@
-class PrintfulProvider {
-    constructor(apiKey, statusCode) {
-        this.apiKey = apiKey;
-        this.statusCode = statusCode;
-    }
-
-    // Additional methods for PrintfulProvider can be added here
-}

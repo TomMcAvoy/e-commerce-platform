@@ -1,24 +1,57 @@
-import { Request, Response, NextFunction } from 'express'
-import { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types'
-import User from '../models/User'
-import Order from '../models/Order'
-import Product from '../models/Product'
-import AppError from '../utils/AppError'
+import { Request, Response, NextFunction } from 'express';
+import asyncHandler from 'express-async-handler';
+import User from '../models/User';
+import Order from '../models/Order'; // Add missing import
+import AppError from '../utils/AppError';
+import { AuthenticatedRequest } from '../middleware/auth';
+import { ApiResponse } from '../types/ApiResponse'; // Add missing import
 
-interface CustomerData {
-  _id: string
-  firstName: string
-  lastName: string
-  email: string
-  phoneNumber?: string
-  totalOrders: number
-  totalSpent: number
-  averageOrderValue: number
-  lastOrderDate?: Date
-  registrationDate: Date
-  status: 'active' | 'inactive' | 'vip'
-  lifetimeValue: number
-}
+// @desc    Get all customers for CRM (customers and vendors)
+// @route   GET /api/crm/customers
+// @access  Private/Admin
+export const getCustomers = asyncHandler(async (req: Request, res: Response) => {
+    const customers = await User.find({ role: { $in: ['customer', 'vendor'] } });
+    res.status(200).json({ success: true, count: customers.length, data: customers });
+});
+
+// @desc    Get a single customer's details
+// @route   GET /api/crm/customers/:id
+// @access  Private/Admin
+export const getCustomerDetails = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const customer = await User.findById(id);
+
+    if (!customer || customer.role === 'admin') {
+        return next(new AppError(`No customer found with the id of ${id}`, 404));
+    }
+
+    // In a real CRM, you would fetch related interactions, orders, etc.
+    // const interactions = await Interaction.find({ customer: customer._id });
+
+    res.status(200).json({
+        success: true,
+        data: customer
+    });
+});
+
+// @desc    Update a customer's details
+// @route   PUT /api/crm/customers/:id
+// @access  Private/Admin
+export const updateCustomerDetails = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const customer = await User.findById(req.params.id);
+
+    // Prevent updating admins via the CRM endpoint
+    if (!customer || customer.role === 'admin') {
+        return next(new AppError(`No customer found with the id of ${req.params.id}`, 404));
+    }
+
+    const updatedCustomer = await User.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true
+    });
+
+    res.status(200).json({ success: true, data: updatedCustomer });
+});
 
 // @desc    Get CRM dashboard
 // @route   GET /api/crm/dashboard
@@ -119,113 +152,6 @@ export const getCRMDashboard = async (
     res.status(200).json({
       success: true,
       data: dashboard
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-// @desc    Get all customers with advanced filtering
-// @route   GET /api/crm/customers
-// @access  Private (Vendor/Admin)
-export const getCustomers = async (
-  req: Request,
-  res: Response<PaginatedResponse<CustomerData>>,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
-    const skip = (page - 1) * limit
-
-    // Build filter
-    let filter: any = { role: 'customer' }
-    
-    if (req.query.search) {
-      filter.$or = [
-        { firstName: { $regex: req.query.search, $options: 'i' } },
-        { lastName: { $regex: req.query.search, $options: 'i' } },
-        { email: { $regex: req.query.search, $options: 'i' } }
-      ]
-    }
-
-    if (req.query.status === 'active') {
-      // Customers who ordered in last 90 days
-      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-      const activeCustomerIds = await Order.distinct('userId', {
-        createdAt: { $gte: ninetyDaysAgo }
-      })
-      filter._id = { $in: activeCustomerIds }
-    }
-
-    // Get customers with order aggregation
-    const customers = await User.aggregate([
-      { $match: filter },
-      {
-        $lookup: {
-          from: 'orders',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'orders'
-        }
-      },
-      {
-        $addFields: {
-          totalOrders: { $size: '$orders' },
-          totalSpent: { $sum: '$orders.total' },
-          lastOrderDate: { $max: '$orders.createdAt' },
-          averageOrderValue: {
-            $cond: [
-              { $gt: [{ $size: '$orders' }, 0] },
-              { $divide: [{ $sum: '$orders.total' }, { $size: '$orders' }] },
-              0
-            ]
-          }
-        }
-      },
-      {
-        $addFields: {
-          status: {
-            $cond: [
-              { $gte: ['$lastOrderDate', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)] },
-              'active',
-              'inactive'
-            ]
-          },
-          lifetimeValue: '$totalSpent'
-        }
-      },
-      {
-        $project: {
-          firstName: 1,
-          lastName: 1,
-          email: 1,
-          phoneNumber: 1,
-          totalOrders: 1,
-          totalSpent: 1,
-          averageOrderValue: 1,
-          lastOrderDate: 1,
-          registrationDate: '$createdAt',
-          status: 1,
-          lifetimeValue: 1
-        }
-      },
-      { $sort: { totalSpent: -1 } },
-      { $skip: skip },
-      { $limit: limit }
-    ])
-
-    const total = await User.countDocuments(filter)
-
-    res.status(200).json({
-      success: true,
-      data: customers,
-      pagination: {
-        page,
-        pages: Math.ceil(total / limit),
-        total,
-        limit
-      }
     })
   } catch (error) {
     next(error)

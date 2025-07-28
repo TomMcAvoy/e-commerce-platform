@@ -1,5 +1,5 @@
 // filepath: /Users/thomasmcavoy/GitHub/shoppingcart/src/services/product/ProductService.ts
-import { AppError } from '../../middleware/errorHandler';
+import AppError from '../../utils/AppError';
 
 export interface Product {
   id: string;
@@ -72,11 +72,11 @@ export class ProductService {
       }
       
       if (filters.size) {
-        filteredProducts = filteredProducts.filter(p => p.sizes?.includes(filters.size));
+        filteredProducts = filteredProducts.filter(p => p.sizes?.includes(filters.size as string));
       }
-      
+
       if (filters.color) {
-        filteredProducts = filteredProducts.filter(p => p.colors?.includes(filters.color));
+        filteredProducts = filteredProducts.filter(p => p.colors?.includes(filters.color as string));
       }
       
       if (filters.minPrice) {

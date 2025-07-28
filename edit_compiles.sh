@@ -1,0 +1,16 @@
+     code   src/controllers/authController.ts
+     code   src/controllers/cartController.ts
+     code   src/controllers/crmController.ts
+     code   src/controllers/dropshippingController.ts
+     code   src/controllers/financialController.ts
+     code   src/controllers/hrController.ts
+     code   src/controllers/inventoryController.ts
+     code   src/controllers/paymentController.ts
+     code   src/middleware/tenantResolver.ts
+     code   src/models/User.ts
+     code   src/seed.ts
+     code   src/seeders/ComprehensiveSeeder.ts
+     code   src/services/dropshipping/DropshippingService.ts
+     code   src/services/dropshipping/SpocketProvider.ts
+     code   src/utils/auth.ts
+     code   src/utils/sendTokenResponse.ts

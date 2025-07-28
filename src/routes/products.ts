@@ -1,28 +1,31 @@
-import { Router } from 'express';
-import { 
-  getProducts, 
-  getProduct, 
-  createProduct, 
-  updateProduct, 
-  deleteProduct,
-  searchProducts,
-  getProductsByCategory
+import express from 'express';
+import {
+  getProducts,
+  getProduct,
+  getProductBySlug,       // This will now be found
+  getFeaturedProducts,    // This will now be found
+  createProduct,
+  updateProduct,
+  deleteProduct
 } from '../controllers/productController';
-import { protect } from '../middleware/auth';
+import { protect, authorize } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
 router.route('/')
   .get(getProducts)
-  .post(protect, createProduct);
+  .post(protect, authorize('admin'), createProduct);
+
+// CRITICAL: More specific routes must be defined *before* general ones.
+router.route('/featured')
+  .get(getFeaturedProducts);
+
+router.route('/slug/:slug')
+  .get(getProductBySlug);
 
 router.route('/:id')
   .get(getProduct)
-  .put(protect, updateProduct)
-  .delete(protect, deleteProduct);
-
-router.get('/search', searchProducts);
-router.get('/category/:category', getProductsByCategory);
-router.get('/category/:category/seasonal', getProductsByCategory);
+  .put(protect, authorize('admin'), updateProduct)
+  .delete(protect, authorize('admin'), deleteProduct);
 
 export default router;

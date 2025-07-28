@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import SocialPost from '../models/SocialPost';
-import { AppError } from '../middleware/errorHandler';
+import AppError from '../utils/AppError';
 
 // Get posts with safety filtering
 export const getPosts = async (req: Request, res: Response, next: NextFunction) => {
@@ -54,6 +54,9 @@ export const getPosts = async (req: Request, res: Response, next: NextFunction) 
 
 export const createPost = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) {
+      return next(new AppError('Authentication required', 401));
+    }
     const { content, category, topics } = req.body;
     
     // Content safety check would go here
@@ -63,7 +66,7 @@ export const createPost = async (req: Request, res: Response, next: NextFunction
       content,
       category,
       topics,
-      author: req.user._id,
+      author: req.user._id, // Now safe to access
       safetyRating,
       moderationStatus: safetyRating >= 7 ? 'approved' : 'pending'
     });

@@ -1,0 +1,539 @@
+[
+  {
+    "name": "Premium Wireless Headphones",
+    "description": "Experience crystal-clear sound with our premium wireless headphones. Featuring active noise cancellation, 30-hour battery life, and comfortable over-ear design. Perfect for music lovers and frequent travelers.",
+    "price": 199.99,
+    "compareAtPrice": 249.99,
+    "sku": "AUDIO-001",
+    "barcode": "7891234567890",
+    "category": "Audio",
+    "images": [
+      "/images/products/headphones-1.jpg",
+      "/images/products/headphones-2.jpg",
+      "/images/products/headphones-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Black",
+        "sku": "AUDIO-001-BLK",
+        "price": 199.99,
+        "inventory": 45
+      },
+      {
+        "name": "White",
+        "sku": "AUDIO-001-WHT",
+        "price": 199.99,
+        "inventory": 32
+      },
+      {
+        "name": "Navy Blue",
+        "sku": "AUDIO-001-NAVY",
+        "price": 209.99,
+        "inventory": 18
+      }
+    ],
+    "options": [
+      {
+        "name": "Color",
+        "values": ["Black", "White", "Navy Blue"]
+      }
+    ],
+    "tags": ["headphones", "wireless", "audio", "noise-cancellation", "premium"]
+  },
+  {
+    "name": "Ultra-Slim Laptop",
+    "description": "Powerful performance in an ultra-slim design. This laptop features a 14-inch 4K display, 16GB RAM, 512GB SSD, and the latest processor. Perfect for professionals and creatives on the go.",
+    "price": 1299.99,
+    "compareAtPrice": 1499.99,
+    "sku": "LAPTOP-001",
+    "barcode": "7891234567891",
+    "category": "Laptops",
+    "images": [
+      "/images/products/laptop-1.jpg",
+      "/images/products/laptop-2.jpg",
+      "/images/products/laptop-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Silver - 16GB RAM - 512GB SSD",
+        "sku": "LAPTOP-001-S-16-512",
+        "price": 1299.99,
+        "inventory": 15
+      },
+      {
+        "name": "Silver - 32GB RAM - 1TB SSD",
+        "sku": "LAPTOP-001-S-32-1TB",
+        "price": 1599.99,
+        "inventory": 8
+      },
+      {
+        "name": "Space Gray - 16GB RAM - 512GB SSD",
+        "sku": "LAPTOP-001-G-16-512",
+        "price": 1299.99,
+        "inventory": 12
+      },
+      {
+        "name": "Space Gray - 32GB RAM - 1TB SSD",
+        "sku": "LAPTOP-001-G-32-1TB",
+        "price": 1599.99,
+        "inventory": 6
+      }
+    ],
+    "options": [
+      {
+        "name": "Color",
+        "values": ["Silver", "Space Gray"]
+      },
+      {
+        "name": "RAM",
+        "values": ["16GB", "32GB"]
+      },
+      {
+        "name": "Storage",
+        "values": ["512GB SSD", "1TB SSD"]
+      }
+    ],
+    "tags": ["laptop", "computer", "ultrabook", "4K display", "SSD"]
+  },
+  {
+    "name": "Smart Fitness Watch",
+    "description": "Track your fitness goals with our advanced smart watch. Features include heart rate monitoring, GPS tracking, sleep analysis, and 50+ workout modes. Water-resistant up to 50 meters and 7-day battery life.",
+    "price": 149.99,
+    "compareAtPrice": 179.99,
+    "sku": "WEARABLE-001",
+    "barcode": "7891234567892",
+    "category": "Wearables",
+    "images": [
+      "/images/products/smartwatch-1.jpg",
+      "/images/products/smartwatch-2.jpg",
+      "/images/products/smartwatch-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Black - Small",
+        "sku": "WEARABLE-001-BLK-S",
+        "price": 149.99,
+        "inventory": 28
+      },
+      {
+        "name": "Black - Large",
+        "sku": "WEARABLE-001-BLK-L",
+        "price": 149.99,
+        "inventory": 32
+      },
+      {
+        "name": "Rose Gold - Small",
+        "sku": "WEARABLE-001-ROSE-S",
+        "price": 159.99,
+        "inventory": 24
+      },
+      {
+        "name": "Rose Gold - Large",
+        "sku": "WEARABLE-001-ROSE-L",
+        "price": 159.99,
+        "inventory": 18
+      }
+    ],
+    "options": [
+      {
+        "name": "Color",
+        "values": ["Black", "Rose Gold"]
+      },
+      {
+        "name": "Size",
+        "values": ["Small", "Large"]
+      }
+    ],
+    "tags": ["smartwatch", "fitness", "wearable", "health", "GPS"]
+  },
+  {
+    "name": "Professional DSLR Camera",
+    "description": "Capture stunning photos and videos with our professional DSLR camera. Features a 24.2MP sensor, 4K video recording, 45-point autofocus system, and ISO range of 100-25600. Includes 18-55mm lens kit.",
+    "price": 899.99,
+    "compareAtPrice": 999.99,
+    "sku": "CAMERA-001",
+    "barcode": "7891234567893",
+    "category": "Cameras",
+    "images": [
+      "/images/products/camera-1.jpg",
+      "/images/products/camera-2.jpg",
+      "/images/products/camera-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Body Only",
+        "sku": "CAMERA-001-BODY",
+        "price": 799.99,
+        "inventory": 12
+      },
+      {
+        "name": "With 18-55mm Lens",
+        "sku": "CAMERA-001-KIT",
+        "price": 899.99,
+        "inventory": 18
+      },
+      {
+        "name": "With 18-55mm & 70-300mm Lenses",
+        "sku": "CAMERA-001-DUAL",
+        "price": 1199.99,
+        "inventory": 8
+      }
+    ],
+    "options": [
+      {
+        "name": "Package",
+        "values": ["Body Only", "With 18-55mm Lens", "With 18-55mm & 70-300mm Lenses"]
+      }
+    ],
+    "tags": ["camera", "DSLR", "photography", "4K video", "professional"]
+  },
+  {
+    "name": "Premium Men's Leather Jacket",
+    "description": "Classic style meets modern comfort with our premium leather jacket for men. Made from genuine full-grain leather with a soft polyester lining. Features multiple pockets, adjustable cuffs, and durable YKK zippers.",
+    "price": 249.99,
+    "compareAtPrice": 299.99,
+    "sku": "MENS-001",
+    "barcode": "7891234567894",
+    "category": "Men's Clothing",
+    "images": [
+      "/images/products/leather-jacket-1.jpg",
+      "/images/products/leather-jacket-2.jpg",
+      "/images/products/leather-jacket-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Brown - S",
+        "sku": "MENS-001-BRN-S",
+        "price": 249.99,
+        "inventory": 8
+      },
+      {
+        "name": "Brown - M",
+        "sku": "MENS-001-BRN-M",
+        "price": 249.99,
+        "inventory": 12
+      },
+      {
+        "name": "Brown - L",
+        "sku": "MENS-001-BRN-L",
+        "price": 249.99,
+        "inventory": 15
+      },
+      {
+        "name": "Brown - XL",
+        "sku": "MENS-001-BRN-XL",
+        "price": 249.99,
+        "inventory": 10
+      },
+      {
+        "name": "Black - S",
+        "sku": "MENS-001-BLK-S",
+        "price": 249.99,
+        "inventory": 9
+      },
+      {
+        "name": "Black - M",
+        "sku": "MENS-001-BLK-M",
+        "price": 249.99,
+        "inventory": 14
+      },
+      {
+        "name": "Black - L",
+        "sku": "MENS-001-BLK-L",
+        "price": 249.99,
+        "inventory": 16
+      },
+      {
+        "name": "Black - XL",
+        "sku": "MENS-001-BLK-XL",
+        "price": 249.99,
+        "inventory": 11
+      }
+    ],
+    "options": [
+      {
+        "name": "Color",
+        "values": ["Brown", "Black"]
+      },
+      {
+        "name": "Size",
+        "values": ["S", "M", "L", "XL"]
+      }
+    ],
+    "tags": ["jacket", "leather", "men's fashion", "outerwear", "premium"]
+  },
+  {
+    "name": "Designer Tote Bag",
+    "description": "Elevate your style with our designer tote bag. Crafted from premium vegan leather with a spacious interior, laptop sleeve, and multiple pockets. Perfect for work, travel, or everyday use.",
+    "price": 129.99,
+    "compareAtPrice": 159.99,
+    "sku": "BAGS-001",
+    "barcode": "7891234567895",
+    "category": "Bags",
+    "images": [
+      "/images/products/tote-bag-1.jpg",
+      "/images/products/tote-bag-2.jpg",
+      "/images/products/tote-bag-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Tan",
+        "sku": "BAGS-001-TAN",
+        "price": 129.99,
+        "inventory": 18
+      },
+      {
+        "name": "Black",
+        "sku": "BAGS-001-BLK",
+        "price": 129.99,
+        "inventory": 22
+      },
+      {
+        "name": "Navy",
+        "sku": "BAGS-001-NAVY",
+        "price": 129.99,
+        "inventory": 15
+      }
+    ],
+    "options": [
+      {
+        "name": "Color",
+        "values": ["Tan", "Black", "Navy"]
+      }
+    ],
+    "tags": ["bag", "tote", "handbag", "vegan leather", "designer"]
+  },
+  {
+    "name": "Modern Sectional Sofa",
+    "description": "Transform your living space with our modern sectional sofa. Features a sturdy hardwood frame, high-density foam cushions, and premium upholstery. L-shaped design with chaise lounge for maximum comfort.",
+    "price": 1299.99,
+    "compareAtPrice": 1599.99,
+    "sku": "FURNITURE-001",
+    "barcode": "7891234567896",
+    "category": "Furniture",
+    "images": [
+      "/images/products/sectional-sofa-1.jpg",
+      "/images/products/sectional-sofa-2.jpg",
+      "/images/products/sectional-sofa-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Gray - Left Chaise",
+        "sku": "FURNITURE-001-GRY-L",
+        "price": 1299.99,
+        "inventory": 5
+      },
+      {
+        "name": "Gray - Right Chaise",
+        "sku": "FURNITURE-001-GRY-R",
+        "price": 1299.99,
+        "inventory": 4
+      },
+      {
+        "name": "Beige - Left Chaise",
+        "sku": "FURNITURE-001-BGE-L",
+        "price": 1299.99,
+        "inventory": 3
+      },
+      {
+        "name": "Beige - Right Chaise",
+        "sku": "FURNITURE-001-BGE-R",
+        "price": 1299.99,
+        "inventory": 4
+      },
+      {
+        "name": "Navy - Left Chaise",
+        "sku": "FURNITURE-001-NAVY-L",
+        "price": 1349.99,
+        "inventory": 2
+      },
+      {
+        "name": "Navy - Right Chaise",
+        "sku": "FURNITURE-001-NAVY-R",
+        "price": 1349.99,
+        "inventory": 3
+      }
+    ],
+    "options": [
+      {
+        "name": "Color",
+        "values": ["Gray", "Beige", "Navy"]
+      },
+      {
+        "name": "Configuration",
+        "values": ["Left Chaise", "Right Chaise"]
+      }
+    ],
+    "tags": ["furniture", "sofa", "sectional", "living room", "modern"]
+  },
+  {
+    "name": "Professional Chef's Knife Set",
+    "description": "Elevate your culinary skills with our professional chef's knife set. Includes 8-inch chef's knife, 7-inch santoku knife, 8-inch bread knife, 6-inch utility knife, and 3.5-inch paring knife. Made from high-carbon stainless steel with ergonomic handles.",
+    "price": 199.99,
+    "compareAtPrice": 249.99,
+    "sku": "KITCHEN-001",
+    "barcode": "7891234567897",
+    "category": "Kitchen",
+    "images": [
+      "/images/products/knife-set-1.jpg",
+      "/images/products/knife-set-2.jpg",
+      "/images/products/knife-set-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "5-Piece Set",
+        "sku": "KITCHEN-001-5PC",
+        "price": 199.99,
+        "inventory": 24
+      },
+      {
+        "name": "5-Piece Set with Block",
+        "sku": "KITCHEN-001-5PC-BLK",
+        "price": 249.99,
+        "inventory": 18
+      },
+      {
+        "name": "8-Piece Set with Block and Sharpener",
+        "sku": "KITCHEN-001-8PC",
+        "price": 299.99,
+        "inventory": 12
+      }
+    ],
+    "options": [
+      {
+        "name": "Set",
+        "values": ["5-Piece Set", "5-Piece Set with Block", "8-Piece Set with Block and Sharpener"]
+      }
+    ],
+    "tags": ["kitchen", "knives", "cooking", "chef", "professional"]
+  },
+  {
+    "name": "Advanced Skincare Set",
+    "description": "Achieve radiant, youthful skin with our advanced skincare set. Includes cleanser, toner, serum, moisturizer, and eye cream formulated with hyaluronic acid, vitamin C, and peptides. Suitable for all skin types.",
+    "price": 149.99,
+    "compareAtPrice": 189.99,
+    "sku": "SKINCARE-001",
+    "barcode": "7891234567898",
+    "category": "Skincare",
+    "images": [
+      "/images/products/skincare-set-1.jpg",
+      "/images/products/skincare-set-2.jpg",
+      "/images/products/skincare-set-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Normal/Combination Skin",
+        "sku": "SKINCARE-001-NORM",
+        "price": 149.99,
+        "inventory": 28
+      },
+      {
+        "name": "Dry Skin",
+        "sku": "SKINCARE-001-DRY",
+        "price": 149.99,
+        "inventory": 22
+      },
+      {
+        "name": "Oily/Acne-Prone Skin",
+        "sku": "SKINCARE-001-OILY",
+        "price": 149.99,
+        "inventory": 25
+      },
+      {
+        "name": "Sensitive Skin",
+        "sku": "SKINCARE-001-SENS",
+        "price": 159.99,
+        "inventory": 20
+      }
+    ],
+    "options": [
+      {
+        "name": "Skin Type",
+        "values": ["Normal/Combination Skin", "Dry Skin", "Oily/Acne-Prone Skin", "Sensitive Skin"]
+      }
+    ],
+    "tags": ["skincare", "beauty", "anti-aging", "facial care", "premium"]
+  },
+  {
+    "name": "Home Gym Equipment Set",
+    "description": "Create your perfect home gym with our comprehensive equipment set. Includes adjustable dumbbells (5-25 lbs), resistance bands, exercise mat, stability ball, and workout guide. Perfect for strength training, cardio, and flexibility exercises.",
+    "price": 299.99,
+    "compareAtPrice": 349.99,
+    "sku": "FITNESS-001",
+    "barcode": "7891234567899",
+    "category": "Exercise Equipment",
+    "images": [
+      "/images/products/home-gym-1.jpg",
+      "/images/products/home-gym-2.jpg",
+      "/images/products/home-gym-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Basic Set",
+        "sku": "FITNESS-001-BASIC",
+        "price": 299.99,
+        "inventory": 15
+      },
+      {
+        "name": "Advanced Set (with Kettlebell)",
+        "sku": "FITNESS-001-ADV",
+        "price": 349.99,
+        "inventory": 12
+      },
+      {
+        "name": "Premium Set (with Kettlebell and Bench)",
+        "sku": "FITNESS-001-PREM",
+        "price": 449.99,
+        "inventory": 8
+      }
+    ],
+    "options": [
+      {
+        "name": "Set",
+        "values": ["Basic Set", "Advanced Set (with Kettlebell)", "Premium Set (with Kettlebell and Bench)"]
+      }
+    ],
+    "tags": ["fitness", "home gym", "exercise", "workout", "strength training"]
+  },
+  {
+    "name": "Strategic Board Game Collection",
+    "description": "Experience the best of modern board gaming with our strategic game collection. Includes three award-winning games that combine strategy, resource management, and player interaction. Perfect for game nights with family and friends.",
+    "price": 129.99,
+    "compareAtPrice": 159.99,
+    "sku": "GAMES-001",
+    "barcode": "7891234567900",
+    "category": "Board Games",
+    "images": [
+      "/images/products/board-games-1.jpg",
+      "/images/products/board-games-2.jpg",
+      "/images/products/board-games-3.jpg"
+    ],
+    "variants": [
+      {
+        "name": "Family Collection",
+        "sku": "GAMES-001-FAM",
+        "price": 129.99,
+        "inventory": 22
+      },
+      {
+        "name": "Strategy Collection",
+        "sku": "GAMES-001-STRAT",
+        "price": 149.99,
+        "inventory": 18
+      },
+      {
+        "name": "Party Collection",
+        "sku": "GAMES-001-PARTY",
+        "price": 119.99,
+        "inventory": 25
+      }
+    ],
+    "options": [
+      {
+        "name": "Collection",
+        "values": ["Family Collection", "Strategy Collection", "Party Collection"]
+      }
+    ],
+    "tags": ["board games", "games", "strategy", "family", "entertainment"]
+  }
+]

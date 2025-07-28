@@ -1,5 +1,5 @@
 import { AuthenticatedRequest } from '../types';
-import { AppError } from './AppError';
+import AppError from './AppError';
 
 /**
  * Safe user access helper following copilot auth patterns

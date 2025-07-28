@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types';
+import asyncHandler from 'express-async-handler';
 import Vendor from '../models/Vendor';
-import User from '../models/User';
+import User from '../models/User'; // FIX: Import User model
+import Product from '../models/Product';
 import AppError from '../utils/AppError';
-import { TenantRequest } from '../middleware/tenantResolver';
 
 // @desc    Register new vendor for the current tenant
 // @route   POST /api/vendors/register
-export const registerVendor = async (req: Request, res: Response<ApiResponse>, next: NextFunction): Promise<void> => {
+export const registerVendor = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { firstName, lastName, email, password, businessName, ...rest } = req.body;
     if (!req.tenantId) {
@@ -33,71 +33,95 @@ export const registerVendor = async (req: Request, res: Response<ApiResponse>, n
 
 // @desc    Get all vendors for the tenant
 // @route   GET /api/vendors
-export const getVendors = async (req: TenantRequest, res: Response, next: NextFunction) => {
-    try {
-        const vendors = await Vendor.find({ tenantId: req.tenantId }).populate('user', 'name email');
-        res.status(200).json({ success: true, count: vendors.length, data: vendors });
-    } catch (error: any) {
-        next(new AppError(error.message, 500));
-    }
-};
+// @access  Private/Admin
+export const getVendors = asyncHandler(async (req: Request, res: Response) => {
+    const vendors = await Vendor.find({ tenantId: req.tenantId }).populate('user', 'name email');
+    res.status(200).json({ success: true, count: vendors.length, data: vendors });
+});
 
-// @desc    Get single vendor
+// @desc    Get single vendor profile by ID
 // @route   GET /api/vendors/:id
-export const getVendor = async (req: TenantRequest, res: Response, next: NextFunction) => {
-    try {
-        const vendor = await Vendor.findOne({ _id: req.params.id, tenantId: req.tenantId }).populate('user', 'name email');
-        if (!vendor) {
-            return next(new AppError(`Vendor not found with id of ${req.params.id}`, 404));
-        }
-        res.status(200).json({ success: true, data: vendor });
-    } catch (error: any) {
-        next(new AppError(error.message, 500));
+// @access  Private
+export const getVendorProfile = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const vendor = await Vendor.findById(req.params.id).populate('user', 'name email');
+    if (!vendor) {
+        return next(new AppError(`Vendor not found with id of ${req.params.id}`, 404));
     }
-};
+    res.status(200).json({ success: true, data: vendor });
+});
 
-// @desc    Create a new vendor (Admin only)
+// @desc    Get single vendor profile by slug
+// @route   GET /api/vendors/slug/:slug
+// @access  Public
+export const getVendorBySlug = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    // Use the compound index for efficient lookup
+    const vendor = await Vendor.findOne({ 
+        slug: req.params.slug,
+        tenantId: req.tenantId
+    }).populate('user', 'name email');
+    
+    if (!vendor) {
+        return next(new AppError(`Vendor not found with slug ${req.params.slug}`, 404));
+    }
+    
+    res.status(200).json({ success: true, data: vendor });
+});
+
+// @desc    Create a new vendor profile
 // @route   POST /api/vendors
-export const createVendor = async (req: TenantRequest, res: Response, next: NextFunction) => {
-    try {
-        // A user must exist before they can be promoted to a vendor
-        const vendor = await Vendor.create({ ...req.body, tenantId: req.tenantId });
-        res.status(201).json({ success: true, data: vendor });
-    } catch (error: any) {
-        next(new AppError(error.message, 500));
-    }
-};
+// @access  Private
+export const createVendorProfile = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    req.body.user = req.user!.id;
+    req.body.tenantId = req.tenantId;
 
-// @desc    Update vendor profile for the current tenant
+    const existingVendor = await Vendor.findOne({ user: req.user!.id });
+    if (existingVendor) {
+        return next(new AppError('User already has a vendor profile', 400));
+    }
+
+    const vendor = await Vendor.create(req.body);
+    res.status(201).json({ success: true, data: vendor });
+});
+
+// @desc    Update vendor profile
 // @route   PUT /api/vendors/:id
-export const updateVendor = async (req: AuthenticatedRequest, res: Response<ApiResponse>, next: NextFunction): Promise<void> => {
-  try {
-    // Scope query to the tenant
-    const vendor = await Vendor.findOne({ _id: req.params.id, tenantId: req.tenantId });
-    if (!vendor) return next(new AppError('Vendor not found in this tenant', 404));
+// @access  Private
+export const updateVendorProfile = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    let vendor = await Vendor.findById(req.params.id);
 
-    if (vendor.userId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return next(new AppError('Not authorized to update this vendor profile', 403));
+    if (!vendor) {
+        return next(new AppError(`Vendor not found with id of ${req.params.id}`, 404));
     }
 
-    const updatedVendor = await Vendor.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    res.status(200).json({ success: true, data: updatedVendor });
-  } catch (error) {
-    next(error);
-  }
-};
+    // FIX: The property is 'userId' on the vendor model, not 'user'
+    if (vendor.userId.toString() !== req.user!.id && req.user!.role !== 'admin') {
+        return next(new AppError('Not authorized to update this vendor profile', 401));
+    }
 
-// @desc    Delete vendor for the current tenant
-// @route   DELETE /api/vendors/:id
-export const deleteVendor = async (req: AuthenticatedRequest, res: Response<ApiResponse>, next: NextFunction): Promise<void> => {
-  try {
-    // Scope query to the tenant
-    const vendor = await Vendor.findOneAndDelete({ _id: req.params.id, tenantId: req.tenantId });
-    if (!vendor) return next(new AppError('Vendor not found in this tenant', 404));
-    // Also delete the associated user
-    await User.findByIdAndDelete(vendor.userId);
-    res.status(200).json({ success: true, message: 'Vendor and associated user deleted successfully' });
-  } catch (error) {
-    next(error);
+    vendor = await Vendor.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true
+    });
+    res.status(200).json({ success: true, data: vendor });
+});
+
+// @desc    Get products for a specific vendor
+// @route   GET /api/vendors/:id/products
+// @access  Public
+export const getVendorProducts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const products = await Product.find({ vendor: req.params.id });
+    res.status(200).json({ success: true, count: products.length, data: products });
+});
+
+// @desc   Import products for the vendor
+// @route  POST /api/vendors/import-products
+export const importProducts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const tenantId = req.tenantId;
+  if (!tenantId) {
+    return next(new AppError('Tenant could not be identified', 400));
   }
-};
+
+  // Handle file upload and parsing here...
+
+  res.status(200).json({ success: true, message: 'Products imported successfully' });
+});

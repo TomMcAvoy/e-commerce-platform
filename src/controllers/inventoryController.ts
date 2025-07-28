@@ -4,6 +4,8 @@ import Product from '../models/Product'
 import Vendor from '../models/Vendor'
 import Order from '../models/Order'
 import AppError from '../utils/AppError'
+import asyncHandler from 'express-async-handler'
+import { Inventory } from '../models/Inventory'
 
 // @desc    Get comprehensive inventory dashboard
 // @route   GET /api/inventory/dashboard
@@ -133,9 +135,8 @@ export const getInventoryLevels = async (
     // Add calculated fields
     const enrichedProducts = products.map(product => ({
       ...product.toObject(),
-      stockValue: product.inventory.quantity * product.cost,
-      stockStatus: product.inventory.quantity === 0 ? 'out_of_stock' :
-                   product.inventory.quantity <= product.inventory.lowStockThreshold ? 'low_stock' : 'in_stock'
+      stockValue: product.inventory.quantity * (product.cost || 0),
+      status: product.inventory.quantity <= (product.inventory.lowStock || 10) ? 'low_stock' : 'in_stock'
     }))
 
     res.status(200).json({
@@ -194,13 +195,8 @@ export const adjustInventory = async (
         }
 
         // Check vendor ownership
-        if (req.user.role === 'vendor' && product.vendorId !== req.user._id) {
-          results.push({
-            productId,
-            success: false,
-            error: 'Not authorized to adjust this product inventory'
-          })
-          continue
+        if (req.user.role === 'vendor' && product.vendorId.toString() !== req.user._id.toString()) {
+          return next(new AppError('Not authorized to view this product inventory', 403));
         }
 
         const oldQuantity = product.inventory.quantity
@@ -383,8 +379,8 @@ export const getLowStockAlerts = async (
       name: product.name,
       sku: product.sku,
       currentStock: product.inventory.quantity,
-      threshold: product.inventory.lowStockThreshold,
-      suggestedReorder: Math.max(product.inventory.lowStockThreshold * 2, 10),
+      threshold: product.inventory.lowStock || 10,
+      suggestedReorder: Math.max((product.inventory.lowStock || 10) * 2, 10),
       priority: product.inventory.quantity === 0 ? 'critical' : 'warning'
     }))
 
@@ -400,3 +396,89 @@ export const getLowStockAlerts = async (
     next(error)
   }
 }
+
+// @desc    Get inventory for all products or a specific one
+// @route   GET /api/inventory
+// @route   GET /api/inventory/:productId
+// @access  Private/Admin or Vendor
+export const getInventory = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { productId } = req.params;
+    let query: any = {};
+
+    if (productId) {
+        query.product = productId;
+    }
+
+    // If the user is a vendor, they can only see their own product inventory
+    if (req.user && req.user.role === 'vendor') {
+        const vendorProducts = await Product.find({ vendorId: req.user._id }).select('_id');
+        const productIds = vendorProducts.map(p => p._id);
+        
+        if (productId) {
+            if (!productIds.map(id => id.toString()).includes(productId)) {
+                return next(new AppError('Not authorized to view this inventory', 403));
+            }
+        } else {
+            query.product = { $in: productIds };
+        }
+    }
+
+    const inventory = await Inventory.find(query).populate('product', 'name sku');
+
+    res.status(200).json({
+        success: true,
+        count: inventory.length,
+        data: inventory
+    });
+});
+
+// @desc    Update stock for a product
+// @route   PUT /api/inventory/:productId
+// @access  Private/Admin or Vendor
+export const updateStock = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { productId } = req.params;
+    const { quantity, reason } = req.body;
+
+    if (typeof quantity !== 'number') {
+        return next(new AppError('Quantity must be a number', 400));
+    }
+
+    const product = await Product.findById(productId);
+
+    if (!product) {
+        return next(new AppError('Product not found', 404));
+    }
+
+    // Authorization check: User must be an admin or the vendor who owns the product
+    if (req.user && req.user.role === 'vendor' && product.vendorId.toString() !== (req.user._id as string)) {
+        return next(new AppError('User is not authorized to update inventory for this product', 403));
+    }
+
+    let inventory = await Inventory.findOne({ product: productId });
+
+    if (!inventory) {
+        inventory = await Inventory.create({
+            product: productId,
+            quantity: quantity,
+            history: [{
+                date: new Date(),
+                quantityChange: quantity,
+                reason: reason || 'Initial stock'
+            }]
+        });
+    } else {
+        const quantityChange = quantity - inventory.quantity;
+        inventory.quantity = quantity;
+        inventory.history.push({
+            date: new Date(),
+            quantityChange: quantityChange,
+            reason: reason || 'Manual stock update'
+        });
+        await inventory.save();
+    }
+
+    res.status(200).json({
+        success: true,
+        data: inventory
+    });
+});

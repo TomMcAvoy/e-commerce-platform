@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import routes from './routes';
-import errorHandler from './middleware/errorHandler';
+import { errorHandler } from './middleware/errorHandler'; // Use named import
 import { notFound } from './middleware/notFound';
 
 const app = express();
@@ -35,6 +35,6 @@ app.use('/api', routes);
 
 // Error handling middleware
 app.use(notFound);
-app.use(errorHandler);
+app.use(errorHandler); // Must be after all routes
 
 export default app;

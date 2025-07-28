@@ -1,4 +1,8 @@
--e 
+/**
+ * This file is reserved for search-related event subscriptions.
+ * For example, listening for product updates to sync with a search index like Algolia or Elasticsearch.
+ */
+
 import eventService, { EventNames } from "../services/eventService";
 import { IProduct } from "../models/Product";
 import { IUser } from "../models/User";
@@ -38,4 +42,10 @@ class SearchSubscriber {
 
 // Initialize the subscriber to start listening for events
 export default new SearchSubscriber();
+
+// Example of a potential subscriber function
+// export const onProductUpdate = (product) => { ... };
+
+// Export an empty object to make this a valid module
+export {};
 

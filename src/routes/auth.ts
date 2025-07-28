@@ -1,17 +1,12 @@
-import { Router } from 'express';
-import { register, login, getAuthStatus } from '../controllers/authController';
+import express from 'express';
+import { register, login, getMe, logout } from '../controllers/authController';
 import { protect } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
-router.get('/status', getAuthStatus);
-router.get('/me', protect, (req, res) => {
-  res.json({
-    success: true,
-    data: req.user
-  });
-});
+router.get('/me', protect, getMe);
+router.post('/logout', protect, logout);
 
 export default router;

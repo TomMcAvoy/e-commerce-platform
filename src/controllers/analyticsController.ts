@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../middleware/errorHandler';
+import AppError from '../utils/AppError';
 
 interface AuthRequest extends Request {
   user?: any;

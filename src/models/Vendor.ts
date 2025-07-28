@@ -1,16 +1,37 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IVendor extends Document {
-  tenantId: mongoose.Types.ObjectId; // Add this line
+  tenantId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  name: string;
-  description: string;
-  contact: {
-    phone: string;
-    email: string;
-    address: string;
+  businessName: string;
+  slug: string;
+  businessEmail: string;
+  businessPhone: string;
+  businessAddress: {
+    firstName: string;
+    lastName: string;
+    company?: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    phone?: string;
+    isDefault: boolean;
   };
-  isActive: boolean;
+  taxId?: string;
+  bankAccount?: {
+    accountNumber: string;
+    routingNumber: string;
+    accountType: string;
+    bankName: string;
+  };
+  isVerified: boolean;
+  rating: number;
+  totalSales: number;
+  commission: number;
+  products: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,7 +57,7 @@ const AddressSchema = new Schema({
 });
 
 const VendorSchema = new Schema({
-  tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true }, // Add this line
+  tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
   userId: {
     type: String,
     required: true,
@@ -46,6 +67,12 @@ const VendorSchema = new Schema({
     type: String,
     required: true,
     trim: true
+  },
+  slug: {
+    type: String,
+    trim: true,
+    lowercase: true,
+    index: true
   },
   businessEmail: {
     type: String,
@@ -102,6 +129,37 @@ VendorSchema.index({ isVerified: 1 });
 VendorSchema.index({ rating: -1 });
 // Add a compound unique index for businessName per tenant
 VendorSchema.index({ businessName: 1, tenantId: 1 }, { unique: true });
+// Add a compound unique index for slug per tenant
+VendorSchema.index({ slug: 1, tenantId: 1 }, { unique: true });
 
+// Pre-save hook to generate and ensure unique slugs
+VendorSchema.pre('save', async function(next) {
+  // Only generate slug if it doesn't exist or businessName has changed
+  if (!this.slug || this.isModified('businessName')) {
+    // Generate slug from businessName
+    const baseSlug = this.businessName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    
+    this.slug = baseSlug;
+    
+    // Check for duplicate slugs within the same tenant
+    const Vendor = this.constructor as any;
+    const slugRegEx = new RegExp(`^${baseSlug}(-[0-9]*)?$`, 'i');
+    const vendorsWithSlug = await Vendor.find({ 
+      slug: slugRegEx,
+      tenantId: this.tenantId,
+      _id: { $ne: this._id } // Exclude current vendor
+    });
+    
+    // If we have duplicates, add a suffix to make the slug unique
+    if (vendorsWithSlug.length > 0) {
+      this.slug = `${baseSlug}-${vendorsWithSlug.length + 1}`;
+    }
+  }
+  
+  next();
+});
 
 export default mongoose.model('Vendor', VendorSchema);

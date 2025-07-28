@@ -1,41 +1,57 @@
-import { Request, Response, NextFunction } from "express";
-import mongoose from "mongoose";
-import Tenant from "../models/Tenant";
-import AppError from "../utils/AppError";
+import { Request, Response, NextFunction } from 'express';
+import asyncHandler from 'express-async-handler';
+import Tenant from '../models/Tenant';
+import AppError from '../utils/AppError';
 
-// Extend the Express Request interface to include tenantId
-export interface TenantRequest extends Request {
-  tenantId?: mongoose.Types.ObjectId;
-}
-
-/**
- * Tenant Resolver Middleware
- * Resolves tenant from X-Tenant-ID header and attaches it to the request.
- */
-export const tenantResolver = async (req: TenantRequest, res: Response, next: NextFunction) => {
-  const tenantIdHeader = req.headers["x-tenant-id"] as string;
-
-  if (!tenantIdHeader) {
-    // Allow requests without a tenant ID to proceed.
-    // Subsequent middleware or controllers are responsible for checking
-    // if tenantId is required for their specific operation.
-    return next();
+const getTenantIdFromRequest = (req: Request): string | null => {
+  // Example: extract from subdomain like 'my-tenant.localhost'
+  const hostnameParts = req.hostname.split('.');
+  if (hostnameParts.length > 2) {
+    return hostnameParts[0];
   }
+  // Example: extract from header like 'X-Tenant-ID'
+  const tenantHeader = req.headers['x-tenant-id'];
+  if (typeof tenantHeader === 'string') {
+    return tenantHeader;
+  }
+  return null;
+};
 
-  try {
-    // In a real-world scenario, you might want to cache this lookup (e.g., in Redis)
-    // to avoid hitting the database on every single request.
-    const tenant = await Tenant.findOne({ slug: tenantIdHeader }).lean();
+const tenantResolver = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const tenantIdentifier = getTenantIdFromRequest(req);
 
-    if (!tenant) {
-      return next(new AppError(`Tenant not found: ${tenantIdHeader}`, 404));
+    if (!tenantIdentifier) {
+      // Allow request to proceed if no tenant identifier is found
+      return next();
     }
 
-    req.tenantId = tenant._id;
-    next();
-  } catch (error) {
-    console.error("Error resolving tenant:", error);
-    return next(new AppError("Internal server error while resolving tenant.", 500));
-  }
-};
+    try {
+      const tenant = await Tenant.findOne({ slug: tenantIdentifier }).lean();
+
+      if (!tenant) {
+        console.warn(`[Tenant Resolver] Tenant not found for identifier: ${tenantIdentifier}`);
+        return next();
+      }
+
+      if (tenant && !Array.isArray(tenant)) {
+        req.tenantId = tenant._id as string;
+        if (process.env.NODE_ENV === 'development') {
+          console.log(
+            `[Tenant Resolver] Tenant resolved: ${tenant.name} (${req.tenantId})`
+          );
+        }
+      } else {
+        console.warn(`[Tenant Resolver] Unexpected tenant data format for identifier: ${tenantIdentifier}`);
+      }
+
+      next();
+    } catch (error) {
+      console.error('[Tenant Resolver] Error:', error);
+      return next(
+        new AppError("Server error while resolving tenant information.", 500)
+      );
+    }
+});
+
+export default tenantResolver;
 

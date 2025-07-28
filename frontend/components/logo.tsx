@@ -1,6 +1,5 @@
-import React from 'react';
-import { ShieldCheckIcon } from '@heroicons/react/24/solid';
+// This file is deprecated and should not be used.
+// Please use the Logo component from the layout directory instead:
+// import { Logo } from '@/components/layout/Logo';
 
-export const Logo = (props: React.SVGProps<SVGSVGElement>) => (
-  <ShieldCheckIcon {...props} className={`text-blue-600 ${props.className || ''}`} />
-);
+export { Logo } from './layout/Logo';

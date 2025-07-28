@@ -1,111 +1,138 @@
 import { Response, NextFunction } from 'express';
-import Cart from '../models/Cart';
+import asyncHandler from 'express-async-handler';
+import Cart, { ICartItem } from '../models/Cart';
 import Product from '../models/Product';
 import AppError from '../utils/AppError';
-import { TenantRequest } from '../middleware/tenantResolver';
+import { AuthenticatedRequest } from '../types/auth';
 
-// Helper function to calculate totals and format cart response
-const getCartResponse = async (cart: any) => {
-    await cart.populate({
-        path: 'items.product',
-        model: 'Product',
-        select: 'name price stock images',
-    });
-
-    cart.calculateSubtotal();
-    await cart.save();
-    return cart;
-};
-
-// @desc    Get user's shopping cart
+// @desc    Get user's cart
 // @route   GET /api/cart
-export const getCart = async (req: TenantRequest, res: Response, next: NextFunction) => {
-    try {
-        let cart = await Cart.findOne({ user: req.user.id, tenantId: req.tenantId });
+// @access  Private
+export const getCart = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
 
-        if (!cart) {
-            // If no cart, create one for the user
-            cart = await Cart.create({ user: req.user.id, tenantId: req.tenantId, items: [] });
-        }
-
-        const cartResponse = await getCartResponse(cart);
-        res.status(200).json({ success: true, data: cartResponse });
-    } catch (error: any) {
-        next(new AppError(error.message, 500));
+    if (!cart) {
+        // Return an empty cart structure if none exists
+        res.status(200).json({
+            success: true,
+            data: { items: [], subTotal: 0 }
+        });
+    } else {
+        res.status(200).json({
+            success: true,
+            data: cart
+        });
     }
-};
+});
 
-// @desc    Add item to cart or update quantity
+
+// @desc    Add item to cart
 // @route   POST /api/cart
-export const addItemToCart = async (req: TenantRequest, res: Response, next: NextFunction) => {
+// @access  Private
+export const addItem = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { productId, quantity } = req.body;
-    if (!productId || !quantity || quantity < 1) {
-        return next(new AppError('Please provide a valid product ID and quantity', 400));
+    const userId = req.user._id;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+        return next(new AppError('Product not found', 404));
     }
 
-    try {
-        const product = await Product.findOne({ _id: productId, tenantId: req.tenantId });
-        if (!product) {
-            return next(new AppError('Product not found', 404));
-        }
-        if (product.stock < quantity) {
-            return next(new AppError(`Not enough stock for ${product.name}`, 400));
-        }
+    let cart = await Cart.findOne({ user: userId });
 
-        const cart = await Cart.findOne({ user: req.user.id, tenantId: req.tenantId });
-        if (!cart) {
-            return next(new AppError('Cart not found, please access GET /api/cart first to initialize.', 404));
-        }
-
-        const itemIndex = cart.items.findIndex(p => p.product.toString() === productId);
+    if (cart) {
+        // Cart exists, update it
+        const itemIndex = cart.items.findIndex((p: ICartItem) => p.product.toString() === productId);
 
         if (itemIndex > -1) {
             // Product exists in cart, update quantity
-            cart.items[itemIndex].quantity = quantity;
+            cart.items[itemIndex].quantity += quantity;
         } else {
-            // Product does not exist in cart, add new item
-            cart.items.push({ product: productId, quantity });
+            // Product not in cart, add new item
+            cart.items.push({ product: productId, name: product.name, price: product.price, quantity });
         }
-
-        const cartResponse = await getCartResponse(cart);
-        res.status(200).json({ success: true, data: cartResponse });
-    } catch (error: any) {
-        next(new AppError(error.message, 500));
+    } else {
+        // No cart for user, create new cart
+        cart = await Cart.create({
+            user: userId,
+            items: [{ product: productId, name: product.name, price: product.price, quantity }]
+        });
     }
-};
+    
+    await cart.populate('items.product');
+    res.status(200).json({ success: true, data: cart });
+});
+
+// @desc    Update item quantity in cart
+// @route   PUT /api/cart/:productId
+// @access  Private
+export const updateItemQuantity = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { productId } = req.params;
+    const { quantity } = req.body;
+    const userId = req.user._id;
+
+    if (typeof quantity !== 'number' || quantity <= 0) {
+        return next(new AppError('Quantity must be a positive number', 400));
+    }
+
+    const cart = await Cart.findOne({ user: userId });
+
+    if (!cart) {
+        return next(new AppError('Cart not found', 404));
+    }
+
+    const itemIndex = cart.items.findIndex((p: ICartItem) => p.product.toString() === productId);
+
+    if (itemIndex > -1) {
+        cart.items[itemIndex].quantity = quantity;
+        await cart.save();
+        await cart.populate('items.product');
+        res.status(200).json({ success: true, data: cart });
+    } else {
+        return next(new AppError('Item not found in cart', 404));
+    }
+});
 
 // @desc    Remove item from cart
 // @route   DELETE /api/cart/:productId
-export const removeItemFromCart = async (req: TenantRequest, res: Response, next: NextFunction) => {
+// @access  Private
+export const removeItem = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { productId } = req.params;
-    try {
-        const cart = await Cart.findOne({ user: req.user.id, tenantId: req.tenantId });
-        if (!cart) {
-            return next(new AppError('Cart not found', 404));
-        }
+    const userId = req.user._id;
 
-        cart.items = cart.items.filter(p => p.product.toString() !== productId);
+    const cart = await Cart.findOne({ user: userId });
 
-        const cartResponse = await getCartResponse(cart);
-        res.status(200).json({ success: true, data: cartResponse });
-    } catch (error: any) {
-        next(new AppError(error.message, 500));
+    if (!cart) {
+        return next(new AppError('Cart not found', 404));
     }
-};
+
+    const itemIndex = cart.items.findIndex((p: ICartItem) => p.product.toString() === productId);
+
+    if (itemIndex > -1) {
+        cart.items.splice(itemIndex, 1);
+        await cart.save();
+        await cart.populate('items.product');
+    } else {
+        return next(new AppError('Item not found in cart', 404));
+    }
+
+    res.status(200).json({ success: true, data: cart });
+});
 
 // @desc    Clear all items from cart
 // @route   DELETE /api/cart
-export const clearCart = async (req: TenantRequest, res: Response, next: NextFunction) => {
-    try {
-        const cart = await Cart.findOne({ user: req.user.id, tenantId: req.tenantId });
-        if (!cart) {
-            return next(new AppError('Cart not found', 404));
-        }
+// @access  Private
+export const clearCart = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const userId = req.user._id;
 
+    const cart = await Cart.findOne({ user: userId });
+
+    if (cart) {
         cart.items = [];
-        const cartResponse = await getCartResponse(cart);
-        res.status(200).json({ success: true, data: cartResponse });
-    } catch (error: any) {
-        next(new AppError(error.message, 500));
+        await cart.save();
+        res.status(200).json({ success: true, data: cart });
+    } else {
+        // If no cart exists, send a success response with an empty cart structure
+        res.status(200).json({ success: true, data: { items: [], subTotal: 0 } });
     }
-};
+});

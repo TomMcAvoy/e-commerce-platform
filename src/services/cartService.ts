@@ -1,5 +1,5 @@
 import { ICartItem, ICart } from '../types/cart';
-import { AppError } from '../utils/AppError';
+import AppError from '../utils/AppError';
 
 /**
  * CartService following copilot service layer architecture pattern

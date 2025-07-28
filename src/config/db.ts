@@ -1,14 +1,16 @@
 import mongoose from 'mongoose';
+import colors from 'colors';
 
-export const connectDB = async () => {
+const connectDB = async () => {
   try {
-    if (!process.env.MONGODB_URI) {
-      throw new Error('MONGODB_URI is not defined in .env file');
-    }
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`💾 MongoDB Connected: ${conn.connection.host}`);
+    const conn = await mongoose.connect(process.env.MONGODB_URI!);
+    console.log(
+      colors.cyan.underline.bold(`MongoDB Connected: ${conn.connection.host}`)
+    );
   } catch (error: any) {
-    console.error(`❌ Error connecting to MongoDB: ${error.message}`);
+    console.error(colors.red(`Error: ${error.message}`));
     process.exit(1);
   }
 };
+
+export default connectDB;

@@ -1,64 +1,110 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
-import helmet from 'helmet';
 import morgan from 'morgan';
+import colors from 'colors';
+import path from 'path';
 import cookieParser from 'cookie-parser';
-import { connectDB } from './config/db';
-import { errorHandler } from './middleware/errorHandler';
-import { tenantResolver } from './middleware/tenantResolver';
+import mongoSanitize from 'express-mongo-sanitize';
+import helmet from 'helmet';
+import xss from 'xss-clean';
+import rateLimit from 'express-rate-limit';
+import hpp from 'hpp';
+import cors from 'cors';
 
-// Import routes statically for reliability
+// Custom modules
+import connectDB from './config/db';
+import errorHandler from './middleware/error';
+import tenantMiddleware from './middleware/tenant';
+import NewsScheduler from './services/NewsScheduler';
+import AppError from './utils/AppError';
+import { errorHandler as customErrorHandler } from './middleware/errorHandler'; // Use named import
+
+// Route files
 import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
 import productRoutes from './routes/productRoutes';
-import categoryRoutes from './routes/categoryRoutes';
-import orderRoutes from './routes/orderRoutes';
-import cartRoutes from './routes/cartRoutes';
 import vendorRoutes from './routes/vendorRoutes';
-import dropshippingRoutes from './routes/dropshippingRoutes';
-import paymentRoutes from './routes/paymentRoutes';
-import webhookRoutes from './routes/webhookRoutes';
+import orderRoutes from './routes/orderRoutes';
+import categoryRoutes from './routes/categoryRoutes';
+import newsRoutes from './routes/newsRoutes';
+import newsCategoryRoutes from './routes/newsCategoryRoutes';
+import seederRoutes from './routes/admin/seeder';
 
-// Load environment variables
+// Load env vars
 dotenv.config();
-
-// Connect to Database
-connectDB();
 
 const app = express();
 
-// --- CORE MIDDLEWARE ---
-app.use(cors({ origin: 'http://localhost:3001', credentials: true }));
-app.use(helmet());
+// Body parser
 app.use(express.json());
+
+// Cookie parser
 app.use(cookieParser());
+
+// Dev logging middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// --- MULTI-TENANCY MIDDLEWARE ---
-app.use(tenantResolver);
+// Security middleware
+app.use(mongoSanitize());
+app.use(helmet());
+app.use(xss());
+app.use(hpp());
 
-// --- API ROUTES ---
-app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 mins
+  max: 200
+});
+app.use(limiter);
+
+// Enable CORS
+app.use(cors({
+  origin: 'http://localhost:3001',
+  credentials: true
+}));
+
+// Tenant Middleware (must be before routes)
+app.use(tenantMiddleware);
+
+// Mount routers
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/cart', cartRoutes);
 app.use('/api/vendors', vendorRoutes);
-app.use('/api/dropshipping', dropshippingRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/webhooks', webhookRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/news-categories', newsCategoryRoutes);
+app.use('/api/admin', seederRoutes);
 
-// --- ERROR HANDLING ---
-app.use(errorHandler);
+// Health check endpoints
+app.get('/health', (req, res) => res.status(200).send('OK'));
+app.get('/api/status', (req, res) => res.status(200).json({ status: 'API is running' }));
+
+// Error Handler Middleware - MUST be last
+app.use(customErrorHandler);
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(
+    colors.blue.bold(
+      `🔥 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+    )
+  );
+  // Connect to Database
+  connectDB();
+  
+  // Initialize the news scheduler
+  NewsScheduler.initialize();
 });
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err: Error, promise) => {
+  console.log(colors.red(`Error: ${err.message}`));
+  // Close server & exit process
+  server.close(() => process.exit(1));
+});
+
+export { app }; // <-- Export the app instance for testing
 

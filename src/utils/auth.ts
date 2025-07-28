@@ -1,13 +1,13 @@
-import jwt from 'jsonwebtoken';
 import { Response } from 'express';
+import { IUser } from '../models/User';
 
-export const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', {
-    expiresIn: process.env.JWT_EXPIRE || '30d'
-  });
+export const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
+  const token = user.getSignedJwtToken();
 
   const options = {
-    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+    expires: new Date(
+      Date.now() + parseInt(process.env.JWT_COOKIE_EXPIRE || '30') * 24 * 60 * 60 * 1000
+    ),
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production'
   };
@@ -18,13 +18,12 @@ export const sendTokenResponse = (user: any, statusCode: number, res: Response) 
     .json({
       success: true,
       token,
-      data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role
       }
     });
 };

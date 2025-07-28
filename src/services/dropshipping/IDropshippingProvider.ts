@@ -1,41 +1,6 @@
-import { 
-  DropshipOrderData, 
-  DropshipOrderResult, 
-  DropshipProduct, 
-  OrderStatus, 
-  ProductQuery 
-} from './types';
+// This file is now redundant as the interface is defined in types.ts.
+// To maintain a clean architecture, this file will re-export the type from types.ts.
+import { IDropshippingProvider as IProvider } from './types';
 
-export interface IDropshippingProvider {
-  isEnabled: boolean;
-  
-  /**
-   * Create a new dropshipping order
-   */
-  createOrder(orderData: DropshipOrderData): Promise<DropshipOrderResult>;
-  
-  /**
-   * Get the status of an existing order
-   */
-  getOrderStatus(orderId: string): Promise<OrderStatus>;
-  
-  /**
-   * Cancel an existing order
-   */
-  cancelOrder(orderId: string): Promise<boolean>;
-  
-  /**
-   * Get available products from this provider
-   */
-  getAvailableProducts(query?: ProductQuery): Promise<DropshipProduct[]>;
-  
-  /**
-   * Get products with query parameters
-   */
-  getProducts(query?: ProductQuery): Promise<DropshipProduct[]>;
-  
-  /**
-   * Get a specific product by ID
-   */
-  getProduct(productId: string): Promise<DropshipProduct | null>;
-}
+// Re-exporting the main interface for components that use this file as an entry point.
+export type IDropshippingProvider = IProvider;

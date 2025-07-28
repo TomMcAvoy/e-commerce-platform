@@ -58,8 +58,12 @@ export interface IOrder extends Document {
 }
 
 const OrderSchema = new Schema<IOrder>({
-  tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   orderItems: [OrderItemSchema],
   shippingAddress: ShippingAddressSchema,
   paymentMethod: { type: String, required: true },
@@ -80,4 +84,13 @@ const OrderSchema = new Schema<IOrder>({
   timestamps: true,
 });
 
-export default mongoose.model<IOrder>('Order', OrderSchema);
+// --- PERFORMANCE INDEXES ---
+OrderSchema.index({ tenantId: 1 });
+// OrderSchema.index({ userId: 1 }); // For querying orders by user
+OrderSchema.index({ tenantId: 1, status: 1 }); // For querying orders by status within a tenant
+
+// This pattern prevents the OverwriteModelError and logs the compilation event.
+if (!mongoose.models.Order) {
+  console.log(`[Model Compilation] Compiling 'Order' in src/models/Order.ts`);
+}
+export default mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);

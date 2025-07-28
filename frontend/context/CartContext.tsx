@@ -1,141 +1,100 @@
 'use client';
 
-import React, { createContext, useReducer, useContext, ReactNode, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext';
-import { apiClient } from '../lib/api';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { ICartItem, IProduct } from '@/types';
 
-// Define the shape of a cart item and the cart's state
-interface CartItem {
-  product: any; // Replace 'any' with a proper Product type
-  quantity: number;
+interface CartContextType {
+  cartItems: ICartItem[];
+  addToCart: (product: IProduct, quantity: number) => void;
+  removeFromCart: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
+  getCartTotal: () => number;
+  getItemCount: () => number;
 }
 
-interface CartState {
-  items: CartItem[];
-}
-
-// Define the actions that can be dispatched
-type CartAction =
-  | { type: 'SET_CART'; payload: CartItem[] }
-  | { type: 'ADD_ITEM'; payload: CartItem }
-  | { type: 'REMOVE_ITEM'; payload: { productId: string } }
-  | { type: 'UPDATE_QUANTITY'; payload: { productId: string; quantity: number } }
-  | { type: 'CLEAR_CART' };
-
-// Define the type for the context value as an object
-export interface CartContextType {
-  state: CartState;
-  dispatch: React.Dispatch<CartAction>;
-}
-
-// Create the context with a default value
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// Reducer function to manage cart state
-const cartReducer = (state: CartState, action: CartAction): CartState => {
-  switch (action.type) {
-    case 'SET_CART':
-      return { ...state, items: action.payload };
-    case 'ADD_ITEM':
-      const existingItemIndex = state.items.findIndex(
-        item => item.product._id === action.payload.product._id
-      );
-      if (existingItemIndex > -1) {
-        const updatedItems = [...state.items];
-        updatedItems[existingItemIndex].quantity += action.payload.quantity;
-        return { ...state, items: updatedItems };
-      }
-      return { ...state, items: [...state.items, action.payload] };
-    case 'REMOVE_ITEM':
-      return {
-        ...state,
-        items: state.items.filter(item => item.product._id !== action.payload.productId),
-      };
-    case 'UPDATE_QUANTITY':
-      return {
-        ...state,
-        items: state.items.map(item =>
-          item.product._id === action.payload.productId
-            ? { ...item, quantity: Math.max(0, action.payload.quantity) }
-            : item
-        ).filter(item => item.quantity > 0), // Also remove if quantity is 0
-      };
-    case 'CLEAR_CART':
-      return { ...state, items: [] };
-    default:
-      return state;
-  }
-};
-
-// Debounce utility
-function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
-  let timeout: NodeJS.Timeout;
-  return (...args: Parameters<F>): void => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), waitFor);
-  };
-}
-
-// Provider component to wrap the application
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(cartReducer, { items: [] });
-  const { isAuthenticated, isLoading } = useAuth();
+  const [cartItems, setCartItems] = useState<ICartItem[]>([]);
 
-  // Debounced function to save the cart to the backend
-  const saveCartToBackend = useCallback(
-    debounce(async (items: CartItem[]) => {
-      if (isAuthenticated) {
-        try {
-          await apiClient.privateRequest('/cart', {
-            method: 'PUT',
-            body: JSON.stringify({ items }),
-          });
-        } catch (error) {
-          console.error("Failed to save cart:", error);
-        }
-      }
-    }, 1000),
-    [isAuthenticated]
-  );
-
-  // Effect to sync state to backend
+  // On initial mount, load the cart from localStorage.
+  // This runs only once on the client-side.
   useEffect(() => {
-    // Don't sync the initial empty state on load
-    if (state.items.length > 0) {
-      saveCartToBackend(state.items);
-    }
-  }, [state.items, saveCartToBackend]);
-
-  // Fetch cart from backend on login
-  useEffect(() => {
-    const fetchCart = async () => {
-      if (isAuthenticated) {
-        try {
-          const res = await apiClient.privateRequest('/cart');
-          if (res.data && res.data.items) {
-            dispatch({ type: 'SET_CART', payload: res.data.items });
-          }
-        } catch (error) {
-          console.error("Failed to fetch cart:", error);
-        }
-      } else {
-        // Clear cart on logout
-        dispatch({ type: 'CLEAR_CART' });
+    try {
+      const storedCart = localStorage.getItem('shoppingCart');
+      if (storedCart) {
+        setCartItems(JSON.parse(storedCart));
       }
-    };
-    if (!isLoading) {
-      fetchCart();
+    } catch (error) {
+      console.error("Failed to parse cart from localStorage", error);
+      setCartItems([]); // Start with an empty cart on error
     }
-  }, [isAuthenticated, isLoading]);
+  }, []);
 
-  return (
-    <CartContext.Provider value={{ state, dispatch }}>
-      {children}
-    </CartContext.Provider>
-  );
+  // Whenever the cartItems state changes, save it to localStorage.
+  useEffect(() => {
+    localStorage.setItem('shoppingCart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const addToCart = (product: IProduct, quantity: number) => {
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(item => item.product._id === product._id);
+      if (existingItem) {
+        // If item exists, update its quantity
+        return prevItems.map(item =>
+          item.product._id === product._id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      // Otherwise, add the new item to the cart
+      return [...prevItems, { product, quantity }];
+    });
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCartItems(prevItems => prevItems.filter(item => item.product._id !== productId));
+  };
+
+  const updateQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      // If quantity is 0 or less, remove the item
+      removeFromCart(productId);
+    } else {
+      setCartItems(prevItems =>
+        prevItems.map(item =>
+          item.product._id === productId ? { ...item, quantity } : item
+        )
+      );
+    }
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
+  const getCartTotal = () => {
+    return cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  };
+
+  const getItemCount = () => {
+    return cartItems.reduce((count, item) => count + item.quantity, 0);
+  };
+
+  const value = {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getCartTotal,
+    getItemCount,
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
-// Custom hook to use the cart context
 export const useCart = (): CartContextType => {
   const context = useContext(CartContext);
   if (context === undefined) {

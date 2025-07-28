@@ -33,8 +33,12 @@ export const createTestProduct = (overrides = {}) => ({
 
 export const cleanupDatabase = async () => {
   if (mongoose.connection.readyState === 1) {
-    const collections = await mongoose.connection.db.collections();
-    await Promise.all(collections.map(collection => collection.deleteMany({})));
+    if (mongoose.connection.db) {
+      const collections = await mongoose.connection.db.collections();
+      for (const collection of collections) {
+        await collection.deleteMany({});
+      }
+    }
   }
 };
 

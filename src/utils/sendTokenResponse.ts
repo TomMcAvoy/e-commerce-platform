@@ -2,27 +2,20 @@ import { Response } from 'express';
 import { IUser } from '../models/User';
 
 /**
- * Signs a JWT, sets it in an HTTP-only cookie, and sends a JSON response.
- * This is a standardized way to handle successful login/registration.
- * @param user The user document from Mongoose.
- * @param statusCode The HTTP status code for the response.
- * @param res The Express response object.
+ * Get token from model, create cookie and send response
+ * Following Authentication Flow pattern from Copilot Instructions
  */
 export const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
-  // Create token
-  // @ts-ignore - Assume getSignedJwtToken method exists on the user model
+  // Create token following JWT pattern
   const token = user.getSignedJwtToken();
 
-  const options: any = {
+  const options = {
     expires: new Date(
-      Date.now() + (process.env.JWT_COOKIE_EXPIRE ? parseInt(process.env.JWT_COOKIE_EXPIRE) * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000)
+      Date.now() + parseInt(process.env.JWT_COOKIE_EXPIRE || '30') * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production'
   };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
 
   res
     .status(statusCode)
@@ -30,13 +23,16 @@ export const sendTokenResponse = (user: IUser, statusCode: number, res: Response
     .json({
       success: true,
       token,
-      // It's good practice to send back some user data, but exclude sensitive info
-      data: {
-        id: user._id,
+      user: {
+        _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.role
+        role: user.role,
+        tenantId: user.tenantId
       }
     });
 };
+
+// Also export as default for backwards compatibility
+export default sendTokenResponse;

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, model } from 'mongoose';
 import eventService, { EventNames } from "../services/eventService";
 
 export interface IProduct extends Document {
@@ -17,9 +17,11 @@ export interface IProduct extends Document {
   images: string[];
   inventory: {
     quantity: number;
-    lowStock: number;
+    lowStock: number; // This might be the intended low stock threshold
     inStock: boolean;
+    lowStockThreshold: number; // Explicitly add for clarity if needed
   };
+  cost?: number; // Add optional cost property
   features?: string[];
   sizes?: string[];
   colors?: string[];
@@ -42,11 +44,18 @@ export interface IProduct extends Document {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  slug: string; // <-- Add slug
 }
 
-const ProductSchema = new Schema({
-  tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true, index: true },
-  name: { type: String, required: [true, 'Product name is required'], trim: true, maxlength: [200, 'Product name cannot exceed 200 characters'] },
+const ProductSchema = new Schema<IProduct>({
+  tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true }, // REMOVED: index: true
+  name: { type: String, required: [true, 'Product name is required'], trim: true, maxlength: [200, 'Product name cannot exceed 200 characters'], index: true },
+  slug: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    index: true 
+  },
   description: { type: String, required: [true, 'Product description is required'], maxlength: [2000, 'Description cannot exceed 2000 characters'] },
   price: { type: Number, required: [true, 'Price is required'], min: [0, 'Price cannot be negative'] },
   originalPrice: { type: Number, min: [0, 'Original price cannot be negative'] },
@@ -57,9 +66,10 @@ const ProductSchema = new Schema({
   sku: { type: String, required: [true, 'SKU is required'], trim: true, uppercase: true },
   asin: { type: String, required: [true, 'ASIN is required'], trim: true, uppercase: true },
   images: [{ type: String, trim: true }],
+  cost: { type: Number, required: false, min: 0 }, // Add cost to schema
   inventory: {
     quantity: { type: Number, required: [true, 'Inventory quantity is required'], min: [0, 'Quantity cannot be negative'], default: 0 },
-    lowStock: { type: Number, default: 10 },
+    lowStock: { type: Number, default: 10 }, // This is likely the threshold
     inStock: { type: Boolean, default: true }
   },
   features: [{ type: String, trim: true }],
@@ -89,13 +99,15 @@ const ProductSchema = new Schema({
 });
 
 // --- PERFORMANCE INDEXES ---
+ProductSchema.index({ tenantId: 1, isActive: 1 }); // Combined tenant and active status
 ProductSchema.index({ vendorId: 1, isActive: 1 });
 ProductSchema.index({ brand: 1, isActive: 1 });
 ProductSchema.index({ price: 1 });
 ProductSchema.index({ name: 'text', description: 'text' });
 ProductSchema.index({ category: 1, subcategory: 1, isActive: 1 });
-ProductSchema.index({ sku: 1, tenantId: 1 }, { unique: true }); // Tenant-aware unique index
-ProductSchema.index({ asin: 1, tenantId: 1 }, { unique: true }); // Tenant-aware unique index
+ProductSchema.index({ sku: 1, tenantId: 1 }, { unique: true });
+ProductSchema.index({ asin: 1, tenantId: 1 }, { unique: true });
+// ProductSchema.index({ tenantId: 1, slug: 1 }, { unique: true }); // REMOVED
 
 // --- VIRTUALS ---
 ProductSchema.virtual('discountPercentage').get(function() {
@@ -105,10 +117,27 @@ ProductSchema.virtual('discountPercentage').get(function() {
   return 0;
 });
 
+// Virtual for reviews
+ProductSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'product',
+  justOne: false
+});
+
 // --- MIDDLEWARE ---
-ProductSchema.pre('save', function(next) {
-  this.inventory.inStock = this.inventory.quantity > 0;
+ProductSchema.pre('save', function (next) {
+  if (this.inventory) { // <-- Add null check
+    this.inventory.inStock = this.inventory.quantity > 0;
+  }
   next();
+});
+
+// FIX: Use the correct hook name 'deleteOne' for post-document-deletion middleware
+ProductSchema.post('deleteOne', { document: true, query: false }, async function() {
+    console.log(`Deleting reviews for product ${this._id}`);
+    eventService.emit(EventNames.PRODUCT_DELETED, this);
+    // Example: await this.model('Review').deleteMany({ product: this._id });
 });
 
 // --- EVENT-DRIVEN ARCHITECTURE HOOKS ---
@@ -128,6 +157,8 @@ ProductSchema.post("save", function(doc, next) {
   next();
 });
 
+// REMOVE the old "remove" hook, as it's replaced by the "deleteOne" hook above.
+/*
 ProductSchema.post("remove", function(doc, next) {
   try {
     eventService.emit(EventNames.PRODUCT_DELETED, doc);
@@ -136,5 +167,11 @@ ProductSchema.post("remove", function(doc, next) {
   }
   next();
 });
+*/
 
-export default mongoose.model<IProduct>('Product', ProductSchema);
+// This pattern prevents the OverwriteModelError and logs the compilation event.
+if (!mongoose.models.Product) {
+  // This log will only appear the first time this file is imported and the model is compiled.
+  console.log(`[Model Compilation] Compiling 'Product' in src/models/Product.ts`);
+}
+export default model<IProduct>('Product', ProductSchema);

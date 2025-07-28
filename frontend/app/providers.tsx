@@ -17,3 +17,6 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     </CartProvider>
   );
 }
+
+// Note: We're keeping the import from '../context/CartContext' as the standard path
+// The duplicate contexts/ directory should be removed

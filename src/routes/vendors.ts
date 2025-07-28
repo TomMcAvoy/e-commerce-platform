@@ -1,10 +1,10 @@
-import { Router } from 'express';
-import { getVendors, getVendor } from '../controllers/vendorController';
-import { protect } from '../middleware/auth';
+import express from 'express';
+import { getVendors, getVendorProfile } from '../controllers/vendorController';
+import { protect, authorize } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
-router.get('/', getVendors);
-router.get('/:id', getVendor);
+router.route('/').get(protect, authorize('admin'), getVendors);
+router.route('/:id').get(protect, getVendorProfile);
 
 export default router;

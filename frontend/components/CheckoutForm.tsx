@@ -1,24 +1,58 @@
 'use client';
 
-import { useState } from 'react';
-import { useStripe, useElements, PaymentElement, AddressElement } from '@stripe/react-stripe-js';
+import { useState, useEffect } from 'react';
+import { 
+  useStripe, 
+  useElements, 
+  PaymentElement, 
+  AddressElement 
+} from '@stripe/react-stripe-js';
+import { Button } from './ui/Button';
 
-interface CheckoutFormProps {
-  clientSecret: string;
-}
-
-export default function CheckoutForm({ clientSecret }: CheckoutFormProps) {
+export function CheckoutForm() {
   const stripe = useStripe();
   const elements = useElements();
 
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    if (!stripe) {
+      return;
+    }
+
+    const clientSecret = new URLSearchParams(window.location.search).get(
+      "payment_intent_client_secret"
+    );
+
+    if (!clientSecret) {
+      return;
+    }
+
+    stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
+      switch (paymentIntent?.status) {
+        case "succeeded":
+          setMessage("Payment succeeded!");
+          break;
+        case "processing":
+          setMessage("Your payment is processing.");
+          break;
+        case "requires_payment_method":
+          setMessage("Your payment was not successful, please try again.");
+          break;
+        default:
+          setMessage("Something went wrong.");
+          break;
+      }
+    });
+  }, [stripe]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!stripe || !elements) {
       // Stripe.js has not yet loaded.
+      // Make sure to disable form submission until Stripe.js has loaded.
       return;
     }
 
@@ -28,7 +62,7 @@ export default function CheckoutForm({ clientSecret }: CheckoutFormProps) {
       elements,
       confirmParams: {
         // Make sure to change this to your payment completion page
-        return_url: `${window.location.origin}/order-confirmation`,
+        return_url: `${window.location.origin}/cart/checkout/success`,
       },
     });
 
@@ -46,20 +80,20 @@ export default function CheckoutForm({ clientSecret }: CheckoutFormProps) {
 
   return (
     <form id="payment-form" onSubmit={handleSubmit}>
-      <h3>Shipping Information</h3>
-      <AddressElement options={{ mode: 'shipping' }} />
-      
-      <h3 style={{ marginTop: '20px' }}>Payment Details</h3>
+      <h2 className="text-lg font-medium text-gray-900 mb-4">Shipping Information</h2>
+      <AddressElement id="address-element" options={{mode: 'shipping'}} />
+
+      <h2 className="text-lg font-medium text-gray-900 mt-6 mb-4">Payment Details</h2>
       <PaymentElement id="payment-element" />
       
-      <button disabled={isLoading || !stripe || !elements} id="submit" style={{ marginTop: '20px', width: '100%' }}>
+      <Button disabled={isLoading || !stripe || !elements} id="submit" className="w-full mt-6">
         <span id="button-text">
           {isLoading ? <div className="spinner" id="spinner"></div> : "Pay now"}
         </span>
-      </button>
+      </Button>
       
       {/* Show any error or success messages */}
-      {message && <div id="payment-message" style={{ marginTop: '10px', color: 'red' }}>{message}</div>}
+      {message && <div id="payment-message" className="mt-4 text-center text-sm text-red-600">{message}</div>}
     </form>
   );
 }

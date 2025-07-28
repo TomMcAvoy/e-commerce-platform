@@ -1,22 +1,33 @@
-import { DropshippingOrder, DropshippingResult } from '../../../services/dropshipping/DropshippingService';
+import { OrderCreationResult, DropshipProduct, IDropshippingProvider } from '../../../services/dropshipping/types';
+import { DropshippingResult } from '../../../services/dropshipping/DropshippingService';
 
-const mockProvider = {
-  name: 'Mock Provider',
-  isEnabled: true,
+/**
+ * Mock implementation of a dropshipping provider following the IDropshippingProvider interface.
+ */
+const mockProvider: IDropshippingProvider = {
+  getProviderName: () => 'Mock Provider',
   createOrder: jest.fn().mockResolvedValue({
-    orderId: 'mock-order-123',
-    shippingCost: 9.99
-  }),
-  getProducts: jest.fn().mockResolvedValue([]),
-  getProduct: jest.fn(),
-  getOrderStatus: jest.fn(),
-  cancelOrder: jest.fn(),
-  getAvailableProducts: jest.fn()
+    success: true,
+    externalOrderId: 'mock-order-123',
+    shippingCost: 9.99,
+    status: 'pending'
+  } as OrderCreationResult),
+  fetchProducts: jest.fn().mockResolvedValue([] as DropshipProduct[]),
+  getProduct: jest.fn().mockResolvedValue(null),
+  getOrderStatus: jest.fn().mockResolvedValue({ status: 'shipped' }),
+  cancelOrder: jest.fn().mockResolvedValue({ success: true }),
+  checkHealth: jest.fn().mockResolvedValue({ status: 'ok', details: 'Mock provider is healthy' }),
+  updateInventory: jest.fn().mockResolvedValue({ success: true }),
+  calculateShipping: jest.fn().mockResolvedValue({ cost: 9.99 }),
 };
 
+/**
+ * Mock DropshippingService following the singleton and provider patterns
+ * from the copilot instructions.
+ */
 export class DropshippingService {
   private static instance: DropshippingService;
-  private providers: Map<string, any> = new Map();
+  private providers: Map<string, IDropshippingProvider> = new Map();
 
   private constructor() {
     this.providers.set('mock-provider', mockProvider);
@@ -29,29 +40,80 @@ export class DropshippingService {
     return DropshippingService.instance;
   }
 
-  public registerProvider = jest.fn();
-  
+  public registerProvider = jest.fn((provider: IDropshippingProvider) => {
+    this.providers.set(provider.getProviderName().toLowerCase().replace(' ', '-'), provider);
+  });
+
   public getEnabledProviders = jest.fn().mockReturnValue([mockProvider]);
-  
-  public isProviderEnabled = jest.fn().mockReturnValue(true);
-  
+
+  public isProviderEnabled = jest.fn((providerName: string) => {
+    const provider = this.providers.get(providerName);
+    return !!provider;
+  });
+
   public getDefaultProvider = jest.fn().mockReturnValue(mockProvider);
-  
+
   public getProviderStatus = jest.fn().mockReturnValue({
     enabled: 1,
     disabled: 0,
-    total: 1
+    total: 1,
+    providers: [{ name: 'Mock Provider', enabled: true }]
   });
 
   public createOrder = jest.fn().mockResolvedValue({
     success: true,
     orderId: 'mock-order-123',
-    provider: 'mock-provider'
-  });
+    provider: 'mock-provider',
+    status: 'pending'
+  } as DropshippingResult);
 
-  public getProductsFromProvider = jest.fn().mockResolvedValue([]);
-  
-  public getAllProducts = jest.fn().mockResolvedValue([]);
-  
-  public getProviderHealth = jest.fn().mockResolvedValue([]);
+  public getProductsFromProvider = jest.fn().mockResolvedValue([] as DropshipProduct[]);
+
+  public getAllProducts = jest.fn().mockResolvedValue([] as DropshipProduct[]);
+
+  public getProviderHealth = jest.fn().mockResolvedValue([{
+    provider: 'mock-provider',
+    status: 'ok',
+    message: 'Mock provider is healthy'
+  }]);
+
+  public getOrderStatus = jest.fn().mockResolvedValue({ status: 'shipped' });
+
+  public getHealth = jest.fn().mockResolvedValue([{
+    provider: 'mock-provider',
+    status: 'ok',
+    message: 'Mock provider is healthy'
+  }]);
 }
+
+/**
+ * Export a singleton instance for simplified mocking in tests,
+ * consistent with service usage in the application.
+ */
+export const dropshippingService = DropshippingService.getInstance();
+
+// @route   POST /api/auth/login
+// @access  Public
+export const login = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+
+  // Validate email & password
+  if (!email || !password) {
+    return next(new AppError('Please provide an email and password', 400));
+  }
+
+  // Check for user
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user || !user.password) {
+    return next(new AppError('Invalid credentials', 401));
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch) {
+    return next(new AppError('Invalid credentials', 401));
+  }
+
+  sendTokenResponse(user, 200, res);
+});

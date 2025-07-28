@@ -1,48 +1,42 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["ES2020"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": false,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
+    // --- Core Build Options ---
+    "target": "es2020",
     "module": "commonjs",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false,
-    "outDir": "./dist",
     "rootDir": "./src",
-    "declaration": true,
-    "declarationMap": true,
+    "outDir": "./dist",
     "sourceMap": true,
     "removeComments": false,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
-    "strictFunctionTypes": false,
-    "noImplicitReturns": false,
-    "noImplicitThis": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    "noEmit": false,
+
+    // --- Module Resolution ---
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    // --- Strictness & Code Quality ---
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    // --- Decorators (if needed for frameworks like TypeORM/NestJS) ---
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["node", "jest", "@types/supertest", "@types/jsonwebtoken"]
+
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node", "jest"]
   },
   "include": [
-    "src/**/*",
-    "src/__tests__/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "frontend",
-    ".backups"
+    ".backups",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts"
   ],
   "ts-node": {
-    "esm": false,
     "transpileOnly": true
   }
 }

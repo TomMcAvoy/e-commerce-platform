@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { app, getServerAddress } from '../../index';
+import { app } from '../../index'; // <-- Use named import
 import mongoose from 'mongoose';
 
 /**
@@ -10,7 +10,10 @@ export class TestUtils {
    * Get server address safely for tests
    */
   static getServerAddress() {
-    return getServerAddress();
+    // This function doesn't exist globally. Let's remove this method
+    // as the server address is not needed for supertest.
+    // return getServerAddress(); 
+    return 'http://127.0.0.1'; // Or return a mock address if needed elsewhere
   }
 
   /**
@@ -29,9 +32,13 @@ export class TestUtils {
    * Clear all database collections for clean tests
    */
   static async clearDatabase() {
-    if (mongoose.connection.readyState === 1) {
-      const collections = await mongoose.connection.db.collections();
-      await Promise.all(collections.map(collection => collection.deleteMany({})));
+    // Add a guard clause for the database connection
+    if (!mongoose.connection.db) {
+      throw new Error('Database connection not available for clearing.');
+    }
+    const collections = await mongoose.connection.db.collections();
+    for (const collection of collections) {
+      await collection.deleteMany({});
     }
   }
 
@@ -93,7 +100,8 @@ export class TestUtils {
    * Make API request with proper error handling
    */
   static async makeRequest(method: string, endpoint: string, data?: any, headers?: any) {
-    const req = request(app)[method.toLowerCase()](endpoint);
+    // Fix for TS7052: Cast method string to a known type for the index signature.
+    const req = (request(app) as any)[method.toLowerCase()](endpoint);
     
     if (headers) {
       Object.keys(headers).forEach(key => {

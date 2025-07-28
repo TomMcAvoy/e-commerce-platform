@@ -1,96 +1,86 @@
-export interface DropshipOrderItem {
-  productId: string;
-  quantity: number;
-  price: number;
-  variantId?: string;
-  customization?: Record<string, any>;
+import { IOrder } from '../../models/Order';
+
+// This is the contract that every dropshipping provider must implement.
+export interface IDropshippingProvider {
+  getProviderName(): string;
+  checkHealth(): Promise<{ status: string; details: any }>;
+  fetchProducts(params: ProductSearchParams): Promise<DropshipProduct[]>;
+  createOrder(orderData: any): Promise<OrderCreationResult>;
+  updateInventory(updates: InventoryUpdate[]): Promise<void>;
+  calculateShipping(orderData: DropshipOrderData): Promise<ShippingInfo>;
 }
 
-export interface ShippingAddress {
-  firstName: string;
-  lastName: string;
-  address1: string;
-  address2?: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  phone?: string;
-}
-
-export interface DropshipOrderData {
-  items: DropshipOrderItem[];
-  shippingAddress: ShippingAddress;
-  customerEmail?: string;
-  orderNotes?: string;
-}
-
-export interface DropshipOrderResult {
-  success: boolean;
-  orderId?: string;
-  providerOrderId?: string;
-  trackingNumber?: string;
-  estimatedDelivery?: Date;
-  cost?: number;
-  message?: string;
-  error?: string;
+export interface ProductSearchParams {
+  category?: string;
+  keyword?: string;
+  limit?: number;
+  page?: number;
 }
 
 export interface DropshipProduct {
   id: string;
   name: string;
+  description: string;
   price: number;
-  description?: string;
-  images?: string[];
-  variants?: ProductVariant[];
-  category?: string;
-  provider?: string;
+  imageUrl: string;
+  variants: any[];
+  vendor: string;
 }
 
-export interface ProductVariant {
-  id: string;
-  name: string;
-  price: number;
-  inStock: boolean;
-  attributes: Record<string, string>;
+export interface DropshipOrderData {
+  orderId: string;
+  items: { externalVariantId: string; quantity: number }[];
+  shippingAddress: any;
+  customerInfo: { name: string; email: string; phone?: string };
+  notes?: string;
+}
+
+export interface OrderCreationResult {
+  externalOrderId: string;
+  status: string;
+  providerData?: any;
 }
 
 export interface OrderStatus {
-  orderId: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  trackingNumber?: string;
-  estimatedDelivery?: Date;
-  actualDelivery?: Date;
-  updates?: OrderUpdate[];
+    status: string;
+    trackingNumber?: string;
+    trackingUrl?: string;
 }
 
-export interface OrderUpdate {
-  timestamp: Date;
-  status: string;
+export interface ImportResult {
+  success: boolean;
+  productId?: string;
   message: string;
-  location?: string;
 }
 
-export interface ProductQuery {
-  category?: string;
-  search?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  limit?: number;
-  offset?: number;
+export interface InventoryUpdate {
+  externalVariantId: string;
+  quantity: number;
 }
 
-export interface ProviderHealth {
-  name: string;
-  status: 'healthy' | 'unhealthy' | 'disabled';
-  lastChecked: Date;
-  responseTime?: number;
-  error?: string;
+export interface ShippingInfo {
+  cost: number;
+  estimatedDelivery: string;
 }
 
-export interface ProviderStatus {
-  name: string;
-  enabled: boolean;
-  connected: boolean;
-  lastUpdate: Date;
+export interface IDropshippingProvider {
+  getProviderName(): string;
+  checkHealth(): Promise<{ status: string; details: any }>;
+  fetchProducts(params: ProductSearchParams): Promise<DropshipProduct[]>;
+  createOrder(orderData: any): Promise<OrderCreationResult>;
+  updateInventory(updates: InventoryUpdate[]): Promise<void>;
+  calculateShipping(orderData: DropshipOrderData): Promise<ShippingInfo>;
 }
+
+export interface PrintfulConfig { apiKey: string; }
+export interface SpocketConfig { apiKey: string; }
+
+export class DropshippingError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'DropshippingError';
+  }
+}
+export class RateLimitError extends DropshippingError {}
+export class ProductNotFoundError extends DropshippingError {}
+export class OrderCreationError extends DropshippingError {}

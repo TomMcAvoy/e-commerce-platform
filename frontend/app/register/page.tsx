@@ -1,75 +1,126 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '../../lib/api';
-import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const { checkAuth } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { register, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push('/account');
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
+    setError(null);
     try {
-      await apiClient.register({ name, email, password });
-      await checkAuth(); // Log the user in after registration
-      router.push('/account'); // Redirect to account page
+      await register({ name, email, password });
+      // The register function in AuthContext handles redirection on success
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
+      setError(err.message || 'An unknown error occurred. Please try again.');
     }
   };
 
+  // Show a loading state while checking auth status or redirecting
+  if (isLoading || isAuthenticated) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+    <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
           Create a new account
         </h2>
       </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">Full name</label>
-            <div className="mt-2">
-              <input id="name" name="name" type="text" required value={name} onChange={(e) => setName(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600"/>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <Label htmlFor="name">Full Name</Label>
+              <div className="mt-1">
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
             </div>
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Email address</label>
-            <div className="mt-2">
-              <input id="email" name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600"/>
+
+            <div>
+              <Label htmlFor="email">Email address</Label>
+              <div className="mt-1">
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
             </div>
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Password</label>
-            <div className="mt-2">
-              <input id="password" name="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600"/>
+
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <div className="mt-1">
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
             </div>
+
+            {error && (
+              <div className="rounded-md bg-red-50 p-4">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
+
+            <div>
+              <Button type="submit" className="w-full">
+                Create Account
+              </Button>
+            </div>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                Sign in
+              </Link>
+            </p>
           </div>
-          {error && <div className="text-sm text-red-600">{error}</div>}
-          <div>
-            <button type="submit" disabled={isLoading} className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:bg-gray-400">
-              {isLoading ? 'Creating account...' : 'Create Account'}
-            </button>
-          </div>
-        </form>
-        <p className="mt-10 text-center text-sm text-gray-500">
-          Already a member?{' '}
-          <Link href="/login" className="font-semibold leading-6 text-blue-600 hover:text-blue-500">Sign in</Link>
-        </p>
+        </div>
       </div>
     </div>
   );

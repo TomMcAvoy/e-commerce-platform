@@ -1,65 +1,60 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import CheckoutForm from '@/components/CheckoutForm';
-import { createOrder, createPaymentIntent } from '@/lib/api';
-// Assume you have a way to get the auth token, e.g., from a context or cookies
-import { useAuth } from '@/context/AuthContext'; 
+import { CheckoutForm } from '@/components/CheckoutForm'; // Corrected: Use named import
+import { apiClient } from '@/lib/api';
 
-// Make sure to call `loadStripe` outside of a component’s render to avoid
-// recreating the `Stripe` object on every render.
+// Make sure to add your publishable key to your .env.local file
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-export default function CheckoutPage() {
-  const { token } = useAuth(); // Example of getting the auth token
+export function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState('');
 
   useEffect(() => {
-    // Create order and payment intent when the component mounts
-    const initializeCheckout = async () => {
-      if (!token) return;
-
+    // Create PaymentIntent as soon as the page loads
+    const createIntent = async () => {
       try {
-        // 1. Create a pending order. You might pass shipping info from a previous step.
-        const orderData = {
-          // Dummy data for now, this would come from a form
-          shippingAddress: { address: '123 Main St', city: 'Anytown', postalCode: '12345', country: 'US' },
-          paymentMethod: 'stripe',
-        };
-        const order = await createOrder(orderData, token);
-
-        // 2. Use the new orderId to create a Payment Intent
-        const paymentData = await createPaymentIntent(order._id, token);
-        setClientSecret(paymentData.clientSecret);
-
+        // This endpoint should exist on your backend. It takes the cart/order details
+        // and returns a clientSecret from Stripe.
+        const response = await apiClient.privateRequest('/orders/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // You might need to pass cart items or total amount here
+          body: JSON.stringify({ amount: 1099 }), // Example amount
+        });
+        setClientSecret(response.data.clientSecret);
       } catch (error) {
-        console.error("Failed to initialize checkout:", error);
-        // Handle error, e.g., show a message to the user
+        console.error("Failed to create payment intent:", error);
+        // Handle error state in UI
       }
     };
 
-    initializeCheckout();
-  }, [token]);
+    createIntent();
+  }, []);
 
   const appearance = {
-    theme: 'stripe',
+    theme: 'stripe' as const,
   };
-  const options = {
+  const options: StripeElementsOptions = {
     clientSecret,
     appearance,
   };
 
   return (
-    <div className="checkout-container">
-      <h1>Checkout</h1>
-      {clientSecret ? (
+    <div className="App">
+      {clientSecret && (
         <Elements options={options} stripe={stripePromise}>
-          <CheckoutForm clientSecret={clientSecret} />
+          <CheckoutForm />
         </Elements>
-      ) : (
-        <p>Loading payment details...</p>
+      )}
+      {!clientSecret && (
+        <div className="text-center p-8">
+          <p>Loading payment form...</p>
+        </div>
       )}
     </div>
   );

@@ -1,39 +1,18 @@
 // filepath: /Users/thomasmcavoy/GitHub/shoppingcart/src/routes/productRoutes.ts
 import express from 'express';
-import {
-    getProducts,
-    getProduct,
-    createProduct,
-    updateProduct,
-    deleteProduct,
-    getFeaturedProducts,
-    getCategories,
-    searchProducts,
-    getProductsByCategory
-} from '../controllers/productController';
-import { protect, authorize } from '../middleware/authMiddleware';
+import asyncHandler from 'express-async-handler';
+import { getProducts, getProduct, createProduct, updateProduct, deleteProduct } from '../controllers/productController';
+import { protect, authorize } from '../middleware/auth';
 
 const router = express.Router();
 
-// Public routes - no authentication required following API Endpoints Structure
-router.get('/categories', getCategories);
-router.get('/featured', getFeaturedProducts);
-router.get('/search', searchProducts);
-router.get('/category/:category', getProductsByCategory);
-
-// Public routes for viewing products
 router.route('/')
-    .get(getProducts);
+  .get(asyncHandler(getProducts))
+  .post(protect, authorize('admin', 'vendor'), asyncHandler(createProduct));
 
 router.route('/:id')
-    .get(getProduct);
-
-// Protected admin/vendor routes for managing products
-router.route('/')
-    .post(protect, authorize('admin', 'vendor'), createProduct);
-
-router.route('/:id')
-    .put(protect, authorize('admin', 'vendor'), updateProduct)
-    .delete(protect, authorize('admin', 'vendor'), deleteProduct);
+  .get(asyncHandler(getProduct))
+  .put(protect, authorize('admin', 'vendor'), asyncHandler(updateProduct))
+  .delete(protect, authorize('admin', 'vendor'), asyncHandler(deleteProduct));
 
 export default router;

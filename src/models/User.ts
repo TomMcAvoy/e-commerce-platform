@@ -1,71 +1,140 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import jwt, { Secret } from 'jsonwebtoken';
+// Assuming a types file exists at src/types/models.ts
+import { IAddress, IPreferences } from '../types/models';
 
-/**
- * Definitive User Model combining B2C customer profiles with B2B vendor profiles.
- * Follows all Database Patterns and Security Considerations from Copilot Instructions.
- */
+// Interface for User document, including methods and virtuals
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
   email: string;
   password?: string;
   role: 'customer' | 'vendor' | 'admin';
+  isActive: boolean;
   isEmailVerified: boolean;
+  tenantId: mongoose.Types.ObjectId;
+  addresses: IAddress[];
+  preferences: IPreferences;
+  lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
-  comparePassword(password: string): Promise<boolean>;
+  // Methods
+  matchPassword(enteredPassword: string): Promise<boolean>;
+  getSignedJwtToken(): string;
+  // Virtuals
+  fullName: string;
 }
 
-const UserSchema: Schema = new Schema({
-  firstName: { 
-    type: String, 
-    required: [true, 'First name is required'] 
+// User Schema following Database Patterns from Copilot Instructions
+const UserSchema: Schema<IUser> = new Schema({
+  firstName: {
+    type: String,
+    required: [true, 'Please add a first name'],
+    trim: true,
   },
-  lastName: { 
-    type: String, 
-    required: [true, 'Last name is required'] 
+  lastName: {
+    type: String,
+    required: [true, 'Please add a last name'],
+    trim: true,
   },
   email: {
     type: String,
-    required: [true, 'Email is required'],
+    required: [true, 'Please add an email'],
     unique: true,
-    lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    match: [
+      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+      'Please add a valid email',
+    ],
   },
-  password: { 
-    type: String, 
-    required: [true, 'Password is required'],
+  password: {
+    type: String,
+    required: [true, 'Please add a password'],
     minlength: 6,
-    select: false 
+    select: false, // Do not return password by default
   },
   role: {
     type: String,
     enum: ['customer', 'vendor', 'admin'],
-    default: 'customer'
+    default: 'customer',
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   },
   isEmailVerified: {
     type: Boolean,
-    default: false
-  }
-}, { 
-  timestamps: true 
+    default: false,
+  },
+  tenantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tenant',
+    required: true,
+    index: true,
+  },
+  addresses: [{
+    street: String,
+    city: String,
+    state: String,
+    zip: String,
+    country: String,
+    isPrimary: Boolean,
+  }],
+  preferences: {
+    theme: { type: String, enum: ['light', 'dark'], default: 'light' },
+    notifications: {
+      email: { type: Boolean, default: true },
+      sms: { type: Boolean, default: false },
+    },
+  },
+  lastLogin: {
+    type: Date,
+  },
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 });
 
-// Hash password before saving
-UserSchema.pre<IUser>('save', async function (next) {
-  if (!this.isModified('password') || !this.password) {
+// Virtual for full name as per Database Patterns
+UserSchema.virtual('fullName').get(function() {
+  return `${this.firstName} ${this.lastName}`;
+});
+
+// Encrypt password using bcrypt (pre-save hook)
+UserSchema.pre<IUser>('save', async function(next) {
+  if (!this.isModified('password')) {
     return next();
   }
-  
-  const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
+  if (this.password) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
   next();
 });
 
-// Method to compare password
-UserSchema.methods.comparePassword = async function (enteredPassword: string): Promise<boolean> {
+// Sign JWT and return, fixing the overload error
+UserSchema.methods.getSignedJwtToken = function(): string {
+  const secret = process.env.JWT_SECRET as Secret;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not defined.');
+  }
+  return jwt.sign({ id: this._id }, secret, {
+    expiresIn: process.env.JWT_EXPIRE || '30d'
+  });
+};
+
+// Match user entered password to hashed password in database
+UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-export default mongoose.model<IUser>('User', UserSchema);
+// Indexes for performance as per Database Patterns
+UserSchema.index({ email: 1, tenantId: 1 }, { unique: true });
+UserSchema.index({ role: 1, isActive: 1 });
+
+const User: Model<IUser> = mongoose.model<IUser>('User', UserSchema);
+
+export default User;
+

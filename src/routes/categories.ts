@@ -1,26 +1,27 @@
-import { Router } from 'express';
-import { 
-  getCategories, 
-  getCategory, 
-  getCategoryBySlug,
+import express from 'express';
+import {
+  getCategories,
+  getCategory,
   createCategory,
   updateCategory,
   deleteCategory,
-  getCategoryTree
+  getCategoryBySlug
 } from '../controllers/categoryController';
 import { protect, authorize } from '../middleware/auth';
+import * as categoryController from '../controllers/categoryController';
 
-const router = Router();
+const router = express.Router();
 
-// Public routes following API Endpoints Structure
-router.get('/', getCategories);
-router.get('/tree', getCategoryTree);
-router.get('/slug/:slug', getCategoryBySlug);
-router.get('/:id', getCategory);
+router.route('/slug/:slug').get(categoryController.getCategoryBySlug);
 
-// Admin-only routes following Security Considerations
-router.post('/', protect, authorize('admin'), createCategory);
-router.put('/:id', protect, authorize('admin'), updateCategory);
-router.delete('/:id', protect, authorize('admin'), deleteCategory);
+router
+  .route('/')
+  .get(getCategories)
+  .post(protect, authorize('admin'), createCategory);
+
+router.route('/:id')
+  .get(getCategory)
+  .put(protect, authorize('admin'), updateCategory)
+  .delete(protect, authorize('admin'), deleteCategory);
 
 export default router;

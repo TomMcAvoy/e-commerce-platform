@@ -1,34 +1,37 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface ITenant extends Document {
   name: string;
-  slug: string;
-  plan: "basic" | "premium" | "enterprise";
+  domain: string;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 const TenantSchema: Schema = new Schema(
   {
-    name: { type: String, required: true, trim: true },
-    slug: {
+    name: {
       type: String,
-      required: true,
-      unique: true,
+      required: [true, "Please add a name"],
       trim: true,
-      lowercase: true,
+    },
+    domain: {
+      type: String,
+      required: [true, "Please add a domain"],
+      unique: true,
       index: true,
     },
-    plan: {
-      type: String,
-      enum: ["basic", "premium", "enterprise"],
-      default: "basic",
+    isActive: {
+      type: Boolean,
+      default: true,
     },
-    isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-export default mongoose.model<ITenant>("Tenant", TenantSchema);
+// This pattern prevents the OverwriteModelError and logs the compilation event.
+if (!mongoose.models.Tenant) {
+  console.log(`[Model Compilation] Compiling 'Tenant' in src/models/Tenant.ts`);
+}
+export default mongoose.models.Tenant || mongoose.model<ITenant>("Tenant", TenantSchema);
 

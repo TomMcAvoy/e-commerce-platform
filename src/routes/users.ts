@@ -1,20 +1,19 @@
-import { Router } from 'express';
-import { 
-  getUsers, 
-  getUser, 
-  updateUser, 
+import express from 'express';
+import {
+  getUsers,
+  getUser,
+  createUser,
+  updateUser,
   deleteUser,
-  getCurrentUser 
+  getMe // Correct function name
 } from '../controllers/userController';
 import { protect, authorize } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
-// All user routes require authentication following Authentication Flow
-router.use(protect);
+router.use(protect); // Protect all routes below
 
-// Current user route
-router.get('/me', getCurrentUser);
+router.get('/me', getMe); // Use the correct function
 
 // Admin routes
 router.get('/', authorize('admin'), getUsers);

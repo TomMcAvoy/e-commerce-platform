@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose'; // <-- Import Model
 
 /**
  * Definitive Category Model combining a scalable hierarchy with rich B2B and merchandising features.
@@ -9,115 +9,216 @@ export interface ICategory extends Document {
   name: string;
   slug: string;
   description?: string;
-  isActive: boolean;
-
-  // --- HIERARCHY (Scalable Approach) ---
+  shortDescription?: string;
+  
+  // Hierarchy Management
   parentCategory?: mongoose.Types.ObjectId;
-  level: number; // Hierarchy depth (0 for root)
-  path: string; // For breadcrumbs, e.g., "electronics/computers/laptops"
-
-  // --- MERCHANDISING (Amazon/Temu Style) ---
+  children?: mongoose.Types.ObjectId[];
+  level: number; // 0=root, 1=main, 2=sub, 3=leaf
+  path: string; // Full hierarchy path
+  breadcrumbs: string[];
+  
+  // Display & UI
   image?: string;
   icon?: string;
-  isFeatured: boolean; // For homepage promotion
-  order: number; // Manual sort order for display
-  promotionText?: string; // e.g., "Up to 50% Off"
-  seo?: {
-    title?: string;
-    description?: string;
-    keywords?: string[];
+  color?: string;
+  displayName?: string;
+  
+  // Status & Visibility
+  isActive: boolean;
+  isFeatured: boolean;
+  isPopular: boolean;
+  showInMenu: boolean;
+  showOnHomepage: boolean;
+  sortOrder: number;
+  menuOrder: number;
+  
+  // E-commerce Data
+  productCount: number;
+  minPrice?: number;
+  maxPrice?: number;
+  commissionRate: number;
+  
+  // SEO & Marketing
+  metaTitle?: string;
+  metaDescription?: string;
+  keywords: string[];
+  
+  // External Mapping (for catalog imports)
+  externalMappings?: {
+    amazon?: string;
+    temu?: string;
+    alibaba?: string;
+    walmart?: string;
+    ebay?: string;
   };
-
-  // --- B2B & MARKET INSIGHTS (Alibaba Style) ---
-  categoryType: 'main' | 'sub' | 'leaf'; // Type of category in the hierarchy
-  industryTags?: string[]; // e.g., "Manufacturing", "Agriculture"
-  targetMarket?: string[]; // e.g., "North America", "Europe"
-  tradeAssurance: boolean; // Does this category support Trade Assurance?
-  supportsCustomization: boolean; // Are products typically customizable?
-  marketInsights?: {
-    searchVolume?: number;
-    supplierCount?: number;
-    avgPrice?: { min: number; max: number; currency: string; };
-    seasonalTrends?: { peakMonths: number[]; description: string; };
-  };
-
-  affiliateCode?: string;
-  affiliateUrl?: string;
+  
+  // Multi-tenant following Database Patterns
   tenantId: mongoose.Types.ObjectId;
+  
   createdAt: Date;
   updatedAt: Date;
+  updatePath(): Promise<void>; // <-- Add method to interface
 }
 
 const CategorySchema: Schema = new Schema<ICategory>({
   name: {
     type: String,
-    required: [true, 'Please add a category name'],
+    required: [true, 'Category name is required'],
     trim: true,
-    maxlength: [100, 'Name cannot be more than 100 characters'],
+    maxlength: [100, 'Category name cannot exceed 100 characters']
   },
   slug: {
     type: String,
-    required: [true, 'Please add a category slug'],
-    unique: true,
+    required: [true, 'Category slug is required'],
     lowercase: true,
-    trim: true,
   },
   description: {
     type: String,
-    required: [true, 'Please add a description'],
-    maxlength: [500, 'Description cannot be more than 500 characters'],
+    maxlength: [1000, 'Description cannot exceed 1000 characters']
   },
-  affiliateCode: {
+  shortDescription: {
     type: String,
-    trim: true,
-    maxlength: [50, 'Affiliate code cannot be more than 50 characters'],
+    maxlength: [200, 'Short description cannot exceed 200 characters']
   },
-  affiliateUrl: {
+  
+  // Hierarchy
+  parentCategory: {
+    type: Schema.Types.ObjectId,
+    ref: 'Category',
+    default: null
+  },
+  children: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Category'
+  }],
+  level: {
+    type: Number,
+    required: true,
+    min: 0,
+    max: 5,
+    default: 0
+  },
+  path: {
     type: String,
-    trim: true,
-    maxlength: [500, 'Affiliate URL cannot be more than 500 characters'],
+    required: true
   },
-  isActive: { type: Boolean, default: true, index: true },
-
-  parentCategory: { type: Schema.Types.ObjectId, ref: 'Category', default: null, index: true },
-  level: { type: Number, required: true, default: 0 },
-  path: { type: String, required: true, index: true },
-
+  breadcrumbs: [String],
+  
+  // Display
   image: String,
   icon: String,
-  isFeatured: { type: Boolean, default: false },
-  order: { type: Number, default: 0 },
-  promotionText: String,
-  seo: {
-    title: { type: String, maxlength: 70 },
-    description: { type: String, maxlength: 160 },
-    keywords: [String]
+  color: String,
+  displayName: String,
+  
+  // Status
+  isActive: {
+    type: Boolean,
+    default: true
   },
-
-  categoryType: { type: String, enum: ['main', 'sub', 'leaf'], default: 'leaf' },
-  industryTags: [String],
-  targetMarket: [String],
-  tradeAssurance: { type: Boolean, default: false },
-  supportsCustomization: { type: Boolean, default: false },
-  marketInsights: {
-    searchVolume: Number,
-    supplierCount: Number,
-    avgPrice: { min: Number, max: Number, currency: { type: String, default: 'USD' } },
-    seasonalTrends: { peakMonths: [Number], description: String }
+  isFeatured: {
+    type: Boolean,
+    default: false
+  },
+  isPopular: {
+    type: Boolean,
+    default: false
+  },
+  showInMenu: {
+    type: Boolean,
+    default: true
+  },
+  showOnHomepage: {
+    type: Boolean,
+    default: false
+  },
+  sortOrder: {
+    type: Number,
+    default: 0
+  },
+  menuOrder: {
+    type: Number,
+    default: 0
+  },
+  
+  // E-commerce
+  productCount: {
+    type: Number,
+    default: 0
+  },
+  minPrice: Number,
+  maxPrice: Number,
+  commissionRate: {
+    type: Number,
+    default: 5,
+    min: 0,
+    max: 100
+  },
+  
+  // SEO
+  metaTitle: String,
+  metaDescription: String,
+  keywords: [String],
+  
+  // External mappings
+  externalMappings: {
+    amazon: String,
+    temu: String,
+    alibaba: String,
+    walmart: String,
+    ebay: String
+  },
+  
+  // Multi-tenant following Database Patterns
+  tenantId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Tenant',
+    required: [true, 'Tenant ID is required']
   }
 }, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  timestamps: true
 });
 
-// Compound index for tenant-specific queries
-CategorySchema.index({ tenantId: 1, slug: 1 });
-CategorySchema.index({ tenantId: 1, name: 1 });
+// --- Indexes for Performance ---
+CategorySchema.index({ tenantId: 1 });
+CategorySchema.index({ tenantId: 1, parentCategory: 1 });
+CategorySchema.index({ tenantId: 1, level: 1 });
+CategorySchema.index({ tenantId: 1, isActive: 1, isFeatured: 1 });
+CategorySchema.index({ tenantId: 1, isActive: 1, showInMenu: 1, menuOrder: 1 });
+CategorySchema.index({ tenantId: 1, isActive: 1, showOnHomepage: 1 });
+CategorySchema.index({ tenantId: 1, path: 1 });
+CategorySchema.index({ keywords: 'text', name: 'text', description: 'text' });
 
-// --- KEPT: Performance Indexes ---
-CategorySchema.index({ isActive: 1, isFeatured: 1, order: 1 });
-CategorySchema.index({ name: 'text', description: 'text' });
+// VIRTUALS
+CategorySchema.virtual('fullPath').get(function(this: ICategory) { // <-- Type 'this'
+  if (!this.breadcrumbs || !this.name) return '';
+  return this.breadcrumbs.join(' > ') + (this.breadcrumbs.length > 0 ? ' > ' : '') + this.name;
+});
 
-export default mongoose.model<ICategory>('Category', CategorySchema);
+// METHODS
+CategorySchema.methods.updatePath = async function(this: ICategory) { // <-- Type 'this'
+  if (this.parentCategory) {
+    // Cast `this.constructor` to the Model type to access static methods
+    const parent = await (this.constructor as Model<ICategory>).findById(this.parentCategory);
+    if (parent) {
+      this.breadcrumbs = [...parent.breadcrumbs, parent.name];
+    }
+  } else {
+    this.breadcrumbs = [];
+  }
+};
+
+// Pre-save middleware
+CategorySchema.pre('save', async function(this: ICategory, next) { // <-- Type 'this'
+  if (this.isModified('parentCategory') || this.isNew) {
+    await this.updatePath();
+  }
+  next();
+});
+
+// This pattern prevents the OverwriteModelError and logs the compilation event.
+if (!mongoose.models.Category) {
+  console.log(`[Model Compilation] Compiling 'Category' in src/models/Category.ts`);
+}
+export default mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
 

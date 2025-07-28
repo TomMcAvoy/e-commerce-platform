@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Seeder</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        #output {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Seeder</h1>
+    
+    <div class="card warning">
+        <h3>⚠️ Important</h3>
+        <p>Before running the seeder, make sure MongoDB is running on your system.</p>
+        <p>If you haven't started MongoDB yet, please do so before continuing:</p>
+        <ul>
+            <li><strong>macOS:</strong> <code>brew services start mongodb-community</code></li>
+            <li><strong>Linux:</strong> <code>sudo systemctl start mongod</code></li>
+            <li><strong>Windows:</strong> Start MongoDB service from Services</li>
+        </ul>
+    </div>
+    
+    <div class="card info">
+        <h3>ℹ️ Instructions</h3>
+        <p>This page provides an alternative way to run the database seeder without using the VS Code terminal.</p>
+        <p>Click the button below to run the seeder. The output will be displayed in the console below.</p>
+    </div>
+    
+    <button id="runSeeder">Run Database Seeder</button>
+    
+    <div id="output">
+        <p>Output will appear here...</p>
+    </div>
+    
+    <script>
+        document.getElementById('runSeeder').addEventListener('click', async function() {
+            const button = this;
+            const output = document.getElementById('output');
+            
+            // Disable button while running
+            button.disabled = true;
+            output.innerHTML = '<p>Running seeder...</p>';
+            
+            try {
+                const response = await fetch('/api/run-seeder', {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    output.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Success!</h3>
+                            <p>Database seeded successfully.</p>
+                        </div>
+                        <pre>${result.output}</pre>
+                    `;
+                } else {
+                    output.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Error</h3>
+                            <p>${result.error}</p>
+                        </div>
+                        <pre>${result.output || ''}</pre>
+                    `;
+                }
+            } catch (error) {
+                output.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                        <p>This page requires the API server to be running.</p>
+                        <p>Please start the server with <code>npm run dev:server</code> and try again.</p>
+                        <p>Alternatively, you can run the seeder directly with:</p>
+                        <code>npm run seed:db</code>
+                    </div>
+                `;
+            } finally {
+                // Re-enable button
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

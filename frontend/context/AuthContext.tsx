@@ -1,83 +1,87 @@
 'use client';
 
-import React, { createContext, useState, useContext, useEffect, useCallback, ReactNode } from 'react';
-import { apiClient } from '../lib/api';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
+import { IUser } from '@/types';
 
-// Define the shape of the user object to match the new backend model
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: 'user' | 'admin' | 'vendor';
-  phone?: string;
-  addresses?: Array<{
-    type: 'shipping' | 'billing';
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-    isDefault: boolean;
-  }>;
-  preferences?: {
-    newsletter: boolean;
-    notifications: boolean;
-
-    language: string;
-  };
-}
-
-// Define the shape of the context value
 interface AuthContextType {
-  user: User | null;
   isAuthenticated: boolean;
+  user: IUser | null;
   isLoading: boolean;
-  checkAuth: () => Promise<void>;
+  login: (credentials: any) => Promise<void>;
+  register: (userInfo: any) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
-  // This function checks if a user is logged in by calling the /api/auth/me endpoint.
-  const checkAuth = useCallback(async () => {
-    // No need to set loading true here to prevent UI flicker on re-validation
-    try {
-      const data = await apiClient.privateRequest('/auth/me');
-      if (data && data.data) {
-        setUser(data.data);
-        setIsAuthenticated(true);
-      } else {
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      try {
+        // This endpoint should be protected and return the current user if the cookie is valid
+        const response = await api.privateRequest('/auth/me');
+        setUser(response.data);
+      } catch (error) {
         setUser(null);
-        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      // A 401 error from the API will be caught here, indicating no valid session.
-      setUser(null);
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    checkUserStatus();
   }, []);
 
-  // Run the authentication check once when the application loads.
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  const login = async (credentials: any) => {
+    const response = await api.publicRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+    setUser(response.data);
+    router.push('/account'); // Redirect to a protected page
+  };
 
-  const value = { user, isAuthenticated, isLoading, checkAuth };
+  const register = async (userInfo: any) => {
+    const response = await api.publicRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userInfo),
+    });
+    setUser(response.data);
+    router.push('/account'); // Redirect after registration
+  };
+
+  const logout = async () => {
+    try {
+      await api.privateRequest('/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error("Logout failed, clearing client-side state anyway.", error);
+    } finally {
+      setUser(null);
+      router.push('/login');
+    }
+  };
+
+  const value = {
+    isAuthenticated: !!user,
+    user,
+    isLoading,
+    login,
+    register,
+    logout,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
-// Custom hook to easily access the auth context in your components.
-export function useAuth() {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
+};

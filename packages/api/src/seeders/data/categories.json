@@ -1,0 +1,506 @@
+[
+  {
+    "name": "Electronics",
+    "description": "Electronic devices and accessories",
+    "icon": "computer",
+    "image": "/images/categories/electronics.jpg",
+    "parent": null
+  },
+  {
+    "name": "Smartphones",
+    "description": "Mobile phones and accessories",
+    "icon": "smartphone",
+    "image": "/images/categories/smartphones.jpg",
+    "parent": "Electronics"
+  },
+  {
+    "name": "Laptops",
+    "description": "Notebook computers and accessories",
+    "icon": "laptop",
+    "image": "/images/categories/laptops.jpg",
+    "parent": "Electronics"
+  },
+  {
+    "name": "Tablets",
+    "description": "Tablet computers and accessories",
+    "icon": "tablet",
+    "image": "/images/categories/tablets.jpg",
+    "parent": "Electronics"
+  },
+  {
+    "name": "Audio",
+    "description": "Headphones, speakers, and audio equipment",
+    "icon": "headphones",
+    "image": "/images/categories/audio.jpg",
+    "parent": "Electronics"
+  },
+  {
+    "name": "Wearables",
+    "description": "Smartwatches and fitness trackers",
+    "icon": "watch",
+    "image": "/images/categories/wearables.jpg",
+    "parent": "Electronics"
+  },
+  {
+    "name": "Cameras",
+    "description": "Digital cameras and photography equipment",
+    "icon": "camera",
+    "image": "/images/categories/cameras.jpg",
+    "parent": "Electronics"
+  },
+  {
+    "name": "Fashion",
+    "description": "Clothing, shoes, and accessories",
+    "icon": "shopping_bag",
+    "image": "/images/categories/fashion.jpg",
+    "parent": null
+  },
+  {
+    "name": "Men's Clothing",
+    "description": "Clothing for men",
+    "icon": "man",
+    "image": "/images/categories/mens-clothing.jpg",
+    "parent": "Fashion"
+  },
+  {
+    "name": "Women's Clothing",
+    "description": "Clothing for women",
+    "icon": "woman",
+    "image": "/images/categories/womens-clothing.jpg",
+    "parent": "Fashion"
+  },
+  {
+    "name": "Shoes",
+    "description": "Footwear for all occasions",
+    "icon": "footwear",
+    "image": "/images/categories/shoes.jpg",
+    "parent": "Fashion"
+  },
+  {
+    "name": "Accessories",
+    "description": "Fashion accessories",
+    "icon": "watch",
+    "image": "/images/categories/accessories.jpg",
+    "parent": "Fashion"
+  },
+  {
+    "name": "Jewelry",
+    "description": "Fine jewelry and watches",
+    "icon": "diamond",
+    "image": "/images/categories/jewelry.jpg",
+    "parent": "Fashion"
+  },
+  {
+    "name": "Bags",
+    "description": "Handbags, backpacks, and luggage",
+    "icon": "shopping_bag",
+    "image": "/images/categories/bags.jpg",
+    "parent": "Fashion"
+  },
+  {
+    "name": "Home & Garden",
+    "description": "Home decor, furniture, and garden supplies",
+    "icon": "home",
+    "image": "/images/categories/home-garden.jpg",
+    "parent": null
+  },
+  {
+    "name": "Furniture",
+    "description": "Indoor and outdoor furniture",
+    "icon": "chair",
+    "image": "/images/categories/furniture.jpg",
+    "parent": "Home & Garden"
+  },
+  {
+    "name": "Kitchen",
+    "description": "Kitchen appliances and accessories",
+    "icon": "kitchen",
+    "image": "/images/categories/kitchen.jpg",
+    "parent": "Home & Garden"
+  },
+  {
+    "name": "Bedding",
+    "description": "Bedding and linens",
+    "icon": "bed",
+    "image": "/images/categories/bedding.jpg",
+    "parent": "Home & Garden"
+  },
+  {
+    "name": "Decor",
+    "description": "Home decor and accessories",
+    "icon": "decor",
+    "image": "/images/categories/decor.jpg",
+    "parent": "Home & Garden"
+  },
+  {
+    "name": "Garden",
+    "description": "Garden tools and supplies",
+    "icon": "grass",
+    "image": "/images/categories/garden.jpg",
+    "parent": "Home & Garden"
+  },
+  {
+    "name": "Lighting",
+    "description": "Indoor and outdoor lighting",
+    "icon": "light",
+    "image": "/images/categories/lighting.jpg",
+    "parent": "Home & Garden"
+  },
+  {
+    "name": "Beauty & Health",
+    "description": "Beauty products and health supplies",
+    "icon": "spa",
+    "image": "/images/categories/beauty-health.jpg",
+    "parent": null
+  },
+  {
+    "name": "Skincare",
+    "description": "Skincare products",
+    "icon": "face",
+    "image": "/images/categories/skincare.jpg",
+    "parent": "Beauty & Health"
+  },
+  {
+    "name": "Makeup",
+    "description": "Makeup and cosmetics",
+    "icon": "brush",
+    "image": "/images/categories/makeup.jpg",
+    "parent": "Beauty & Health"
+  },
+  {
+    "name": "Haircare",
+    "description": "Hair care products",
+    "icon": "content_cut",
+    "image": "/images/categories/haircare.jpg",
+    "parent": "Beauty & Health"
+  },
+  {
+    "name": "Fragrances",
+    "description": "Perfumes and colognes",
+    "icon": "air",
+    "image": "/images/categories/fragrances.jpg",
+    "parent": "Beauty & Health"
+  },
+  {
+    "name": "Personal Care",
+    "description": "Personal care products",
+    "icon": "healing",
+    "image": "/images/categories/personal-care.jpg",
+    "parent": "Beauty & Health"
+  },
+  {
+    "name": "Health Supplements",
+    "description": "Vitamins and supplements",
+    "icon": "medication",
+    "image": "/images/categories/health-supplements.jpg",
+    "parent": "Beauty & Health"
+  },
+  {
+    "name": "Sports & Outdoors",
+    "description": "Sports equipment and outdoor gear",
+    "icon": "sports_soccer",
+    "image": "/images/categories/sports-outdoors.jpg",
+    "parent": null
+  },
+  {
+    "name": "Exercise Equipment",
+    "description": "Fitness and exercise equipment",
+    "icon": "fitness_center",
+    "image": "/images/categories/exercise-equipment.jpg",
+    "parent": "Sports & Outdoors"
+  },
+  {
+    "name": "Outdoor Recreation",
+    "description": "Camping and hiking gear",
+    "icon": "hiking",
+    "image": "/images/categories/outdoor-recreation.jpg",
+    "parent": "Sports & Outdoors"
+  },
+  {
+    "name": "Team Sports",
+    "description": "Equipment for team sports",
+    "icon": "sports_basketball",
+    "image": "/images/categories/team-sports.jpg",
+    "parent": "Sports & Outdoors"
+  },
+  {
+    "name": "Water Sports",
+    "description": "Equipment for water sports",
+    "icon": "pool",
+    "image": "/images/categories/water-sports.jpg",
+    "parent": "Sports & Outdoors"
+  },
+  {
+    "name": "Cycling",
+    "description": "Bicycles and cycling accessories",
+    "icon": "pedal_bike",
+    "image": "/images/categories/cycling.jpg",
+    "parent": "Sports & Outdoors"
+  },
+  {
+    "name": "Activewear",
+    "description": "Athletic clothing and footwear",
+    "icon": "directions_run",
+    "image": "/images/categories/activewear.jpg",
+    "parent": "Sports & Outdoors"
+  },
+  {
+    "name": "Toys & Games",
+    "description": "Toys, games, and entertainment",
+    "icon": "toys",
+    "image": "/images/categories/toys-games.jpg",
+    "parent": null
+  },
+  {
+    "name": "Board Games",
+    "description": "Board games and card games",
+    "icon": "casino",
+    "image": "/images/categories/board-games.jpg",
+    "parent": "Toys & Games"
+  },
+  {
+    "name": "Video Games",
+    "description": "Video games and consoles",
+    "icon": "sports_esports",
+    "image": "/images/categories/video-games.jpg",
+    "parent": "Toys & Games"
+  },
+  {
+    "name": "Toys",
+    "description": "Toys for all ages",
+    "icon": "toys",
+    "image": "/images/categories/toys.jpg",
+    "parent": "Toys & Games"
+  },
+  {
+    "name": "Puzzles",
+    "description": "Jigsaw puzzles and brain teasers",
+    "icon": "extension",
+    "image": "/images/categories/puzzles.jpg",
+    "parent": "Toys & Games"
+  },
+  {
+    "name": "Collectibles",
+    "description": "Collectible items and memorabilia",
+    "icon": "emoji_events",
+    "image": "/images/categories/collectibles.jpg",
+    "parent": "Toys & Games"
+  },
+  {
+    "name": "Outdoor Play",
+    "description": "Outdoor toys and play equipment",
+    "icon": "park",
+    "image": "/images/categories/outdoor-play.jpg",
+    "parent": "Toys & Games"
+  },
+  {
+    "name": "Books & Media",
+    "description": "Books, music, and movies",
+    "icon": "menu_book",
+    "image": "/images/categories/books-media.jpg",
+    "parent": null
+  },
+  {
+    "name": "Books",
+    "description": "Physical books and e-books",
+    "icon": "auto_stories",
+    "image": "/images/categories/books.jpg",
+    "parent": "Books & Media"
+  },
+  {
+    "name": "Music",
+    "description": "CDs, vinyl records, and digital music",
+    "icon": "music_note",
+    "image": "/images/categories/music.jpg",
+    "parent": "Books & Media"
+  },
+  {
+    "name": "Movies",
+    "description": "DVDs, Blu-rays, and digital movies",
+    "icon": "movie",
+    "image": "/images/categories/movies.jpg",
+    "parent": "Books & Media"
+  },
+  {
+    "name": "Magazines",
+    "description": "Magazines and periodicals",
+    "icon": "newspaper",
+    "image": "/images/categories/magazines.jpg",
+    "parent": "Books & Media"
+  },
+  {
+    "name": "Audiobooks",
+    "description": "Audio books and spoken content",
+    "icon": "headphones",
+    "image": "/images/categories/audiobooks.jpg",
+    "parent": "Books & Media"
+  },
+  {
+    "name": "Automotive",
+    "description": "Automotive parts and accessories",
+    "icon": "directions_car",
+    "image": "/images/categories/automotive.jpg",
+    "parent": null
+  },
+  {
+    "name": "Car Parts",
+    "description": "Replacement parts for vehicles",
+    "icon": "build",
+    "image": "/images/categories/car-parts.jpg",
+    "parent": "Automotive"
+  },
+  {
+    "name": "Car Accessories",
+    "description": "Accessories for vehicles",
+    "icon": "car_rental",
+    "image": "/images/categories/car-accessories.jpg",
+    "parent": "Automotive"
+  },
+  {
+    "name": "Tools",
+    "description": "Automotive tools and equipment",
+    "icon": "handyman",
+    "image": "/images/categories/tools.jpg",
+    "parent": "Automotive"
+  },
+  {
+    "name": "Car Care",
+    "description": "Car cleaning and maintenance products",
+    "icon": "local_car_wash",
+    "image": "/images/categories/car-care.jpg",
+    "parent": "Automotive"
+  },
+  {
+    "name": "Motorcycle",
+    "description": "Motorcycle parts and accessories",
+    "icon": "two_wheeler",
+    "image": "/images/categories/motorcycle.jpg",
+    "parent": "Automotive"
+  },
+  {
+    "name": "Grocery",
+    "description": "Food and grocery items",
+    "icon": "local_grocery_store",
+    "image": "/images/categories/grocery.jpg",
+    "parent": null
+  },
+  {
+    "name": "Pantry",
+    "description": "Non-perishable food items",
+    "icon": "kitchen",
+    "image": "/images/categories/pantry.jpg",
+    "parent": "Grocery"
+  },
+  {
+    "name": "Snacks",
+    "description": "Snack foods and treats",
+    "icon": "fastfood",
+    "image": "/images/categories/snacks.jpg",
+    "parent": "Grocery"
+  },
+  {
+    "name": "Beverages",
+    "description": "Drinks and beverages",
+    "icon": "local_bar",
+    "image": "/images/categories/beverages.jpg",
+    "parent": "Grocery"
+  },
+  {
+    "name": "Baking",
+    "description": "Baking ingredients and supplies",
+    "icon": "cake",
+    "image": "/images/categories/baking.jpg",
+    "parent": "Grocery"
+  },
+  {
+    "name": "Organic",
+    "description": "Organic food products",
+    "icon": "eco",
+    "image": "/images/categories/organic.jpg",
+    "parent": "Grocery"
+  },
+  {
+    "name": "Pet Supplies",
+    "description": "Supplies for pets",
+    "icon": "pets",
+    "image": "/images/categories/pet-supplies.jpg",
+    "parent": null
+  },
+  {
+    "name": "Dog Supplies",
+    "description": "Supplies for dogs",
+    "icon": "pets",
+    "image": "/images/categories/dog-supplies.jpg",
+    "parent": "Pet Supplies"
+  },
+  {
+    "name": "Cat Supplies",
+    "description": "Supplies for cats",
+    "icon": "pets",
+    "image": "/images/categories/cat-supplies.jpg",
+    "parent": "Pet Supplies"
+  },
+  {
+    "name": "Fish Supplies",
+    "description": "Supplies for fish",
+    "icon": "water",
+    "image": "/images/categories/fish-supplies.jpg",
+    "parent": "Pet Supplies"
+  },
+  {
+    "name": "Bird Supplies",
+    "description": "Supplies for birds",
+    "icon": "air",
+    "image": "/images/categories/bird-supplies.jpg",
+    "parent": "Pet Supplies"
+  },
+  {
+    "name": "Small Animal Supplies",
+    "description": "Supplies for small animals",
+    "icon": "pets",
+    "image": "/images/categories/small-animal-supplies.jpg",
+    "parent": "Pet Supplies"
+  },
+  {
+    "name": "Office Supplies",
+    "description": "Supplies for office and school",
+    "icon": "business_center",
+    "image": "/images/categories/office-supplies.jpg",
+    "parent": null
+  },
+  {
+    "name": "Writing Supplies",
+    "description": "Pens, pencils, and writing instruments",
+    "icon": "edit",
+    "image": "/images/categories/writing-supplies.jpg",
+    "parent": "Office Supplies"
+  },
+  {
+    "name": "Paper Products",
+    "description": "Paper, notebooks, and stationery",
+    "icon": "description",
+    "image": "/images/categories/paper-products.jpg",
+    "parent": "Office Supplies"
+  },
+  {
+    "name": "Office Furniture",
+    "description": "Furniture for office and workspace",
+    "icon": "chair",
+    "image": "/images/categories/office-furniture.jpg",
+    "parent": "Office Supplies"
+  },
+  {
+    "name": "Office Electronics",
+    "description": "Electronics for office use",
+    "icon": "print",
+    "image": "/images/categories/office-electronics.jpg",
+    "parent": "Office Supplies"
+  },
+  {
+    "name": "School Supplies",
+    "description": "Supplies for school and education",
+    "icon": "school",
+    "image": "/images/categories/school-supplies.jpg",
+    "parent": "Office Supplies"
+  }
+]

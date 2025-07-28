@@ -39,6 +39,9 @@ class ComprehensiveSeeder {
     console.log('🧹 Wiping database completely...');
     
     try {
+      if (!mongoose.connection.db) {
+        throw new AppError('Database connection not available for clearing.', 500);
+      }
       // Drop collections completely (including indexes)
       const collections = await mongoose.connection.db.listCollections().toArray();
       
@@ -686,24 +689,19 @@ class ComprehensiveSeeder {
       console.log('\n✅ All systems ready for development!');
       console.log('💡 Run: npm run dev:all');
       
-    } catch (error) {
-      console.error('❌ Comprehensive seeding failed:', error);
-      
-      // Enhanced error reporting following your Error Handling Pattern
-      if (error.name === 'ValidationError') {
-        console.error('\n🔍 Mongoose Validation Errors:');
-        Object.keys(error.errors).forEach(field => {
-          const fieldError = error.errors[field];
-          console.error(`  • ${field}: ${fieldError.message} (Kind: ${fieldError.kind})`);
-        });
-        console.error('\n💡 Check your model schemas for required fields');
+    } catch (error: unknown) {
+      console.error(`❌ Seeding failed.`);
+      if (error instanceof Error) {
+        console.error(`Error message: ${error.message}`);
+        if ('name' in error && error.name === 'ValidationError' && 'errors' in error) {
+          const validationError = error as any; // Cast to access specific properties
+          Object.keys(validationError.errors).forEach(field => {
+            console.error(`  - ${field}: ${validationError.errors[field].message}`);
+          });
+        }
+      } else {
+        console.error('An unknown error object was thrown:', error);
       }
-      
-      if (error instanceof AppError) {
-        console.error(`AppError: ${error.message} (Status: ${error.statusCode})`);
-      }
-      
-      throw error;
     } finally {
       await mongoose.connection.close();
     }

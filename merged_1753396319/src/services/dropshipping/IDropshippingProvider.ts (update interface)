@@ -1,9 +1,0 @@
-interface IDropshippingProvider {
-    createOrder(orderDetails: any): Promise<any>;
-    getOrderStatus(orderId: string): Promise<any>;
-    cancelOrder(orderId: string): Promise<any>;
-    getAvailableProducts(): Promise<any[]>;
-    isEnabled: boolean;
-    getProducts(query: any): Promise<any[]>;
-    getProduct(productId: string): Promise<any>;
-}

@@ -1,93 +1,86 @@
 "use client";
 
-import React from "react";
-import { useCart } from "../../context/CartContext";
-import { Navigation } from "../../components/navigation/Navigation";
-import { ProductCard } from "../../components/products/ProductCard";
-
-// Define a type for the product for clarity
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  images: string[];
-  slug: string;
-}
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { apiClient } from "@/lib/api";
+import { IProduct } from "@/types";
+import { ProductCard } from "@/components/products/ProductCard";
+import { Button } from "@/components/ui/Button";
 
 export default function HomePage() {
-  // Correctly destructure state and dispatch from the cart context
-  const { state, dispatch } = useCart();
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Placeholder product data - in a real app, this would be fetched from an API
-  const products: Product[] = [
-    {
-      _id: "prod_1",
-      name: "High-Performance Router",
-      price: 199.99,
-      images: ["/placeholder.png"],
-      slug: "performance-router",
-    },
-    {
-      _id: "prod_2",
-      name: "Secure VPN Gateway",
-      price: 299.99,
-      images: ["/placeholder.png"],
-      slug: "secure-gateway",
-    },
-    {
-      _id: "prod_3",
-      name: "Network Security Camera",
-      price: 149.99,
-      images: ["/placeholder.png"],
-      slug: "security-camera",
-    },
-    {
-      _id: "prod_4",
-      name: "Enterprise Firewall",
-      price: 499.99,
-      images: ["/placeholder.png"],
-      slug: "enterprise-firewall",
-    },
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.publicRequest(
+          "/products?limit=8&sort=-createdAt"
+        );
+        setProducts(response.data.data);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch products.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleAddToCart = (product: Product) => {
-    dispatch({
-      type: "ADD_ITEM",
-      payload: { product, quantity: 1 },
-    });
-    alert(`${product.name} has been added to your cart.`);
-  };
+    fetchProducts();
+  }, []);
 
   return (
-    <div>
-      <Navigation />
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900">
-            Welcome to Whitestart System Security
-          </h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Your trusted partner in network and system security solutions.
-          </p>
+    <div className="bg-white">
+      <main>
+        {/* Hero Section */}
+        <div className="relative bg-gray-900">
+          <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80&sat=-100"
+              alt="Hero background"
+              className="w-full h-full object-center object-cover"
+            />
+          </div>
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gray-900 opacity-50"
+          />
+          <div className="relative max-w-3xl mx-auto py-32 px-6 flex flex-col items-center text-center lg:px-0">
+            <h1 className="text-4xl font-bold tracking-tight text-white lg:text-6xl">
+              Your One-Stop E-Commerce Hub
+            </h1>
+            <p className="mt-4 text-xl text-white">
+              Discover amazing products from vendors all over the world. Quality
+              and convenience, delivered.
+            </p>
+            <Button asChild size="lg" className="mt-8">
+              <Link href="/products">Shop Now</Link>
+            </Button>
+          </div>
         </div>
 
-        <h2 className="text-3xl font-bold mb-6">Featured Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product) => (
-            <div
-              key={product._id}
-              className="border rounded-lg p-4 shadow-sm"
-            >
-              <ProductCard product={product} />
-              <button
-                onClick={() => handleAddToCart(product)}
-                className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Add to Cart
-              </button>
+        {/* Featured Products Section */}
+        <section
+          aria-labelledby="featured-products-heading"
+          className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8"
+        >
+          <h2
+            id="featured-products-heading"
+            className="text-2xl font-bold tracking-tight text-gray-900"
+          >
+            Featured Products
+          </h2>
+          {loading && <p className="mt-6">Loading...</p>}
+          {error && <p className="mt-6 text-red-600">{error}</p>}
+          {!loading && !error && (
+            <div className="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </section>
       </main>
     </div>
   );

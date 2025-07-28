@@ -1,0 +1,242 @@
+[
+  {
+    "firstName": "John",
+    "lastName": "Smith",
+    "email": "john.smith@example.com",
+    "phone": "555-123-4567",
+    "businessName": "Tech Innovations",
+    "taxId": "12-3456789",
+    "address": {
+      "address1": "123 Main Street",
+      "address2": "Suite 101",
+      "city": "San Francisco",
+      "state": "CA",
+      "postalCode": "94105",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Sarah",
+    "lastName": "Johnson",
+    "email": "sarah.johnson@example.com",
+    "phone": "555-234-5678",
+    "businessName": "Fashion Forward",
+    "taxId": "23-4567890",
+    "address": {
+      "address1": "456 Market Street",
+      "address2": "Floor 3",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Michael",
+    "lastName": "Williams",
+    "email": "michael.williams@example.com",
+    "phone": "555-345-6789",
+    "businessName": "Home Essentials",
+    "taxId": "34-5678901",
+    "address": {
+      "address1": "789 Oak Avenue",
+      "address2": "",
+      "city": "Chicago",
+      "state": "IL",
+      "postalCode": "60601",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Emily",
+    "lastName": "Brown",
+    "email": "emily.brown@example.com",
+    "phone": "555-456-7890",
+    "businessName": "Beauty Bliss",
+    "taxId": "45-6789012",
+    "address": {
+      "address1": "321 Pine Street",
+      "address2": "Unit 5",
+      "city": "Los Angeles",
+      "state": "CA",
+      "postalCode": "90001",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "David",
+    "lastName": "Jones",
+    "email": "david.jones@example.com",
+    "phone": "555-567-8901",
+    "businessName": "Sports Unlimited",
+    "taxId": "56-7890123",
+    "address": {
+      "address1": "654 Elm Street",
+      "address2": "",
+      "city": "Dallas",
+      "state": "TX",
+      "postalCode": "75201",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Jessica",
+    "lastName": "Miller",
+    "email": "jessica.miller@example.com",
+    "phone": "555-678-9012",
+    "businessName": "Toy Kingdom",
+    "taxId": "67-8901234",
+    "address": {
+      "address1": "987 Maple Avenue",
+      "address2": "Suite 202",
+      "city": "Seattle",
+      "state": "WA",
+      "postalCode": "98101",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Robert",
+    "lastName": "Davis",
+    "email": "robert.davis@example.com",
+    "phone": "555-789-0123",
+    "businessName": "Book Haven",
+    "taxId": "78-9012345",
+    "address": {
+      "address1": "246 Cedar Street",
+      "address2": "",
+      "city": "Boston",
+      "state": "MA",
+      "postalCode": "02108",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Jennifer",
+    "lastName": "Garcia",
+    "email": "jennifer.garcia@example.com",
+    "phone": "555-890-1234",
+    "businessName": "Auto Parts Plus",
+    "taxId": "89-0123456",
+    "address": {
+      "address1": "135 Walnut Street",
+      "address2": "Building B",
+      "city": "Miami",
+      "state": "FL",
+      "postalCode": "33101",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "James",
+    "lastName": "Rodriguez",
+    "email": "james.rodriguez@example.com",
+    "phone": "555-901-2345",
+    "businessName": "Gourmet Grocers",
+    "taxId": "90-1234567",
+    "address": {
+      "address1": "864 Birch Avenue",
+      "address2": "",
+      "city": "Denver",
+      "state": "CO",
+      "postalCode": "80201",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Lisa",
+    "lastName": "Martinez",
+    "email": "lisa.martinez@example.com",
+    "phone": "555-012-3456",
+    "businessName": "Pet Paradise",
+    "taxId": "01-2345678",
+    "address": {
+      "address1": "753 Spruce Street",
+      "address2": "Suite 303",
+      "city": "Atlanta",
+      "state": "GA",
+      "postalCode": "30301",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Daniel",
+    "lastName": "Hernandez",
+    "email": "daniel.hernandez@example.com",
+    "phone": "555-123-4567",
+    "businessName": "Office Supply Co",
+    "taxId": "12-3456780",
+    "address": {
+      "address1": "951 Ash Street",
+      "address2": "",
+      "city": "Phoenix",
+      "state": "AZ",
+      "postalCode": "85001",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Maria",
+    "lastName": "Lopez",
+    "email": "maria.lopez@example.com",
+    "phone": "555-234-5678",
+    "businessName": "Handmade Crafts",
+    "taxId": "23-4567891",
+    "address": {
+      "address1": "357 Willow Avenue",
+      "address2": "Unit 7",
+      "city": "Philadelphia",
+      "state": "PA",
+      "postalCode": "19101",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Christopher",
+    "lastName": "Gonzalez",
+    "email": "christopher.gonzalez@example.com",
+    "phone": "555-345-6789",
+    "businessName": "Digital Gadgets",
+    "taxId": "34-5678902",
+    "address": {
+      "address1": "159 Redwood Street",
+      "address2": "",
+      "city": "San Diego",
+      "state": "CA",
+      "postalCode": "92101",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Amanda",
+    "lastName": "Wilson",
+    "email": "amanda.wilson@example.com",
+    "phone": "555-456-7890",
+    "businessName": "Trendy Apparel",
+    "taxId": "45-6789013",
+    "address": {
+      "address1": "753 Sequoia Avenue",
+      "address2": "Floor 2",
+      "city": "Portland",
+      "state": "OR",
+      "postalCode": "97201",
+      "country": "USA"
+    }
+  },
+  {
+    "firstName": "Matthew",
+    "lastName": "Anderson",
+    "email": "matthew.anderson@example.com",
+    "phone": "555-567-8901",
+    "businessName": "Home Decor Designs",
+    "taxId": "56-7890124",
+    "address": {
+      "address1": "852 Fir Street",
+      "address2": "",
+      "city": "Minneapolis",
+      "state": "MN",
+      "postalCode": "55401",
+      "country": "USA"
+    }
+  }
+]

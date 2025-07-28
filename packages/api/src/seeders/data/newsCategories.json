@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Technology",
+    "description": "Latest news and updates from the tech world",
+    "image": "/images/news/technology.jpg"
+  },
+  {
+    "name": "Fashion",
+    "description": "Fashion trends, styles, and industry news",
+    "image": "/images/news/fashion.jpg"
+  },
+  {
+    "name": "Home & Living",
+    "description": "Tips and trends for home decor and lifestyle",
+    "image": "/images/news/home-living.jpg"
+  },
+  {
+    "name": "Health & Wellness",
+    "description": "Health tips, wellness advice, and fitness news",
+    "image": "/images/news/health-wellness.jpg"
+  },
+  {
+    "name": "Sports & Outdoors",
+    "description": "Sports news, outdoor activities, and adventure",
+    "image": "/images/news/sports-outdoors.jpg"
+  },
+  {
+    "name": "Entertainment",
+    "description": "Entertainment news, reviews, and celebrity updates",
+    "image": "/images/news/entertainment.jpg"
+  },
+  {
+    "name": "Business",
+    "description": "Business news, market trends, and industry insights",
+    "image": "/images/news/business.jpg"
+  },
+  {
+    "name": "Food & Cooking",
+    "description": "Recipes, cooking tips, and food trends",
+    "image": "/images/news/food-cooking.jpg"
+  }
+]
