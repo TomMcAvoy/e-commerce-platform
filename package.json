@@ -15,7 +15,13 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "seed": "ts-node src/seed.ts",
-    "setup": "npm install && cd frontend && npm install && cd .. && cp .env.example .env && npm run build"
+    "seed:full": "ts-node -e \"import { DatabaseSeeder } from './src/seeders/DatabaseSeeder'; new DatabaseSeeder().seedAll();\"",
+    "db:clear": "ts-node -e \"import { DatabaseSeeder } from './src/seeders/DatabaseSeeder'; new DatabaseSeeder().clearAll();\"",
+    "db:reset": "ts-node -e \"import { DatabaseSeeder } from './src/seeders/DatabaseSeeder'; new DatabaseSeeder().resetAll();\"",
+    "clean:all": "rimraf dist node_modules frontend/node_modules frontend/.next",
+    "reset:all": "npm run clean:all && npm install && cd frontend && npm install && cd .. && npm run build",
+    "setup": "npm install && cd frontend && npm install && cd .. && cp .env.example .env && npm run build",
+    "kill": "pkill -f 'nodemon src/index.ts' && pkill -f 'next dev' || true"
   },
   "dependencies": {
     "@types/hpp": "^0.2.6",
@@ -64,6 +70,7 @@
     "mongodb-memory-server": "^10.1.4",
     "nodemon": "^3.0.1",
     "playwright": "^1.54.1",
+    "rimraf": "^5.0.5",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
