@@ -1,12 +1,16 @@
 # Dependencies
 node_modules/
+*/node_modules/
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+frontend/.turbo/
 
 # Production builds
 dist/
 build/
+out/
+*.tsbuildinfo
 
 # Environment files
 .env
@@ -106,6 +110,25 @@ uploads/*
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# TypeScript
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Vercel
+.vercel/
+
+# Build artifacts
+*.map
+*.min.js
+*.min.css
 
 # Database
 *.db
