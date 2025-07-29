@@ -115,13 +115,11 @@ UserSchema.pre<IUser>('save', async function(next) {
 
 // Sign JWT and return, fixing the overload error
 UserSchema.methods.getSignedJwtToken = function(): string {
-  const secret = process.env.JWT_SECRET as Secret;
+  const secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new Error('JWT_SECRET is not defined.');
   }
-  return jwt.sign({ id: this._id }, secret, {
-    expiresIn: process.env.JWT_EXPIRE || '30d'
-  });
+  return jwt.sign({ id: this._id }, secret);
 };
 
 // Match user entered password to hashed password in database

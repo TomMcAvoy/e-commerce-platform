@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 
 export default function RegisterPage() {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
     try {
-      await register({ name, email, password });
+      await register({ name: `${firstName} ${lastName}`, email, password });
       // The register function in AuthContext handles redirection on success
     } catch (err: any) {
       setError(err.message || 'An unknown error occurred. Please try again.');
@@ -55,16 +56,31 @@ export default function RegisterPage() {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="firstName">First Name</Label>
               <div className="mt-1">
                 <Input
-                  id="name"
-                  name="name"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  autoComplete="name"
+                  autoComplete="given-name"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="lastName">Last Name</Label>
+              <div className="mt-1">
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  autoComplete="family-name"
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                 />
               </div>
             </div>

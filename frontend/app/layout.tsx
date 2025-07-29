@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import { headers } from 'next/headers';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,6 +19,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = headers();
+  const pathname = headersList.get('x-pathname') || '';
+  const isCompanyPage = pathname.startsWith('/company');
+
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -24,7 +30,7 @@ export default function RootLayout({
           <CartProvider>
             <Header />
             <main>{children}</main>
-            {/* A Footer component could be added here later */}
+            {!isCompanyPage && <Footer />}
           </CartProvider>
         </AuthProvider>
       </body>

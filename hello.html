@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Script Runner</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #output {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello Script Runner</h1>
+    
+    <div class="card info">
+        <h3>ℹ️ Instructions</h3>
+        <p>This page demonstrates a simple way to run JavaScript code without using the terminal.</p>
+        <p>Click the button below to run the hello script. The output will be displayed in the console below.</p>
+    </div>
+    
+    <button id="runScript">Run Hello Script</button>
+    
+    <div id="output">
+        <p>Output will appear here...</p>
+    </div>
+    
+    <script>
+        document.getElementById('runScript').addEventListener('click', function() {
+            const output = document.getElementById('output');
+            
+            // Clear previous output
+            output.innerHTML = '';
+            
+            // Run the script
+            const now = new Date();
+            
+            output.innerHTML += `Hello from the shopping cart application!\n`;
+            output.innerHTML += `This script ran successfully.\n`;
+            output.innerHTML += `Current time: ${now.toLocaleTimeString()}\n\n`;
+            
+            output.innerHTML += `System information:\n`;
+            output.innerHTML += `- Browser: ${navigator.userAgent}\n`;
+            output.innerHTML += `- Platform: ${navigator.platform}\n`;
+            output.innerHTML += `- Language: ${navigator.language}\n`;
+            output.innerHTML += `- Window size: ${window.innerWidth}x${window.innerHeight}\n\n`;
+            
+            output.innerHTML += `Script completed successfully!`;
+            
+            // Add success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'success';
+            successMsg.innerHTML = '<h3>✅ Success!</h3><p>Script executed successfully.</p>';
+            output.parentNode.insertBefore(successMsg, output.nextSibling);
+        });
+    </script>
+</body>
+</html>

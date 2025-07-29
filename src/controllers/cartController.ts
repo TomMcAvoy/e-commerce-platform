@@ -1,15 +1,15 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import Cart, { ICartItem } from '../models/Cart';
 import Product from '../models/Product';
 import AppError from '../utils/AppError';
-import { AuthenticatedRequest } from '../types/auth';
+// import { AuthenticatedRequest } from '../types/auth';
 
 // @desc    Get user's cart
 // @route   GET /api/cart
 // @access  Private
-export const getCart = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
+export const getCart = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const cart = await Cart.findOne({ user: req.user!._id }).populate('items.product');
 
     if (!cart) {
         // Return an empty cart structure if none exists
@@ -29,9 +29,9 @@ export const getCart = asyncHandler(async (req: AuthenticatedRequest, res: Respo
 // @desc    Add item to cart
 // @route   POST /api/cart
 // @access  Private
-export const addItem = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const addItem = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const { productId, quantity } = req.body;
-    const userId = req.user._id;
+    const userId = req.user!._id;
 
     const product = await Product.findById(productId);
     if (!product) {
@@ -66,10 +66,10 @@ export const addItem = asyncHandler(async (req: AuthenticatedRequest, res: Respo
 // @desc    Update item quantity in cart
 // @route   PUT /api/cart/:productId
 // @access  Private
-export const updateItemQuantity = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const updateItemQuantity = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const { productId } = req.params;
     const { quantity } = req.body;
-    const userId = req.user._id;
+    const userId = req.user!._id;
 
     if (typeof quantity !== 'number' || quantity <= 0) {
         return next(new AppError('Quantity must be a positive number', 400));
@@ -96,9 +96,9 @@ export const updateItemQuantity = asyncHandler(async (req: AuthenticatedRequest,
 // @desc    Remove item from cart
 // @route   DELETE /api/cart/:productId
 // @access  Private
-export const removeItem = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const removeItem = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const { productId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user!._id;
 
     const cart = await Cart.findOne({ user: userId });
 
@@ -122,8 +122,8 @@ export const removeItem = asyncHandler(async (req: AuthenticatedRequest, res: Re
 // @desc    Clear all items from cart
 // @route   DELETE /api/cart
 // @access  Private
-export const clearCart = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const userId = req.user._id;
+export const clearCart = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user!._id;
 
     const cart = await Cart.findOne({ user: userId });
 

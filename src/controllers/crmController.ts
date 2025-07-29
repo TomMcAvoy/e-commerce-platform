@@ -170,7 +170,7 @@ export const getCustomerProfile = async (
     const { id } = req.params
 
     const customer = await User.findById(id).select('-password')
-    if (!customer || customer.role === 'user') {
+    if (!customer || customer.role === 'admin') {
       return next(new AppError('Customer not found', 404))
     }
 
@@ -271,7 +271,7 @@ export const addCustomerNote = async (
     }
 
     const customer = await User.findById(id)
-    if (!customer || customer.role === 'user') {
+    if (!customer || customer.role === 'admin') {
       return next(new AppError('Customer not found', 404))
     }
 

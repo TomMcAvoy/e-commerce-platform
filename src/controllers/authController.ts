@@ -43,7 +43,7 @@ export const register = asyncHandler(async (req: Request, res: Response, next: N
     });
 
     const { firstName, lastName, email, password, role } = req.body;
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const tenantId = req.headers['x-tenant-id'] as string || process.env.DEFAULT_TENANT_ID || '6884bf4702e02fe6eb401303';
 
     if (!tenantId) {
       return next(new AppError('Tenant ID is required', 400));
@@ -78,8 +78,11 @@ export const register = asyncHandler(async (req: Request, res: Response, next: N
     });
 
     sendTokenResponse(user, 201, res);
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Registration error:', error);
+    if (error.code === 11000) {
+      return next(new AppError('User already exists', 400));
+    }
     return next(new AppError('Registration failed', 500));
   }
 });

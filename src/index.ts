@@ -27,7 +27,7 @@ import orderRoutes from './routes/orderRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import newsRoutes from './routes/newsRoutes';
 import newsCategoryRoutes from './routes/newsCategoryRoutes';
-import seederRoutes from './routes/admin/seeder';
+
 
 // Load env vars
 dotenv.config();
@@ -53,8 +53,8 @@ app.use(hpp());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 mins
-  max: 200
+  windowMs: 1 * 60 * 1000, // 1 min
+  max: 1000 // Increased for development
 });
 app.use(limiter);
 
@@ -75,7 +75,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/news-categories', newsCategoryRoutes);
-app.use('/api/admin', seederRoutes);
+
 
 // Health check endpoints
 app.get('/health', (req, res) => res.status(200).send('OK'));

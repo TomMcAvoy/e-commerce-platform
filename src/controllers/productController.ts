@@ -8,7 +8,7 @@ import AppError from '../utils/AppError';
 // @access  Public
 export const getProducts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const products = await Product.find({ tenantId: req.tenantId }).populate('category vendor');
+    const products = await Product.find({ tenantId: req.tenantId });
     res.status(200).json({ success: true, count: products.length, data: products });
   } catch (error) {
     next(error);
@@ -50,7 +50,7 @@ export const getProductBySlug = asyncHandler(async (req: Request, res: Response,
 // @access  Public
 export const getFeaturedProducts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const products = await Product.find({ tenantId: req.tenantId, isFeatured: true }).populate('category vendor');
+    const products = await Product.find({ tenantId: req.tenantId, isFeatured: true });
     res.status(200).json({ success: true, count: products.length, data: products });
   } catch (error) {
     next(error);

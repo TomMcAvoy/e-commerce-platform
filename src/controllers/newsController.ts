@@ -39,10 +39,18 @@ const getNewsArticleBySlug = async (req: Request, res: Response, next: NextFunct
 const getNewsFeed = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const source = req.query.source as string;
+    const country = req.query.country as string;
+    const category = req.query.category as string;
     const query: any = { tenantId: req.tenantId, isActive: true };
 
     if (source) {
       query.sourceId = source;
+    }
+    if (country) {
+      query.country = country;
+    }
+    if (category) {
+      query.category = category.toLowerCase();
     }
 
     const articles = await News.find(query)
@@ -52,7 +60,7 @@ const getNewsFeed = async (req: Request, res: Response, next: NextFunction) => {
 
     res.status(200).json({
       success: true,
-      source: source ? source : 'all',
+      filters: { source, country, category },
       count: articles.length,
       data: articles
     });
@@ -61,10 +69,44 @@ const getNewsFeed = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const getNewsCountries = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const countries = {
+      usa: 'United States',
+      uk: 'United Kingdom', 
+      scotland: 'Scotland',
+      canada: 'Canada',
+      australia: 'Australia',
+      germany: 'Germany',
+      france: 'France',
+      italy: 'Italy',
+      spain: 'Spain',
+      netherlands: 'Netherlands',
+      ireland: 'Ireland',
+      india: 'India',
+      japan: 'Japan',
+      china: 'China',
+      russia: 'Russia',
+      brazil: 'Brazil',
+      mexico: 'Mexico',
+      argentina: 'Argentina',
+      southafrica: 'South Africa'
+    };
+
+    res.status(200).json({
+      success: true,
+      data: countries
+    });
+  } catch (error) {
+    next(new AppError('Failed to get news countries', 500));
+  }
+};
+
 // FIX: Use a single default export (namespace pattern). This is the definitive fix
 // for the '[object Undefined]' error, ensuring all handlers are exported correctly.
 export default {
   getNewsArticles,
   getNewsArticleBySlug,
-  getNewsFeed // Add the new feed handler
+  getNewsFeed,
+  getNewsCountries
 };

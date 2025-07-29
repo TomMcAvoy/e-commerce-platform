@@ -1,6 +1,6 @@
 import express from 'express';
-import { getCart, updateCart } from '../controllers/cartController';
-import { protect } from '../middleware/protect';
+import { getCart, addItem, updateItemQuantity, removeItem, clearCart } from '../controllers/cartController';
+import { protect } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -9,6 +9,11 @@ router.use(protect);
 
 router.route('/')
   .get(getCart)
-  .put(updateCart);
+  .post(addItem)
+  .delete(clearCart);
+
+router.route('/:productId')
+  .put(updateItemQuantity)
+  .delete(removeItem);
 
 export default router;

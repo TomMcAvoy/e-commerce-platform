@@ -1,0 +1,222 @@
+{
+  "navigation": [],
+  "pages": {
+    "/": {
+      "url": "https://sharpits.com/",
+      "title": "Top Identity Access Management (IAM) Services | SharpITS",
+      "navLinks": [],
+      "headings": [
+        {
+          "level": "H1",
+          "text": "Custom Built IAM Solutions",
+          "className": "animate-text"
+        },
+        {
+          "level": "H1",
+          "text": "SharpITS Can Help You with Any Major IAM Technologies",
+          "className": "home_animationSection2__NGLxV"
+        },
+        {
+          "level": "H1",
+          "text": "SharpITS Can Help You With Any Major IAM Technologies",
+          "className": "animation_section2__VezxG"
+        },
+        {
+          "level": "H1",
+          "text": "Okta",
+          "className": "animation_linkText__Th-zW link-text"
+        },
+        {
+          "level": "H3",
+          "text": "Learn More →",
+          "className": ""
+        },
+        {
+          "level": "H1",
+          "text": "Auth0",
+          "className": "animation_linkText__Th-zW link-text"
+        },
+        {
+          "level": "H3",
+          "text": "Learn More →",
+          "className": ""
+        },
+        {
+          "level": "H1",
+          "text": "Solutions",
+          "className": "Partner_inside_main_heading"
+        },
+        {
+          "level": "H1",
+          "text": "Partners",
+          "className": "Partner_inside_main_heading2"
+        },
+        {
+          "level": "H1",
+          "text": "Testimonials",
+          "className": "Testimonials_heading"
+        },
+        {
+          "level": "H3",
+          "text": "Talk to An Identity Advisor",
+          "className": "contact_banner_navigate_text"
+        },
+        {
+          "level": "H3",
+          "text": "Services",
+          "className": ""
+        },
+        {
+          "level": "H3",
+          "text": "Solutions",
+          "className": ""
+        },
+        {
+          "level": "H3",
+          "text": "Company",
+          "className": ""
+        },
+        {
+          "level": "H3",
+          "text": "Resources",
+          "className": ""
+        }
+      ],
+      "paragraphs": [
+        {
+          "text": "Tailored Solutions and Integrations for Your IGA, EAM, PAM and Customer IAM Needs",
+          "className": "animate-text1"
+        },
+        {
+          "text": "Since founded in 2015, SharpITS has rapidly become a trusted leader in Identity and Access Management (IAM) solutions that secure access and identities for enterprises.With onshore and offshore delivery capabilities, we provide flexible 24/7 global professional services and support that meets your needs. Our Zero-Defect Quality Model ensures flawless IAM delivery.Our large pool of IAM experts and consultants hold certifications across all leading technologies, allowing customized solutions tailored to your environment.",
+          "className": ""
+        },
+        {
+          "text": "IAM Modernization  Services",
+          "className": "services_imgtext1__AusPQ"
+        },
+        {
+          "text": "Professional Services",
+          "className": "services_imgtext3__dA8yJ"
+        },
+        {
+          "text": "Advisory and  Assessment",
+          "className": "services_imgtext5__ZybVq"
+        },
+        {
+          "text": "Okta Identity Cloud is a leading SaaS-delivered converged IAM platform broadly used across both workforce and CIAM use cases. Newly acquired Auth0 Platform is a SaaS product commercialized for CIAM and developer use cases.",
+          "className": ""
+        },
+        {
+          "text": "Auth0 is known for its developer-focused products. Auth0 has a strong focus and specialization in customer identity and access management (CIAM), for both B2C and B2B scenarios.",
+          "className": ""
+        },
+        {
+          "text": "Transform your business with  our  digital identity solutions",
+          "className": "Solutions_inside_main_text"
+        },
+        {
+          "text": "At SharpITS, we offer integrated identity and access management solutions to secure access and provide visibility across your hybrid infrastructure. Our comprehensive capabilities govern identities, manage access, prevent unauthorized access, and deliver insights into user access thus enabling Zero Trust.",
+          "className": "Solutions_inside_text"
+        },
+        {
+          "text": "Identity Governance  and Administration",
+          "className": "Solution_home_box_text"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Previous",
+          "className": "slick-arrow slick-prev"
+        },
+        {
+          "text": "Next",
+          "className": "slick-arrow slick-next"
+        },
+        {
+          "text": "1",
+          "className": ""
+        },
+        {
+          "text": "2",
+          "className": ""
+        },
+        {
+          "text": "3",
+          "className": ""
+        },
+        {
+          "text": "4",
+          "className": ""
+        },
+        {
+          "text": "5",
+          "className": ""
+        },
+        {
+          "text": "6",
+          "className": ""
+        }
+      ],
+      "images": [
+        {
+          "src": "https://sharpits.com/static/media/LogoNew-Color.5f1af73a415a8df35b98.webp",
+          "alt": "SharpITS",
+          "className": "header_headerImage__mnqXK"
+        },
+        {
+          "src": "https://sharpits.com/static/media/7.71bbfce889db4de8175f.png",
+          "alt": "saviynt",
+          "className": ""
+        },
+        {
+          "src": "https://sharpits.com/static/media/6.00f5b37d6861aaba9c58.png",
+          "alt": "sailPoint",
+          "className": ""
+        },
+        {
+          "src": "https://sharpits.com/static/media/8.7cdb55eb74a75cfe9414.png",
+          "alt": "oracle",
+          "className": ""
+        },
+        {
+          "src": "https://sharpits.com/static/media/one.6ebad415407e960c1316.png",
+          "alt": "oneIdentity",
+          "className": ""
+        },
+        {
+          "src": "https://sharpits.com/static/media/10.3d890be35056317ec647.png",
+          "alt": "pingIdentity",
+          "className": ""
+        },
+        {
+          "src": "https://sharpits.com/static/media/13.8c1b5e3d891556213662.png",
+          "alt": "beyondTrust",
+          "className": ""
+        },
+        {
+          "src": "https://sharpits.com/static/media/EntraPIM.1d25c98caaa02f3df58c.png",
+          "alt": "azurePIM",
+          "className": ""
+        },
+        {
+          "src": "https://sharpits.com/static/media/IBM.9950c139c5a9e6f466a6.png",
+          "alt": "ibm",
+          "className": ""
+        },
+        {
+          "src": "https://sharpits.com/static/media/3.671afdc4947a43ceaef8.webp",
+          "alt": "azureAD",
+          "className": ""
+        }
+      ],
+      "sections": [],
+      "meta": {
+        "description": "Safe Access with SharpITS' Identity Access Management (IAM) services. We customize IAM solutions for people in the United States, Canada, and the United Kingdom. Call Now!",
+        "keywords": "IAM Services, Identity Access Management Services, IAM Solutions, Identity Management Services, Best IAM Solutions, IAM Managed Services, IAM Architect"
+      }
+    }
+  },
+  "structure": {},
+  "content": {}
+}

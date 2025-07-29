@@ -1,316 +1,250 @@
-import { getNews } from '@/lib/api';
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { 
-  NewspaperIcon, 
-  GlobeAmericasIcon, 
-  FlagIcon,
-  MagnifyingGlassIcon
-} from '@heroicons/react/24/outline';
+'use client';
 
-// Enhanced NewsArticle interface with source information
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import Link from 'next/link';
+import Sidebar from '@/components/layout/Sidebar';
+import { useSearchParams, useRouter } from 'next/navigation';
+
 interface NewsArticle {
   _id: string;
   title: string;
-  slug: string;
-  excerpt: string;
-  imageUrl: string;
+  content: string;
+  description: string;
+  sourceName: string;
   author: string;
+  url: string;
+  urlToImage: string;
   publishedAt: string;
-  source?: string;
-  country?: string;
-  category: {
-    name: string;
-    slug: string;
-  };
 }
 
-export const metadata: Metadata = {
-  title: 'Latest News | Whitestart Security',
-  description: 'Stay up to date with the latest news, announcements, and security insights from Whitestart Security.',
-};
+export default function NewsPage() {
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [shareDropdown, setShareDropdown] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [countries, setCountries] = useState<Record<string, string>>({});
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-// News sources with their details
-const newsSources = [
-  { id: 'cnn', name: 'CNN', country: 'USA', logo: '/images/news/cnn-logo.png' },
-  { id: 'fox', name: 'Fox News', country: 'USA', logo: '/images/news/fox-logo.png' },
-  { id: 'bbc', name: 'BBC', country: 'UK', logo: '/images/news/bbc-logo.png' },
-  { id: 'sky', name: 'Sky News', country: 'UK', logo: '/images/news/sky-logo.png' },
-  { id: 'cbc', name: 'CBC', country: 'Canada', logo: '/images/news/cbc-logo.png' },
-  { id: 'scotsman', name: 'The Scotsman', country: 'Scotland', logo: '/images/news/scotsman-logo.png' },
-];
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const response = await api.publicRequest('/news/countries');
+        setCountries(response.data || {});
+      } catch (error) {
+        console.error('Failed to fetch countries:', error);
+      }
+    };
+    fetchCountries();
+    
+    // Set initial category from URL params
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
 
-// Country filters
-const countries = [
-  { id: 'usa', name: 'USA', flag: '🇺🇸' },
-  { id: 'uk', name: 'United Kingdom', flag: '🇬🇧' },
-  { id: 'canada', name: 'Canada', flag: '🇨🇦' },
-  { id: 'scotland', name: 'Scotland', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿' },
-];
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (selectedCountry) params.append('country', selectedCountry);
+        if (selectedCategory) params.append('category', selectedCategory);
+        
+        const response = await api.publicRequest(`/news/feed?${params.toString()}`);
+        setArticles(response.data || []);
+      } catch (error) {
+        console.error('Failed to fetch news:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-export default async function NewsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-  // Get filter parameters
-  const categoryFilter = typeof searchParams.category === 'string' ? searchParams.category : undefined;
-  const sourceFilter = typeof searchParams.source === 'string' ? searchParams.source : undefined;
-  const countryFilter = typeof searchParams.country === 'string' ? searchParams.country : undefined;
-  
-  // The getNews function fetches articles with populated category data
-  let articles: NewsArticle[] = await getNews({ 
-    limit: 100,
-    category: categoryFilter,
-    source: sourceFilter,
-    country: countryFilter
-  });
+    fetchNews();
+  }, [selectedCountry, selectedCategory]);
 
-  // If we don't have real data with sources, simulate it for the demo
-  if (articles.length > 0 && !articles[0].source) {
-    // Assign random sources and countries to articles for demonstration
-    articles = articles.map(article => {
-      const randomSourceIndex = Math.floor(Math.random() * newsSources.length);
-      const source = newsSources[randomSourceIndex];
-      return {
-        ...article,
-        source: source.name,
-        country: source.country
-      };
-    });
+  if (loading) {
+    return <div className="p-8">Loading news...</div>;
   }
 
-  // Get unique categories from articles
-  const categories = Array.from(new Set(articles.map(article => 
-    article.category ? article.category.name : null
-  ).filter(Boolean) as string[]));
-
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="bg-blue-900 text-white py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center mb-4">
-            <NewspaperIcon className="w-10 h-10 mr-3" />
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Security News Hub
-            </h1>
-          </div>
-          <p className="mt-2 max-w-2xl mx-auto text-lg text-blue-200 text-center">
-            Stay informed with the latest security news from trusted sources worldwide
-          </p>
-          
-          {/* Search bar */}
-          <div className="mt-8 max-w-md mx-auto">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search news articles..."
-                className="w-full px-4 py-3 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              />
-              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600">
-                <MagnifyingGlassIcon className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+    <div className="flex max-w-7xl mx-auto">
+      <div className="flex-1 p-8">
+        <h1 className="text-3xl font-bold mb-6">News Feed</h1>
+      
+      <div className="mb-6 space-y-4">
+        {/* Country Filter */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setSelectedCountry('')}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              !selectedCountry 
+                ? 'bg-blue-600 text-white' 
+                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            All Countries
+          </button>
+          {Object.entries(countries).map(([code, name]) => (
+            <button
+              key={code}
+              onClick={() => setSelectedCountry(code)}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                selectedCountry === code 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+        
+        {/* Category Filter */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              setSelectedCategory('');
+              router.push('/news');
+            }}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              !selectedCategory 
+                ? 'bg-green-600 text-white' 
+                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            All Categories
+          </button>
+          {['Technology', 'Business', 'Politics', 'Sports', 'Health', 'Science', 'Entertainment'].map((category) => (
+            <button
+              key={category}
+              onClick={() => {
+                setSelectedCategory(category);
+                router.push(`/news?category=${category.toLowerCase()}`);
+              }}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                selectedCategory === category 
+                  ? 'bg-green-600 text-white' 
+                  : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
         </div>
       </div>
-
-      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Filters section */}
-        <div className="mb-8 bg-white rounded-lg shadow-sm p-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {/* News Sources */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">News Sources</h3>
-              <div className="flex flex-wrap gap-2">
-                <Link 
-                  href="/news"
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${!sourceFilter ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-                >
-                  All Sources
-                </Link>
-                {newsSources.map(source => (
-                  <Link 
-                    key={source.id}
-                    href={`/news?source=${source.id}`}
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${sourceFilter === source.id ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-                  >
-                    {source.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            
-            {/* Countries */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Countries</h3>
-              <div className="flex flex-wrap gap-2">
-                <Link 
-                  href="/news"
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${!countryFilter ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-                >
-                  All Countries
-                </Link>
-                {countries.map(country => (
-                  <Link 
-                    key={country.id}
-                    href={`/news?country=${country.id}`}
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${countryFilter === country.id ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-                  >
-                    <span className="mr-1">{country.flag}</span> {country.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            
-            {/* Categories */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Categories</h3>
-              <div className="flex flex-wrap gap-2">
-                <Link 
-                  href="/news"
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${!categoryFilter ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-                >
-                  All Categories
-                </Link>
-                {categories.map(category => (
-                  <Link 
-                    key={category}
-                    href={`/news?category=${category.toLowerCase().replace(/\s+/g, '-')}`}
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${categoryFilter === category.toLowerCase().replace(/\s+/g, '-') ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-                  >
-                    {category}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
+      
+      {articles.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">No news articles found</p>
         </div>
-
-        {/* Featured article */}
-        {articles.length > 0 && (
-          <div className="mb-12">
-            <div className="relative rounded-xl overflow-hidden shadow-lg">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
-              <img 
-                src={articles[0].imageUrl} 
-                alt={articles[0].title} 
-                className="w-full h-96 object-cover"
-              />
-              <div className="absolute bottom-0 left-0 right-0 p-6 z-20 text-white">
-                <div className="flex items-center mb-3">
-                  {articles[0].source && (
-                    <span className="bg-red-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">
-                      {articles[0].source}
-                    </span>
-                  )}
-                  {articles[0].category && (
-                    <Link href={`/news?category=${articles[0].category.slug}`} className="text-xs font-medium text-white/80 hover:text-white">
-                      {articles[0].category.name}
-                    </Link>
-                  )}
-                  <span className="mx-2">•</span>
-                  <span className="text-xs text-white/80">
-                    {new Date(articles[0].publishedAt).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {articles.map((article) => (
+            <div key={article._id} data-testid="news-article" className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              {/* Article Image */}
+              <div className="h-48 bg-gray-200 overflow-hidden">
+                <img
+                  src={article.urlToImage || '/placeholder.svg'}
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+              </div>
+              
+              {/* Article Content */}
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                    {article.sourceName}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(article.publishedAt).toLocaleDateString()}
                   </span>
                 </div>
-                <Link href={`/news/${articles[0].slug}`}>
-                  <h2 className="text-3xl font-bold mb-2 hover:underline">{articles[0].title}</h2>
-                </Link>
-                <p className="text-white/90 text-lg mb-4 line-clamp-2">{articles[0].excerpt}</p>
-                <div className="flex items-center">
-                  <span className="text-sm">By {articles[0].author}</span>
-                  {articles[0].country && (
-                    <>
-                      <span className="mx-2">•</span>
-                      <span className="flex items-center text-sm">
-                        <GlobeAmericasIcon className="w-4 h-4 mr-1" />
-                        {articles[0].country}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* News grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {articles.length > 1 ? (
-            articles.slice(1).map((article) => (
-              <div key={article._id} className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-transform duration-300 hover:-translate-y-2">
-                <div className="flex-shrink-0 relative">
-                  <img className="h-48 w-full object-cover" src={article.imageUrl} alt={article.title} />
-                  {article.source && (
-                    <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold">
-                      {article.source}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col justify-between bg-white p-6">
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      {article.category && (
-                        <Link href={`/news?category=${article.category.slug}`} className="text-xs font-medium text-blue-600 hover:underline">
-                          {article.category.name}
-                        </Link>
-                      )}
-                      <span className="text-xs text-gray-500">
-                        {new Date(article.publishedAt).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'short', 
-                          day: 'numeric' 
-                        })}
-                      </span>
-                    </div>
-                    <Link href={`/news/${article.slug}`} className="block">
-                      <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 mb-2">{article.title}</h3>
-                      <p className="text-base text-gray-500 line-clamp-3">{article.excerpt}</p>
-                    </Link>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-sm text-gray-600">{article.author}</span>
-                    {article.country && (
-                      <span className="flex items-center text-xs text-gray-500">
-                        <FlagIcon className="w-3 h-3 mr-1" />
-                        {article.country}
-                      </span>
+                
+                <h3 className="font-semibold text-gray-900 mb-2 h-12 overflow-hidden">
+                  {article.title.length > 60 ? article.title.substring(0, 60) + '...' : article.title}
+                </h3>
+                
+                <p className="text-gray-600 text-sm mb-4 h-16 overflow-hidden">
+                  {(article.description || article.content)?.substring(0, 120) + '...'}
+                </p>
+                
+                {article.author && (
+                  <p className="text-xs text-gray-400 mb-3">By {article.author}</p>
+                )}
+                
+                <div className="flex space-x-2">
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Read Article
+                    <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                  
+                  <div className="relative">
+                    <button
+                      data-testid="share-button"
+                      onClick={() => setShareDropdown(shareDropdown === article._id ? null : article._id)}
+                      className="px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                      </svg>
+                    </button>
+                    
+                    {shareDropdown === article._id && (
+                      <div data-testid="share-options" className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
+                        <div className="py-1">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(article.url);
+                              setShareDropdown(null);
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Copy Link
+                          </button>
+                          <button
+                            onClick={() => {
+                              window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(article.url)}&text=${encodeURIComponent(article.title)}`, '_blank');
+                              setShareDropdown(null);
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Share on Twitter
+                          </button>
+                          <button
+                            onClick={() => {
+                              window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(article.url)}`, '_blank');
+                              setShareDropdown(null);
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Share on Facebook
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <p className="col-span-full text-center text-lg text-gray-500 py-12">
-              There are no news articles available at this time. Please check back later.
-            </p>
-          )}
+            </div>
+          ))}
         </div>
-        
-        {/* Pagination */}
-        {articles.length > 0 && (
-          <div className="mt-12 flex justify-center">
-            <nav className="inline-flex rounded-md shadow">
-              <a href="#" className="px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                Previous
-              </a>
-              <a href="#" className="px-4 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-blue-600">
-                1
-              </a>
-              <a href="#" className="px-4 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                2
-              </a>
-              <a href="#" className="px-4 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                3
-              </a>
-              <a href="#" className="px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                Next
-              </a>
-            </nav>
-          </div>
-        )}
+      )}
       </div>
+      <Sidebar />
     </div>
   );
 }

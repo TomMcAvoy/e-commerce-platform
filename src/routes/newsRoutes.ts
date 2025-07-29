@@ -13,6 +13,10 @@ router.route('/')
 router.route('/feed')
   .get(newsController.getNewsFeed);
 
+// Add route for available countries
+router.route('/countries')
+  .get(newsController.getNewsCountries);
+
 // FIX: The route for slugs should be distinct to avoid conflicts.
 router.route('/slug/:slug')
   .get(newsController.getNewsArticleBySlug);

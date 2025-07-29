@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express'
-import { AuthenticatedRequest, ApiResponse, PaginatedResponse } from '../types'
+import { AuthenticatedRequest } from '../middleware/auth'
+import { ApiResponse, PaginatedResponse } from '../types/ApiResponse'
 import Product from '../models/Product'
 import Vendor from '../models/Vendor'
 import Order from '../models/Order'
 import AppError from '../utils/AppError'
 import asyncHandler from 'express-async-handler'
-import { Inventory } from '../models/Inventory'
+import Inventory from '../models/Inventory'
 
 // @desc    Get comprehensive inventory dashboard
 // @route   GET /api/inventory/dashboard
@@ -195,7 +196,7 @@ export const adjustInventory = async (
         }
 
         // Check vendor ownership
-        if (req.user.role === 'vendor' && product.vendorId.toString() !== req.user._id.toString()) {
+        if (req.user.role === 'vendor' && product.vendorId?.toString() !== req.user._id?.toString()) {
           return next(new AppError('Not authorized to view this product inventory', 403));
         }
 
@@ -450,7 +451,7 @@ export const updateStock = asyncHandler(async (req: AuthenticatedRequest, res: R
     }
 
     // Authorization check: User must be an admin or the vendor who owns the product
-    if (req.user && req.user.role === 'vendor' && product.vendorId.toString() !== (req.user._id as string)) {
+    if (req.user && req.user.role === 'vendor' && product.vendorId?.toString() !== req.user._id?.toString()) {
         return next(new AppError('User is not authorized to update inventory for this product', 403));
     }
 
@@ -459,21 +460,10 @@ export const updateStock = asyncHandler(async (req: AuthenticatedRequest, res: R
     if (!inventory) {
         inventory = await Inventory.create({
             product: productId,
-            quantity: quantity,
-            history: [{
-                date: new Date(),
-                quantityChange: quantity,
-                reason: reason || 'Initial stock'
-            }]
+            quantity: quantity
         });
     } else {
-        const quantityChange = quantity - inventory.quantity;
         inventory.quantity = quantity;
-        inventory.history.push({
-            date: new Date(),
-            quantityChange: quantityChange,
-            reason: reason || 'Manual stock update'
-        });
         await inventory.save();
     }
 

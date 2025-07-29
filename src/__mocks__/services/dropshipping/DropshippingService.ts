@@ -13,7 +13,7 @@ const mockProvider: IDropshippingProvider = {
     status: 'pending'
   } as OrderCreationResult),
   fetchProducts: jest.fn().mockResolvedValue([] as DropshipProduct[]),
-  getProduct: jest.fn().mockResolvedValue(null),
+
   getOrderStatus: jest.fn().mockResolvedValue({ status: 'shipped' }),
   cancelOrder: jest.fn().mockResolvedValue({ success: true }),
   checkHealth: jest.fn().mockResolvedValue({ status: 'ok', details: 'Mock provider is healthy' }),
@@ -92,28 +92,3 @@ export class DropshippingService {
  */
 export const dropshippingService = DropshippingService.getInstance();
 
-// @route   POST /api/auth/login
-// @access  Public
-export const login = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  const { email, password } = req.body;
-
-  // Validate email & password
-  if (!email || !password) {
-    return next(new AppError('Please provide an email and password', 400));
-  }
-
-  // Check for user
-  const user = await User.findOne({ email }).select('+password');
-
-  if (!user || !user.password) {
-    return next(new AppError('Invalid credentials', 401));
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) {
-    return next(new AppError('Invalid credentials', 401));
-  }
-
-  sendTokenResponse(user, 200, res);
-});

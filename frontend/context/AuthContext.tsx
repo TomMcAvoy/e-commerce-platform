@@ -24,26 +24,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkUserStatus = async () => {
       try {
-        // This endpoint should be protected and return the current user if the cookie is valid
         const response = await api.privateRequest('/auth/me');
         setUser(response.data);
       } catch (error) {
+        // User not authenticated, clear state
         setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkUserStatus();
+    // Add a small delay to prevent flash
+    const timer = setTimeout(() => {
+      checkUserStatus();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const login = async (credentials: any) => {
-    const response = await api.publicRequest('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
-    setUser(response.data);
-    router.push('/account'); // Redirect to a protected page
+    try {
+      const response = await api.publicRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
+      setUser(response.user);
+      router.push('/account'); // Redirect to a protected page
+    } catch (error: any) {
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        throw new Error('Invalid credentials');
+      }
+      throw error;
+    }
   };
 
   const register = async (userInfo: any) => {
@@ -51,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       method: 'POST',
       body: JSON.stringify(userInfo),
     });
-    setUser(response.data);
+    setUser(response.user);
     router.push('/account'); // Redirect after registration
   };
 

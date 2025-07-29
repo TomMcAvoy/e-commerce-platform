@@ -14,20 +14,21 @@ interface ProductDetailsClientProps {
 
 export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
   const [quantity, setQuantity] = useState(1);
+  const [showSuccess, setShowSuccess] = useState(false);
   const { addToCart } = useCart();
 
   const handleAddToCart = () => {
     if (quantity > 0) {
       addToCart(product, quantity);
-      // Optionally, show a success toast/notification here
-      alert(`${quantity} x ${product.name} added to cart!`);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
     }
   };
 
   return (
     <div className="mx-auto max-w-2xl px-4 pt-10 pb-16 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:px-8 lg:pt-16 lg:pb-24">
       <div className="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{product.name}</h1>
+        <h1 data-testid="product-title" className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{product.name}</h1>
       </div>
 
       {/* Image gallery */}
@@ -47,9 +48,14 @@ export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
       {/* Product info */}
       <div className="mt-4 lg:row-span-3 lg:mt-0">
         <h2 className="sr-only">Product information</h2>
-        <p className="text-3xl tracking-tight text-gray-900">${product.price.toFixed(2)}</p>
+        <p data-testid="product-price" className="text-3xl tracking-tight text-gray-900">${product.price.toFixed(2)}</p>
 
         <form className="mt-10">
+          {showSuccess && (
+            <div className="mb-4 rounded-md bg-green-50 p-4">
+              <p className="text-sm font-medium text-green-800">Added to cart</p>
+            </div>
+          )}
           <div className="flex items-center space-x-4">
             <div className="w-24">
               <Label htmlFor="quantity" className="sr-only">Quantity</Label>

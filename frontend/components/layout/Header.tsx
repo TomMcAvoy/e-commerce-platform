@@ -23,16 +23,31 @@ export default function Header() {
             <div className="hidden md:block ml-10">
               <div className="flex items-baseline space-x-4">
                 <Link href="/products" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                  All Products
+                  Shop
+                </Link>
+                <Link href="/news" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  News
+                </Link>
+                <Link href="/news?category=sports" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Sports
+                </Link>
+                <Link href="/news?category=entertainment" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Entertainment
+                </Link>
+                <Link href="/products?category=fashion" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Fashion
                 </Link>
                 <Link href="/categories" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                   Categories
+                </Link>
+                <Link href="/company" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Company
                 </Link>
               </div>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/cart" className="relative text-gray-400 hover:text-gray-600 p-2">
+            <Link href="/cart" data-testid="cart-button" className="relative text-gray-400 hover:text-gray-600 p-2">
               <span className="sr-only">View shopping cart</span>
               <ShoppingCartIcon className="h-6 w-6" />
               {totalItems > 0 && (

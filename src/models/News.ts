@@ -25,6 +25,7 @@ const NewsSchema: Schema = new Schema({
   urlToImage: { type: String },
   publishedAt: { type: Date, required: true, index: true },
   content: { type: String },
+  country: { type: String, index: true },
   isActive: { type: Boolean, default: true, index: true }
 }, {
   timestamps: true

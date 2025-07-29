@@ -21,6 +21,7 @@ export const CategoryCard = ({ category }: CategoryCardProps) => {
   return (
     <Link 
       href={`/categories/${category.slug}`}
+      data-testid="category-card"
       className="group block rounded-lg shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-2xl bg-white border border-gray-200"
     >
       {/* Image section */}

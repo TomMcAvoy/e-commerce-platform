@@ -37,11 +37,12 @@ export default function LoginPage() {
     }
   };
 
-  // Show a loading state while checking auth status or redirecting
-  if (isLoading || isAuthenticated) {
+  // Only redirect if authenticated, don't block on loading
+  if (isAuthenticated && !isLoading) {
+    router.push('/account');
     return (
       <div className="flex justify-center items-center h-screen">
-        <p>Loading...</p>
+        <p>Redirecting...</p>
       </div>
     );
   }

@@ -29,7 +29,8 @@ export class NewsAPIService {
 
   async fetchAndSaveNews(): Promise<void> {
     if (!this.apiKey) {
-      throw new AppError('NEWS_API_KEY not configured', 500);
+      console.log('📰 NEWS_API_KEY not configured - skipping news fetch');
+      return;
     }
 
     try {

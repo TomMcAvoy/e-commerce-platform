@@ -34,7 +34,7 @@ const tenantResolver = asyncHandler(async (req: Request, res: Response, next: Ne
       }
 
       if (tenant && !Array.isArray(tenant)) {
-        req.tenantId = tenant._id as string;
+        req.tenantId = tenant._id as any;
         if (process.env.NODE_ENV === 'development') {
           console.log(
             `[Tenant Resolver] Tenant resolved: ${tenant.name} (${req.tenantId})`

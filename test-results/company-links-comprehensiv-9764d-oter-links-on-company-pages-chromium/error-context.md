@@ -1,0 +1,103 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - navigation:
+    - link "Whitestart":
+      - /url: /
+    - link "Shop":
+      - /url: /products
+    - link "News":
+      - /url: /news
+    - link "Sports":
+      - /url: /news?category=sports
+    - link "Entertainment":
+      - /url: /news?category=entertainment
+    - link "Fashion":
+      - /url: /products?category=fashion
+    - link "Categories":
+      - /url: /categories
+    - link "Company":
+      - /url: /company
+    - link "View shopping cart":
+      - /url: /cart
+- main:
+  - navigation:
+    - img "WhiteStart Logo"
+    - link "Services":
+      - /url: "#services"
+    - link "Solutions":
+      - /url: "#solutions"
+    - link "About":
+      - /url: /company/about
+    - link "Contact":
+      - /url: /company/contact
+  - img "Background"
+  - heading "WhiteStart System Security" [level=1]
+  - paragraph: Custom Built IAM Solutions - Tailored Solutions and Integrations for Your Identity Governance, Access Management, and Security Needs
+  - button "Get Started"
+  - button "Learn More"
+  - heading "Our Solutions" [level=2]
+  - link "IAM Modernization Transform and modernize your legacy IAM systems, build your next generation IAM platform with comprehensive services.":
+    - /url: /company/iam-modernization
+    - img
+    - heading "IAM Modernization" [level=3]
+    - paragraph: Transform and modernize your legacy IAM systems, build your next generation IAM platform with comprehensive services.
+  - link "Professional Services Accelerate your IAM implementation with industry experts. Over a decade of experience in identity and access management.":
+    - /url: /company/professional-services
+    - img
+    - heading "Professional Services" [level=3]
+    - paragraph: Accelerate your IAM implementation with industry experts. Over a decade of experience in identity and access management.
+  - link "Managed Services Secure access, simple management. Let our experts manage your IAM infrastructure while you focus on core business.":
+    - /url: /company/managed-services
+    - img
+    - heading "Managed Services" [level=3]
+    - paragraph: Secure access, simple management. Let our experts manage your IAM infrastructure while you focus on core business.
+  - link "Virtual CISO Executive-level cybersecurity leadership without the full-time cost. Strategic security guidance for evolving threats.":
+    - /url: /company/virtual-ciso
+    - img
+    - heading "Virtual CISO" [level=3]
+    - paragraph: Executive-level cybersecurity leadership without the full-time cost. Strategic security guidance for evolving threats.
+  - link "Staff Augmentation Exclusive access to industry's best identity and access management talent through our staff augmentation services.":
+    - /url: /company/staff-augmentation
+    - img
+    - heading "Staff Augmentation" [level=3]
+    - paragraph: Exclusive access to industry's best identity and access management talent through our staff augmentation services.
+  - link "Advisory & Assessment Begin your digital transformation journey with expert IAM advisory and assessment services for actionable recommendations.":
+    - /url: /company/advisory-assessment
+    - img
+    - heading "Advisory & Assessment" [level=3]
+    - paragraph: Begin your digital transformation journey with expert IAM advisory and assessment services for actionable recommendations.
+  - link "DevSecOps Infrastructure Enterprise-grade DevSecOps infrastructure with Red Hat on Google Cloud, TOGAF compliance, and industry standards.":
+    - /url: /company/devsecops
+    - img
+    - heading "DevSecOps Infrastructure" [level=3]
+    - paragraph: Enterprise-grade DevSecOps infrastructure with Red Hat on Google Cloud, TOGAF compliance, and industry standards.
+  - heading "Enterprise-Grade Technology" [level=2]
+  - paragraph: Since founded in 2015, WhiteStart has rapidly become a trusted leader in Identity and Access Management (IAM) solutions that secure access and identities for enterprises.
+  - text: Cloud-Native Architecture Zero-Trust Security Model 24/7 Global Professional Services Zero-Defect Quality Model
+  - img "Technology"
+  - heading "Ready to Secure Your Enterprise?" [level=2]
+  - paragraph: Join thousands of organizations that trust WhiteStart for their security needs
+  - button "Start Free Trial"
+  - button "Schedule Demo"
+  - img "WhiteStart Logo"
+  - paragraph: Advanced security solutions for modern enterprises
+  - heading "Services" [level=4]
+  - list:
+    - listitem: IAM Modernization
+    - listitem: Professional Services
+    - listitem: Managed Services
+  - heading "Solutions" [level=4]
+  - list:
+    - listitem: Virtual CISO
+    - listitem: Staff Augmentation
+    - listitem: Advisory & Assessment
+  - heading "Company" [level=4]
+  - list:
+    - listitem: About Us
+    - listitem: Contact
+    - listitem: Careers
+  - paragraph: © 2024 Whitestart Security Systems Inc. All rights reserved.
+- alert
+```

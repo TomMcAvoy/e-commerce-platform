@@ -1,0 +1,22 @@
+{
+  "hero": null,
+  "sections": [],
+  "navigation": [],
+  "styles": {
+    "colors": {
+      "primary": "#007bff",
+      "secondary": "#6c757d",
+      "background": "rgb(255, 255, 255)",
+      "text": "rgb(33, 37, 41)"
+    },
+    "typography": {
+      "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Fira Sans\", \"Droid Sans\", \"Helvetica Neue\", sans-serif",
+      "fontSize": "16px",
+      "lineHeight": "24px"
+    }
+  },
+  "meta": {
+    "title": "Top Identity Access Management (IAM) Services | SharpITS",
+    "description": "Safe Access with SharpITS' Identity Access Management (IAM) services. We customize IAM solutions for people in the United States, Canada, and the United Kingdom. Call Now!"
+  }
+}

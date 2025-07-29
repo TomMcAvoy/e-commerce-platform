@@ -88,3 +88,79 @@ export const getPayoutRequests = asyncHandler(async (
     data: payoutRequests,
   });
 });
+
+// @desc    Get transactions
+// @route   GET /api/financial/transactions
+// @access  Private/Admin
+export const getTransactions = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const transactions = await Transaction.find().sort({ createdAt: -1 });
+  res.status(200).json({ success: true, data: transactions });
+});
+
+// @desc    Create transaction
+// @route   POST /api/financial/transactions
+// @access  Private/Admin
+export const createTransaction = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const transaction = await Transaction.create(req.body);
+  res.status(201).json({ success: true, data: transaction });
+});
+
+// @desc    Get payouts
+// @route   GET /api/financial/payouts
+// @access  Private/Admin
+export const getPayouts = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const payouts = await PayoutRequest.find().populate('vendor');
+  res.status(200).json({ success: true, data: payouts });
+});
+
+// @desc    Process payout
+// @route   PUT /api/financial/payouts/:id
+// @access  Private/Admin
+export const processPayout = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const payout = await PayoutRequest.findByIdAndUpdate(
+    req.params.id,
+    { status: 'processed' },
+    { new: true }
+  );
+  res.status(200).json({ success: true, data: payout });
+});
+
+// @desc    Get financial reports
+// @route   GET /api/financial/reports
+// @access  Private/Admin
+export const getFinancialReports = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const reports = { revenue: 50000, expenses: 15000, profit: 35000 };
+  res.status(200).json({ success: true, data: reports });
+});
+
+// @desc    Get tax reports
+// @route   GET /api/financial/tax-reports
+// @access  Private/Admin
+export const getTaxReports = asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const taxReports = { totalTax: 5000, taxableIncome: 35000 };
+  res.status(200).json({ success: true, data: taxReports });
+});

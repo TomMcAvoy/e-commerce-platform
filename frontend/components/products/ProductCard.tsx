@@ -47,8 +47,9 @@ interface ProductCardProps {
  * This is a Client Component to allow for 'Add to Cart' interactivity.
  */
 export function ProductCard({ product, variant = 'default' }: ProductCardProps) {
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
   const [isHovered, setIsHovered] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   
   // Calculate discount percentage if originalPrice is provided
   const discountPercentage = product.originalPrice 
@@ -56,15 +57,9 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
     : product.discount;
 
   const handleAddToCart = () => {
-    addItem({
-      productId: product._id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.images[0]
-    });
-    // Optional: Add a toast notification here for user feedback
-    console.log(`Added ${product.name} to cart.`);
+    addToCart(product, 1);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
   };
 
   // Generate star rating display
@@ -245,6 +240,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
   // Default variant
   return (
     <div 
+      data-testid="product-card"
       className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-lg"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -293,12 +289,15 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
       </div>
       
       <div className="flex flex-1 flex-col p-4">
+        {showSuccess && (
+          <div className="mb-2 text-xs text-green-600 font-medium">Added to cart</div>
+        )}
         {product.vendor && (
           <div className="text-xs text-gray-500 mb-1">{product.vendor.name}</div>
         )}
         
         <h3 className="text-sm font-medium text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
-          <Link href={`/products/${product.slug}`}>
+          <Link href={`/products/${product.slug}`} className="block">
             {product.name}
           </Link>
         </h3>

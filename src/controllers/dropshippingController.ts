@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
-import { DropshippingService } from '../services/dropshipping/DropshippingService';
-import { Order } from '../models/Order';
+import { dropshippingService } from '../services/dropshipping/DropshippingService';
+import Order, { IOrder } from '../models/Order';
 import AppError from '../utils/AppError';
 import { AuthenticatedRequest } from '../middleware/auth';
 
-// Get the singleton instance of the service as per the architecture pattern
-const dropshippingService = DropshippingService.getInstance();
+
 
 /**
  * Dropshipping Controller following Service Architecture pattern from Copilot Instructions
@@ -81,6 +80,6 @@ export const getDropshippingOrderStatus = asyncHandler(async (req: Request, res:
 export const getProviderProducts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const { provider } = req.params;
     // Pass query parameters from the request to the service method
-    const products = await dropshippingService.getProducts(provider, req.query);
+    const products = await dropshippingService.getProductsFromProvider(provider, req.query);
     res.status(200).json({ success: true, count: products.length, data: products });
 });

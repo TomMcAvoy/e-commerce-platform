@@ -61,49 +61,53 @@ const importData = async () => {
       // If user exists, update their details and password.
       // Setting the password directly triggers the 'pre-save' hook for hashing.
       console.log('Admin user found, ensuring all details are correct.');
-      user.name = 'Thomas McAvoy';
+      user.firstName = 'Thomas';
+      user.lastName = 'McAvoy';
       user.role = 'admin';
       user.password = adminPassword;
       // FIX: Ensure phone, addresses, and preferences are also updated on subsequent runs.
-      user.phone = '555-123-4567';
+      // user.phone = '555-123-4567'; // Property doesn't exist on User model
       user.addresses = [{
-        type: 'shipping',
         street: '123 Main St',
         city: 'Anytown',
         state: 'CA',
-        zipCode: '12345',
+        zip: '12345',
         country: 'US',
-        isDefault: true
+        isPrimary: true
       }];
       user.preferences = {
-        newsletter: true,
-        notifications: true,
-        language: 'en'
+        theme: 'light',
+        notifications: {
+          email: true,
+          sms: false
+        }
       };
       await user.save();
     } else {
       // If user does not exist, create them with a full set of attributes.
       console.log('Admin user not found, creating new user.');
       await User.create({
-        name: 'Thomas McAvoy',
+        firstName: 'Thomas',
+        lastName: 'McAvoy',
         email: adminEmail,
         password: adminPassword,
         role: 'admin',
         tenantId: tenantId,
-        phone: '555-123-4567',
+        // phone: '555-123-4567', // Property doesn't exist on User model
         addresses: [{
-          type: 'shipping',
           street: '123 Main St',
           city: 'Anytown',
           state: 'CA',
-          zipCode: '12345',
+          zip: '12345',
           country: 'US',
-          isDefault: true
+          isPrimary: true
         }],
         preferences: {
-          newsletter: true,
-          notifications: true,
-          language: 'en'
+          theme: 'light',
+          notifications: {
+            email: true,
+            sms: false
+          }
         }
       });
     }

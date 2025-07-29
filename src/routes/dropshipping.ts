@@ -1,13 +1,10 @@
 import express from 'express';
 import {
-  createDropshipOrder,
-  getDropshipProducts,
-  syncProvider,
-  calculateShipping,
-  getProviderHealth,
-  getAllProviders,
-  getProvidersStatus,
-  getDropshipOrderStatus // FIX: Import the new controller function
+  getProviders,
+  getDropshippingHealth,
+  fulfillOrder,
+  getDropshippingOrderStatus,
+  getProviderProducts
 } from '../controllers/dropshippingController';
 import { protect, authorize } from '../middleware/auth';
 import asyncHandler from 'express-async-handler';
@@ -37,16 +34,14 @@ router.get('/status', (req, res) => {
 router.use(protect); // All routes below require authentication
 
 // Order management following API Endpoints Structure
-router.post('/orders', authorize('admin', 'vendor'), asyncHandler(createDropshipOrder));
-router.get('/orders/:id', protect, authorize('admin', 'vendor'), asyncHandler(getDropshipOrderStatus));
+router.post('/fulfill', authorize('admin', 'vendor'), asyncHandler(fulfillOrder));
+router.get('/status/:provider/:externalOrderId', authorize('admin', 'vendor'), asyncHandler(getDropshippingOrderStatus));
 
 // Product management
-router.get('/products/:provider', authorize('admin', 'vendor'), asyncHandler(getDropshipProducts));
+router.get('/products/:provider', authorize('admin', 'vendor'), asyncHandler(getProviderProducts));
 
 // Provider management following Service Architecture pattern
-router.get('/health', authorize('admin'), getProviderHealth);
-router.get('/providers', authorize('admin'), getAllProviders);
-router.get('/provider-status', authorize('admin'), getProvidersStatus);
-router.get('/orders/:id', protect, authorize('admin', 'vendor'), asyncHandler(getDropshipOrderStatus));
+router.get('/health', authorize('admin'), getDropshippingHealth);
+router.get('/providers', authorize('admin'), getProviders);
 
 export default router;

@@ -1,7 +1,7 @@
 // filepath: /Users/thomasmcavoy/GitHub/shoppingcart/src/routes/productRoutes.ts
 import express from 'express';
 import asyncHandler from 'express-async-handler';
-import { getProducts, getProduct, createProduct, updateProduct, deleteProduct } from '../controllers/productController';
+import { getProducts, getProduct, getProductBySlug, createProduct, updateProduct, deleteProduct } from '../controllers/productController';
 import { protect, authorize } from '../middleware/auth';
 
 const router = express.Router();
@@ -9,6 +9,9 @@ const router = express.Router();
 router.route('/')
   .get(asyncHandler(getProducts))
   .post(protect, authorize('admin', 'vendor'), asyncHandler(createProduct));
+
+router.route('/slug/:slug')
+  .get(asyncHandler(getProductBySlug));
 
 router.route('/:id')
   .get(asyncHandler(getProduct))

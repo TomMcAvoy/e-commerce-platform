@@ -47,6 +47,8 @@ export const api = {
   privateRequest: (endpoint: string, options?: RequestInit) => apiClient(endpoint, options),
 };
 
+export { apiClient };
+
 
 // --- Server-Side Data Fetching Functions ---
 // These functions use the apiClient and are designed for Server Components,
@@ -66,6 +68,15 @@ export async function getCategories(params: { limit?: number } = {}): Promise<IC
   const query = params.limit ? `?limit=${params.limit}` : '';
   const data = await apiClient(`/categories${query}`, { next: { revalidate: 300 } });
   return data.data || [];
+}
+
+export async function getProductBySlug(slug: string): Promise<IProduct | null> {
+  try {
+    const data = await apiClient(`/products/slug/${slug}`, { next: { revalidate: 60 } });
+    return data.data;
+  } catch (error) {
+    return null;
+  }
 }
 
 export async function getFeaturedProducts(params: { limit?: number } = {}): Promise<IProduct[]> {

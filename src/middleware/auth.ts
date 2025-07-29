@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken';
 import AppError from '../utils/AppError';
 import User from '../models/User'; // Assuming a User model exists
 
+export interface AuthenticatedRequest extends Request {
+  user: any;
+}
+
 /**
  * Authentication middleware following Authentication Flow from Copilot Instructions
  * Protects routes and provides role-based authorization

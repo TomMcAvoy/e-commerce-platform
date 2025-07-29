@@ -11,6 +11,66 @@
 				"$tsc"
 			],
 			"args": []
+		},
+		{
+			"label": "Run Hello Script (JavaScript)",
+			"type": "shell",
+			"command": "npm run hello",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"focus": true
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			}
+		},
+		{
+			"label": "Run Hello Script (TypeScript)",
+			"type": "shell",
+			"command": "npm run hello:ts",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"focus": true
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			}
+		},
+		{
+			"label": "Check MongoDB Connection",
+			"type": "shell",
+			"command": "npm run check:mongodb",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"focus": true
+			},
+			"group": {
+				"kind": "test",
+				"isDefault": false
+			}
+		},
+		{
+			"label": "Seed Database",
+			"type": "shell",
+			"command": "npm run seed:db",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"focus": true
+			},
+			"group": {
+				"kind": "test",
+				"isDefault": false
+			}
 		}
 	]
 }
