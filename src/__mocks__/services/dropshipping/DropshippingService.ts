@@ -7,15 +7,13 @@ import { DropshippingResult } from '../../../services/dropshipping/DropshippingS
 const mockProvider: IDropshippingProvider = {
   getProviderName: () => 'Mock Provider',
   createOrder: jest.fn().mockResolvedValue({
-    success: true,
+    orderId: 'mock-order-123',
     externalOrderId: 'mock-order-123',
-    shippingCost: 9.99,
     status: 'pending'
   } as OrderCreationResult),
   fetchProducts: jest.fn().mockResolvedValue([] as DropshipProduct[]),
 
-  getOrderStatus: jest.fn().mockResolvedValue({ status: 'shipped' }),
-  cancelOrder: jest.fn().mockResolvedValue({ success: true }),
+
   checkHealth: jest.fn().mockResolvedValue({ status: 'ok', details: 'Mock provider is healthy' }),
   updateInventory: jest.fn().mockResolvedValue({ success: true }),
   calculateShipping: jest.fn().mockResolvedValue({ cost: 9.99 }),

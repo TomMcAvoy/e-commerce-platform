@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../utils/asyncHandler';
 import User from '../models/User';
 import Order from '../models/Order'; // Add missing import
 import AppError from '../utils/AppError';
-import { AuthenticatedRequest } from '../middleware/auth';
+import { AuthenticatedRequest } from '../types/auth';
 import { ApiResponse } from '../types/ApiResponse'; // Add missing import
 
 // @desc    Get all customers for CRM (customers and vendors)

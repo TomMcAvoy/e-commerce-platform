@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
 import AppError from '../utils/AppError';
-import User from '../models/User';
+import User, { IUser } from '../models/User';
 import { Request, Response, NextFunction } from 'express';
 
 export const protect = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -19,7 +19,7 @@ export const protect = asyncHandler(async (req: Request, res: Response, next: Ne
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
-    req.user = await User.findById(decoded.id).select('-password');
+    req.user = await User.findById(decoded.id).select('-password') as IUser;
     if (!req.user) {
       return next(new AppError('No user found with this id', 404));
     }

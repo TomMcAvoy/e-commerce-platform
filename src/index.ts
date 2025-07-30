@@ -14,19 +14,13 @@ import cors from 'cors';
 // Custom modules
 import connectDB from './config/db';
 import errorHandler from './middleware/error';
-import tenantMiddleware from './middleware/tenant';
+import { setTenantId } from './middleware/tenant';
 import NewsScheduler from './services/NewsScheduler';
 import AppError from './utils/AppError';
 import { errorHandler as customErrorHandler } from './middleware/errorHandler'; // Use named import
 
 // Route files
-import authRoutes from './routes/authRoutes';
-import productRoutes from './routes/productRoutes';
-import vendorRoutes from './routes/vendorRoutes';
-import orderRoutes from './routes/orderRoutes';
-import categoryRoutes from './routes/categoryRoutes';
-import newsRoutes from './routes/newsRoutes';
-import newsCategoryRoutes from './routes/newsCategoryRoutes';
+import routes from './routes';
 
 
 // Load env vars
@@ -65,16 +59,10 @@ app.use(cors({
 }));
 
 // Tenant Middleware (must be before routes)
-app.use(tenantMiddleware);
+app.use(setTenantId);
 
 // Mount routers
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/vendors', vendorRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/news', newsRoutes);
-app.use('/api/news-categories', newsCategoryRoutes);
+app.use('/api', routes);
 
 
 // Health check endpoints
@@ -84,26 +72,38 @@ app.get('/api/status', (req, res) => res.status(200).json({ status: 'API is runn
 // Error Handler Middleware - MUST be last
 app.use(customErrorHandler);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.NODE_ENV === 'test' ? 0 : (process.env.PORT || 3000);
 
-const server = app.listen(PORT, () => {
-  console.log(
-    colors.blue.bold(
-      `🔥 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
-    )
-  );
-  // Connect to Database
-  connectDB();
-  
-  // Initialize the news scheduler
+// Connect to Database (always for both server and tests)
+connectDB();
+
+// Initialize the news scheduler (only if not in test mode)
+if (process.env.NODE_ENV !== 'test') {
   NewsScheduler.initialize();
-});
+}
+
+let server: any;
+
+// Only start server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => {
+    console.log(
+      colors.blue.bold(
+        `🔥 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+      )
+    );
+  });
+}
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err: Error, promise) => {
   console.log(colors.red(`Error: ${err.message}`));
-  // Close server & exit process
-  server.close(() => process.exit(1));
+  // Close server & exit process (only if server exists)
+  if (server) {
+    server.close(() => process.exit(1));
+  } else {
+    process.exit(1);
+  }
 });
 
 export { app }; // <-- Export the app instance for testing

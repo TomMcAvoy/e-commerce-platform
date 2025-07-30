@@ -3,42 +3,46 @@
  * Following e-commerce platform testing infrastructure patterns
  */
 
-// Import the mocked app from jest.setup.ts
-let app: any;
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import routes from '../routes';
+import { errorHandler } from '../middleware/errorHandler';
 
-try {
-  // Import from the mocked index (configured in jest.setup.ts)
-  app = require('../index').default || require('../index').app || require('../index');
-} catch (error) {
-  console.warn('Could not import app from index, using fallback');
-  
-  // Fallback: create minimal Express app for tests
-  const express = require('express');
-  app = express();
-  
-  // Health endpoint following debugging dashboard pattern
-  app.get('/health', (req: any, res: any) => {
-    res.status(200).json({ 
-      status: 'OK', 
-      environment: 'test',
-      timestamp: new Date().toISOString()
-    });
+// Create test app with proper configuration
+const app = express();
+
+// Basic middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(cors());
+
+// Mock authentication middleware for testing
+app.use('/api', (req: any, res: any, next: any) => {
+  // Mock user for protected routes
+  req.user = {
+    _id: '507f1f77bcf86cd799439011', // Mock user ID
+    name: 'Test User',
+    email: 'test@example.com',
+    role: 'user'
+  };
+  next();
+});
+
+// Health endpoint following debugging dashboard pattern
+app.get('/health', (req: any, res: any) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    environment: 'test',
+    timestamp: new Date().toISOString()
   });
-  
-  // API status endpoint following project patterns
-  app.get('/api/status', (req: any, res: any) => {
-    res.status(200).json({
-      api: 'E-Commerce Platform API',
-      version: '1.0.0',
-      status: 'running',
-      environment: 'test'
-    });
-  });
-  
-  // 404 handler following project patterns
-  app.use('*', (req: any, res: any) => {
-    res.status(404).json({ success: false, message: 'Route not found' });
-  });
-}
+});
+
+// API routes following unified route structure
+app.use('/api', routes);
+
+// Error handling middleware
+app.use(errorHandler);
 
 export default app;

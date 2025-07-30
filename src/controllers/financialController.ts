@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler';
-import { AuthenticatedRequest } from '../middleware/auth';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AuthenticatedRequest } from '../types/auth';
 import { Transaction, PayoutRequest } from '../models/FinancialModels';
 import { ApiResponse, PaginatedResponse } from '../types/ApiResponse';
 import { FinancialSummary } from '../types/Financials';

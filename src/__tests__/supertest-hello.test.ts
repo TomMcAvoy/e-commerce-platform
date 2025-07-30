@@ -1,6 +1,5 @@
+import request from 'supertest';
 import app from './test-app-setup';
-const request = require('supertest');
-const app = require('../app'); // Adjust the path to your app
 
 describe('API Endpoints', () => {
     test('GET /api/products/category/fashion should return 200', async () => {

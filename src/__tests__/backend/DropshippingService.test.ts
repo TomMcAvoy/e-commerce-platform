@@ -79,7 +79,8 @@ describe('DropshippingService Backend Tests', () => {
 
     it('should create order with specific provider', async () => {
       const orderData: DropshipOrderData = {
-        items: [{ productId: 'product-1', quantity: 2, price: 29.99 }],
+        orderId: 'test-order-specific',
+        items: [{ externalVariantId: 'product-1-variant', quantity: 2 }],
         shippingAddress: {
           firstName: 'John',
           lastName: 'Doe', 
@@ -88,7 +89,8 @@ describe('DropshippingService Backend Tests', () => {
           state: 'TS',
           postalCode: '12345',
           country: 'US'
-        }
+        },
+        customerInfo: { name: 'John Doe', email: 'john@example.com' }
       };
 
       const result = await service.createOrder(orderData, 'test-provider');
@@ -100,11 +102,13 @@ describe('DropshippingService Backend Tests', () => {
 
     it('should use default provider when none specified', async () => {
       const orderData: DropshipOrderData = {
-        items: [{ productId: 'product-1', quantity: 1, price: 19.99 }],
+        orderId: 'test-order-default',
+        items: [{ externalVariantId: 'product-1-variant', quantity: 1 }],
         shippingAddress: {
           firstName: 'Jane', lastName: 'Smith', address1: '456 Main St',
           city: 'Main City', state: 'MC', postalCode: '54321', country: 'US'
-        }
+        },
+        customerInfo: { name: 'Jane Smith', email: 'jane@example.com' }
       };
 
       const result = await service.createOrder(orderData);
@@ -151,11 +155,13 @@ describe('DropshippingService Backend Tests', () => {
 
       // US order - should use domestic provider
       const usOrder: DropshipOrderData = {
-        items: [{ productId: 'us-product', quantity: 1, price: 50 }],
+        orderId: 'test-us-order',
+        items: [{ externalVariantId: 'us-product-variant', quantity: 1 }],
         shippingAddress: {
           firstName: 'US', lastName: 'Customer', address1: '123 US St',
           city: 'New York', state: 'NY', postalCode: '10001', country: 'US'
-        }
+        },
+        customerInfo: { name: 'US Customer', email: 'us@example.com' }
       };
 
       const usResult = await service.createOrder(usOrder, 'domestic');
@@ -164,11 +170,13 @@ describe('DropshippingService Backend Tests', () => {
 
       // UK order - should use international provider
       const ukOrder: DropshipOrderData = {
-        items: [{ productId: 'uk-product', quantity: 1, price: 50 }],
+        orderId: 'test-uk-order',
+        items: [{ externalVariantId: 'uk-product-variant', quantity: 1 }],
         shippingAddress: {
           firstName: 'UK', lastName: 'Customer', address1: '123 UK St',
           city: 'London', state: 'London', postalCode: 'SW1A 1AA', country: 'GB'
-        }
+        },
+        customerInfo: { name: 'UK Customer', email: 'uk@example.com' }
       };
 
       const ukResult = await service.createOrder(ukOrder, 'international');
@@ -284,11 +292,13 @@ describe('DropshippingService Backend Tests', () => {
       service.registerProvider('disabled', mockDisabledProvider);
       
       const orderData: DropshipOrderData = {
-        items: [{ productId: 'test', quantity: 1, price: 10 }],
+        orderId: 'test-order-disabled',
+        items: [{ externalVariantId: 'test-variant', quantity: 1 }],
         shippingAddress: {
           firstName: 'Test', lastName: 'User', address1: '123 Test St',
           city: 'Test', state: 'TS', postalCode: '12345', country: 'US'
-        }
+        },
+        customerInfo: { name: 'Test User', email: 'test@disabled.com' }
       };
 
       await expect(service.createOrder(orderData, 'disabled'))
@@ -297,11 +307,13 @@ describe('DropshippingService Backend Tests', () => {
 
     it('should handle no available providers', async () => {
       const orderData: DropshipOrderData = {
-        items: [{ productId: 'test', quantity: 1, price: 10 }],
+        orderId: 'test-order-no-providers',
+        items: [{ externalVariantId: 'test-variant', quantity: 1 }],
         shippingAddress: {
           firstName: 'Test', lastName: 'User', address1: '123 Test St',
           city: 'Test', state: 'TS', postalCode: '12345', country: 'US'
-        }
+        },
+        customerInfo: { name: 'Test User', email: 'test@noprovider.com' }
       };
 
       await expect(service.createOrder(orderData))
@@ -310,12 +322,12 @@ describe('DropshippingService Backend Tests', () => {
 
     it('should handle provider errors gracefully in getAllProducts', async () => {
       const workingProvider = { ...mockProvider };
-      workingProvider.getProducts = jest.fn().mockResolvedValue([
+      workingProvider.fetchProducts = jest.fn().mockResolvedValue([
         { id: 'working-product', name: 'Working Product', price: 19.99 }
       ]);
 
       const errorProvider = { ...mockProvider };
-      errorProvider.getProducts = jest.fn().mockRejectedValue(new Error('Network error'));
+      errorProvider.fetchProducts = jest.fn().mockRejectedValue(new Error('Network error'));
 
       service.registerProvider('working', workingProvider);
       service.registerProvider('error', errorProvider);

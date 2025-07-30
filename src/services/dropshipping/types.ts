@@ -8,6 +8,7 @@ export interface IDropshippingProvider {
   createOrder(orderData: any): Promise<OrderCreationResult>;
   updateInventory(updates: InventoryUpdate[]): Promise<void>;
   calculateShipping(orderData: DropshipOrderData): Promise<ShippingInfo>;
+  getOrderStatus?(provider: string, externalOrderId: string): Promise<OrderStatus>;
 }
 
 export interface ProductSearchParams {
@@ -36,6 +37,7 @@ export interface DropshipOrderData {
 }
 
 export interface OrderCreationResult {
+  orderId: string;
   externalOrderId: string;
   status: string;
   providerData?: any;
@@ -61,15 +63,6 @@ export interface InventoryUpdate {
 export interface ShippingInfo {
   cost: number;
   estimatedDelivery: string;
-}
-
-export interface IDropshippingProvider {
-  getProviderName(): string;
-  checkHealth(): Promise<{ status: string; details: any }>;
-  fetchProducts(params: ProductSearchParams): Promise<DropshipProduct[]>;
-  createOrder(orderData: any): Promise<OrderCreationResult>;
-  updateInventory(updates: InventoryUpdate[]): Promise<void>;
-  calculateShipping(orderData: DropshipOrderData): Promise<ShippingInfo>;
 }
 
 export interface PrintfulConfig { apiKey: string; }

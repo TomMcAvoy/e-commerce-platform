@@ -4,7 +4,7 @@ import Product from '../models/Product';
 import AppError from '../utils/AppError';
 // import { TenantRequest } from '../middleware/tenantResolver'; // <-- Remove this import
 import eventService from '../services/eventService';
-import asyncHandler from 'express-async-handler'; // <-- You're using this, which is great
+import { asyncHandler } from '../utils/asyncHandler';
 
 // @desc    Get all orders for the logged-in user or all tenant orders for admin
 // @route   GET /api/orders

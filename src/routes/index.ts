@@ -45,6 +45,11 @@ if (safeRequire('./cart', '/cart')) loadedRoutesCount++;
 if (safeRequire('./orders', '/orders')) loadedRoutesCount++;
 if (safeRequire('./vendors', '/vendors')) loadedRoutesCount++;
 if (safeRequire('./dropshipping', '/dropshipping')) loadedRoutesCount++;
+if (safeRequire('./newsRoutes', '/news')) loadedRoutesCount++;
+if (safeRequire('./countryFeaturesRoutes', '/countries')) loadedRoutesCount++;
+if (safeRequire('./dsers', '/dsers')) loadedRoutesCount++;
+if (safeRequire('./shopify', '/shopify')) loadedRoutesCount++;
+if (safeRequire('./socialRoutes', '/social')) loadedRoutesCount++;
 
 // Health check endpoint following Debugging & Testing Ecosystem
 router.get('/status', (req, res) => {
@@ -64,7 +69,18 @@ router.get('/status', (req, res) => {
       'POST /api/cart/add',
       'GET /api/orders',
       'GET /api/vendors',
-      'GET /api/dropshipping/status'
+      'GET /api/dropshipping/status',
+      'GET /api/news',
+      'GET /api/news/feed',
+      'GET /api/news/countries',
+      'GET /api/countries/countries',
+      'GET /api/countries/:country/products',
+      'GET /api/countries/:country/vacation',
+      'GET /api/social/posts',
+      'POST /api/social/posts',
+      'POST /api/social/posts/:id/like',
+      'POST /api/social/posts/:id/report',
+      'GET /api/social/notifications'
     ]
   });
 });

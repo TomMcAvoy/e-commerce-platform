@@ -24,7 +24,7 @@ export default function ERPDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src="/whitestart-logo.svg" alt="WhiteStart" className="h-8 w-auto" />
+              <img src="/whitestart-logo.svg" alt="WhiteStart" className="h-16 w-auto" />
               <span className="ml-3 text-xl font-semibold text-gray-900">Enterprise ERP</span>
             </div>
             <div className="flex items-center space-x-4">

@@ -36,17 +36,38 @@ export interface IVendor {
 
 export interface IProduct {
   _id: string;
+  tenantId: string;
   name: string;
   slug: string;
   description: string;
   price: number;
+  originalPrice?: number;
+  category: string;
+  subcategory?: string;
+  brand: string;
+  vendorId: string;
+  sku: string;
+  asin: string;
   images: string[];
-  category: ICategory; // Populated category data
-  vendor: IVendor;     // Populated vendor data
-  stock: number;
-  rating: number;
+  inventory: {
+    quantity: number;
+    lowStock: number;
+    inStock: boolean;
+  };
+  cost?: number;
+  features?: string[];
+  sizes?: string[];
+  colors?: string[];
+  seo?: { title?: string; description?: string; keywords?: string[]; };
+  isActive: boolean;
   createdAt: string;
-  // other product properties
+  updatedAt: string;
+  
+  // Computed/populated fields for frontend display
+  stock?: number; // Alias for inventory.quantity
+  rating?: number;
+  vendor?: IVendor;     // Populated vendor data
+  categoryData?: ICategory; // Populated category data
 }
 
 export interface ICartItem {

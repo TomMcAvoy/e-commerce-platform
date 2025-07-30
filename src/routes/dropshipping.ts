@@ -7,7 +7,7 @@ import {
   getProviderProducts
 } from '../controllers/dropshippingController';
 import { protect, authorize } from '../middleware/auth';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = express.Router();
 
@@ -34,8 +34,8 @@ router.get('/status', (req, res) => {
 router.use(protect); // All routes below require authentication
 
 // Order management following API Endpoints Structure
-router.post('/fulfill', authorize('admin', 'vendor'), asyncHandler(fulfillOrder));
-router.get('/status/:provider/:externalOrderId', authorize('admin', 'vendor'), asyncHandler(getDropshippingOrderStatus));
+router.post('/fulfill', authorize('admin', 'vendor'), fulfillOrder);
+router.get('/status/:provider/:externalOrderId', authorize('admin', 'vendor'), getDropshippingOrderStatus);
 
 // Product management
 router.get('/products/:provider', authorize('admin', 'vendor'), asyncHandler(getProviderProducts));

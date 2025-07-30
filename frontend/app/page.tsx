@@ -6,6 +6,7 @@ import { VendorCard } from '@/components/vendors/VendorCard';
 import { HeroSection } from '@/components/layout/HeroSection';
 import { Button } from '@/components/ui/Button';
 import { ICategory, IProduct, IVendor } from '@/types';
+import CountrySpotlight from '@/components/sections/CountrySpotlight';
 import { 
   ShoppingBagIcon, 
   NewspaperIcon, 
@@ -279,6 +280,9 @@ export default async function HomePage() {
               </div>
             </div>
           </section>
+
+          {/* Country Spotlight Section */}
+          <CountrySpotlight />
         </>
       )}
     </>

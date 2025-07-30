@@ -23,7 +23,7 @@ export class NewsAPIService {
   constructor() {
     this.apiKey = process.env.NEWS_API_KEY || '';
     if (!this.apiKey) {
-      console.warn('NEWS_API_KEY not found - news fetching disabled');
+      console.log('📰 NEWS_API_KEY not configured - news fetching disabled');
     }
   }
 

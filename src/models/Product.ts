@@ -117,6 +117,10 @@ ProductSchema.virtual('discountPercentage').get(function() {
   return 0;
 });
 
+ProductSchema.virtual('discountedPrice').get(function() {
+  return this.price; // For now, just return the current price
+});
+
 // Virtual for reviews
 ProductSchema.virtual('reviews', {
   ref: 'Review',

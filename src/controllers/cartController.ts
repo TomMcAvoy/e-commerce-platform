@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../utils/asyncHandler';
 import Cart, { ICartItem } from '../models/Cart';
 import Product from '../models/Product';
 import AppError from '../utils/AppError';

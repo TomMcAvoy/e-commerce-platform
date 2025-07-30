@@ -30,7 +30,7 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/company" className="flex items-center">
-              <img src="/whitestart-logo.svg" alt="WhiteStart Logo" className="h-8 w-auto" />
+              <img src="/whitestart-logo.svg" alt="WhiteStart Logo" className="h-16 w-auto" />
             </Link>
             <Link href="/company" className="text-blue-600 hover:text-blue-800 font-medium">
               ← Back to Company

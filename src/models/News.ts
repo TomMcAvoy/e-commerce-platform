@@ -11,6 +11,8 @@ export interface INews extends Document {
   urlToImage: string;
   publishedAt: Date;
   content: string;
+  country: string;
+  category: string;
   isActive: boolean;
 }
 
@@ -26,6 +28,7 @@ const NewsSchema: Schema = new Schema({
   publishedAt: { type: Date, required: true, index: true },
   content: { type: String },
   country: { type: String, index: true },
+  category: { type: String, default: 'general', index: true },
   isActive: { type: Boolean, default: true, index: true }
 }, {
   timestamps: true

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../utils/asyncHandler';
 import Vendor from '../models/Vendor';
 import User from '../models/User'; // FIX: Import User model
 import Product from '../models/Product';
@@ -37,6 +37,28 @@ export const registerVendor = async (req: Request, res: Response, next: NextFunc
 export const getVendors = asyncHandler(async (req: Request, res: Response) => {
     const vendors = await Vendor.find({ tenantId: req.tenantId }).populate('user', 'name email');
     res.status(200).json({ success: true, count: vendors.length, data: vendors });
+});
+
+// @desc    Get featured vendors for public display
+// @route   GET /api/vendors/featured
+// @access  Public
+export const getFeaturedVendors = asyncHandler(async (req: Request, res: Response) => {
+    const limit = parseInt(req.query.limit as string) || 3;
+    
+    const vendors = await Vendor.find({ 
+        tenantId: req.tenantId,
+        isActive: true 
+    })
+    .populate('userId', 'firstName lastName')
+    .sort({ rating: -1, createdAt: -1 })
+    .limit(limit)
+    .select('businessName description rating location imageUrl slug businessEmail createdAt');
+    
+    res.status(200).json({ 
+        success: true, 
+        count: vendors.length, 
+        data: vendors 
+    });
 });
 
 // @desc    Get single vendor profile by ID

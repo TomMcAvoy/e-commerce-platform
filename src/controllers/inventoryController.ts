@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
-import { AuthenticatedRequest } from '../middleware/auth'
+import { AuthenticatedRequest } from '../types/auth'
 import { ApiResponse, PaginatedResponse } from '../types/ApiResponse'
 import Product from '../models/Product'
 import Vendor from '../models/Vendor'
 import Order from '../models/Order'
 import AppError from '../utils/AppError'
-import asyncHandler from 'express-async-handler'
+import { asyncHandler } from '../utils/asyncHandler'
 import Inventory from '../models/Inventory'
 
 // @desc    Get comprehensive inventory dashboard
@@ -143,12 +143,9 @@ export const getInventoryLevels = async (
     res.status(200).json({
       success: true,
       data: enrichedProducts,
-      pagination: {
-        page,
-        pages: Math.ceil(total / limit),
-        total,
-        limit
-      }
+      count: total,
+      page,
+      pages: Math.ceil(total / limit)
     })
   } catch (error) {
     next(error)

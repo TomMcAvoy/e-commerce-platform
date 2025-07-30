@@ -56,4 +56,11 @@ export function SocialPostCard({ post }: SocialPostCardProps) {
           <ChatBubbleOvalLeftIcon className="w-5 h-5" />
           <span>{post.comments?.length || 0} Comments</span>
         </Button>
-        <Button variant="ghost" size="sm" className="flex items-center space-x-2 text-gray
+        <Button variant="ghost" size="sm" className="flex items-center space-x-2 text-gray-600">
+          <ArrowUpOnSquareIcon className="w-5 h-5" />
+          <span>Share</span>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}

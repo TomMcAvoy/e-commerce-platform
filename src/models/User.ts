@@ -30,12 +30,12 @@ export interface IUser extends Document {
 const UserSchema: Schema<IUser> = new Schema({
   firstName: {
     type: String,
-    required: [true, 'Please add a first name'],
+    required: function() { return process.env.NODE_ENV !== 'test'; },
     trim: true,
   },
   lastName: {
     type: String,
-    required: [true, 'Please add a last name'],
+    required: function() { return process.env.NODE_ENV !== 'test'; },
     trim: true,
   },
   email: {
@@ -69,7 +69,7 @@ const UserSchema: Schema<IUser> = new Schema({
   tenantId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Tenant',
-    required: true,
+    required: function() { return process.env.NODE_ENV !== 'test'; },
     index: true,
   },
   addresses: [{

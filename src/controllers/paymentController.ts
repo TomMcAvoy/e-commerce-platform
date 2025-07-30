@@ -1,19 +1,24 @@
 import { Request, Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../utils/asyncHandler';
 import Stripe from 'stripe';
 import Order from '../models/Order';
 import AppError from '../utils/AppError';
-import { AuthenticatedRequest } from '../types';
 
 // Initialize Stripe with the secret key from environment variables
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-08-16'
+});
 
 /**
  * @desc    Create a payment intent for an existing order
  * @route   POST /api/payments/create-intent
  * @access  Private
  */
-export const createPaymentIntent = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const createPaymentIntent = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return next(new AppError('Authentication required', 401));
+  }
+  
   const { orderId } = req.body;
 
   // Find the user's pending order within the current tenant

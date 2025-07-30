@@ -1,6 +1,5 @@
+import request from 'supertest';
 import app from './__tests__/test-app-setup';
-const request = require('supertest');
-const app = require('../app'); // Adjust the path as necessary
 
 describe('Application Tests', () => {
     it('should return a healthy status', async () => {

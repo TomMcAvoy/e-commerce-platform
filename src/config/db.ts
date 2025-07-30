@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 import colors from 'colors';
 
 const connectDB = async () => {
+  // Skip connection in test environment (jest handles it)
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+  
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI!);
     console.log(

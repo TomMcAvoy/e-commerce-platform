@@ -17,8 +17,8 @@ export default function Header() {
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              Whitestart
+            <Link href="/" className="flex items-center">
+              <img src="/whitestart-logo.svg" alt="Whitestart" className="h-16 w-auto" />
             </Link>
             <div className="hidden md:block ml-10">
               <div className="flex items-baseline space-x-4">

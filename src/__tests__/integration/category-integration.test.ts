@@ -1,12 +1,10 @@
 import request from 'supertest';
 import app from '../test-app-setup';
-import { DropshippingService } from '../../services/dropshipping/DropshippingService';
+import { dropshippingService } from '../../services/dropshipping/DropshippingService';
 
 describe('Cross-Category Integration Tests', () => {
-  let dropshippingService: DropshippingService;
-
   beforeAll(() => {
-    dropshippingService = new DropshippingService();
+    // dropshippingService is already a singleton instance
   });
 
   describe('Multi-Category Shopping Cart', () => {
@@ -77,11 +75,21 @@ describe('Cross-Category Integration Tests', () => {
 
   describe('Multi-Provider Dropshipping', () => {
     it('should handle orders from multiple suppliers', async () => {
-      // Register multiple providers
+      // Register multiple providers with complete interface implementation
       const electronicsProvider = {
         isEnabled: true,
-        createOrder: jest.fn().mockResolvedValue({ success: true, orderId: 'elec-001' }),
-        getOrderStatus: jest.fn(),
+        getProviderName: jest.fn().mockReturnValue('electronics-supplier'),
+        checkHealth: jest.fn().mockResolvedValue({ status: 'healthy', details: {} }),
+        fetchProducts: jest.fn().mockResolvedValue([]),
+        createOrder: jest.fn().mockResolvedValue({ 
+          orderId: 'internal-elec-001', 
+          externalOrderId: 'elec-001', 
+          status: 'pending' 
+        }),
+        updateInventory: jest.fn().mockResolvedValue(undefined),
+        calculateShipping: jest.fn().mockResolvedValue({ cost: 10, estimatedDelivery: '3-5 days' }),
+        getOrderStatus: jest.fn().mockResolvedValue({ status: 'processing' }),
+        // Legacy methods for backward compatibility
         cancelOrder: jest.fn(),
         getAvailableProducts: jest.fn(),
         getProducts: jest.fn(),
@@ -90,8 +98,18 @@ describe('Cross-Category Integration Tests', () => {
 
       const fashionProvider = {
         isEnabled: true,
-        createOrder: jest.fn().mockResolvedValue({ success: true, orderId: 'fashion-001' }),
-        getOrderStatus: jest.fn(),
+        getProviderName: jest.fn().mockReturnValue('fashion-supplier'),
+        checkHealth: jest.fn().mockResolvedValue({ status: 'healthy', details: {} }),
+        fetchProducts: jest.fn().mockResolvedValue([]),
+        createOrder: jest.fn().mockResolvedValue({ 
+          orderId: 'internal-fashion-001', 
+          externalOrderId: 'fashion-001', 
+          status: 'pending' 
+        }),
+        updateInventory: jest.fn().mockResolvedValue(undefined),
+        calculateShipping: jest.fn().mockResolvedValue({ cost: 5, estimatedDelivery: '2-4 days' }),
+        getOrderStatus: jest.fn().mockResolvedValue({ status: 'processing' }),
+        // Legacy methods for backward compatibility
         cancelOrder: jest.fn(),
         getAvailableProducts: jest.fn(),
         getProducts: jest.fn(),
@@ -102,30 +120,37 @@ describe('Cross-Category Integration Tests', () => {
       dropshippingService.registerProvider('fashion-supplier', fashionProvider);
 
       const orderData1 = {
-        items: [{ productId: 'phone-001', quantity: 1, price: 699 }],
+        orderId: 'test-order-1',
+        items: [{ externalVariantId: 'phone-001-variant', quantity: 1 }],
         shippingAddress: {
           firstName: 'Multi', lastName: 'Buyer',
           address1: '123 Test St', city: 'Test', state: 'CA',
           postalCode: '90210', country: 'US'
-        }
+        },
+        customerInfo: { name: 'Multi Buyer', email: 'multi@test.com' }
       };
 
       const orderData2 = {
-        items: [{ productId: 'shirt-001', quantity: 2, price: 29.99 }],
+        orderId: 'test-order-2',
+        items: [{ externalVariantId: 'shirt-001-variant', quantity: 2 }],
         shippingAddress: {
           firstName: 'Multi', lastName: 'Buyer',
           address1: '123 Test St', city: 'Test', state: 'CA',
           postalCode: '90210', country: 'US'
-        }
+        },
+        customerInfo: { name: 'Multi Buyer', email: 'multi@test.com' }
       };
 
-      const result1 = await dropshippingService.createOrder(orderData1, 'electronics-supplier');
-      const result2 = await dropshippingService.createOrder(orderData2, 'fashion-supplier');
+      // Create orders using the service
+      const result1 = await dropshippingService.createOrder('electronics-supplier', orderData1);
+      const result2 = await dropshippingService.createOrder('fashion-supplier', orderData2);
 
-      expect(result1.success).toBe(true);
-      expect(result2.success).toBe(true);
-      expect(result1.orderId).toBe('elec-001');
-      expect(result2.orderId).toBe('fashion-001');
+      expect(result1.orderId).toBe('internal-elec-001');
+      expect(result1.externalOrderId).toBe('elec-001');
+      expect(result1.status).toBe('pending');
+      expect(result2.orderId).toBe('internal-fashion-001');
+      expect(result2.externalOrderId).toBe('fashion-001');
+      expect(result2.status).toBe('pending');
     });
 
     it('should get unified product catalog from all providers', async () => {
@@ -138,8 +163,14 @@ describe('Cross-Category Integration Tests', () => {
 
       const mockElectronicsProvider = {
         isEnabled: true,
-        createOrder: jest.fn(),
-        getOrderStatus: jest.fn(),
+        getProviderName: jest.fn().mockReturnValue('electronics-provider'),
+        checkHealth: jest.fn().mockResolvedValue({ status: 'healthy', details: {} }),
+        fetchProducts: jest.fn().mockResolvedValue(electronicsProducts),
+        createOrder: jest.fn().mockResolvedValue({ orderId: 'test', externalOrderId: 'ext', status: 'pending' }),
+        updateInventory: jest.fn().mockResolvedValue(undefined),
+        calculateShipping: jest.fn().mockResolvedValue({ cost: 10, estimatedDelivery: '3-5 days' }),
+        getOrderStatus: jest.fn().mockResolvedValue({ status: 'processing' }),
+        // Legacy methods
         cancelOrder: jest.fn(),
         getAvailableProducts: jest.fn(),
         getProducts: jest.fn().mockResolvedValue(electronicsProducts),
@@ -148,8 +179,14 @@ describe('Cross-Category Integration Tests', () => {
 
       const mockFashionProvider = {
         isEnabled: true,
-        createOrder: jest.fn(),
-        getOrderStatus: jest.fn(),
+        getProviderName: jest.fn().mockReturnValue('fashion-provider'),
+        checkHealth: jest.fn().mockResolvedValue({ status: 'healthy', details: {} }),
+        fetchProducts: jest.fn().mockResolvedValue(fashionProducts),
+        createOrder: jest.fn().mockResolvedValue({ orderId: 'test', externalOrderId: 'ext', status: 'pending' }),
+        updateInventory: jest.fn().mockResolvedValue(undefined),
+        calculateShipping: jest.fn().mockResolvedValue({ cost: 5, estimatedDelivery: '2-4 days' }),
+        getOrderStatus: jest.fn().mockResolvedValue({ status: 'processing' }),
+        // Legacy methods
         cancelOrder: jest.fn(),
         getAvailableProducts: jest.fn(),
         getProducts: jest.fn().mockResolvedValue(fashionProducts),
@@ -159,7 +196,10 @@ describe('Cross-Category Integration Tests', () => {
       dropshippingService.registerProvider('electronics-provider', mockElectronicsProvider);
       dropshippingService.registerProvider('fashion-provider', mockFashionProvider);
 
-      const allProducts = await dropshippingService.getAllProducts();
+      // Get products from both providers
+      const electronicsProds = await dropshippingService.getProducts('electronics-provider', {});
+      const fashionProds = await dropshippingService.getProducts('fashion-provider', {});
+      const allProducts = [...electronicsProds, ...fashionProds];
 
       expect(allProducts).toHaveLength(2);
       expect(allProducts[0].provider).toBe('electronics-provider');

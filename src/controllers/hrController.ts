@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../utils/asyncHandler';
 import User from '../models/User';
 import Employee from '../models/Employee';
 import AppError from '../utils/AppError';
-import { AuthenticatedRequest } from '../middleware/auth';
+import { AuthenticatedRequest } from '../types/auth';
 
 // @desc    Hire a new employee from an existing user
 // @route   POST /api/hr/employees

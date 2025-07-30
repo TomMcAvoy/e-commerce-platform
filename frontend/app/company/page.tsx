@@ -189,7 +189,7 @@ export default function CompanyPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <img src="/whitestart-logo.svg" alt="WhiteStart Logo" className="h-8 w-auto mb-4" />
+              <img src="/whitestart-logo.svg" alt="WhiteStart Logo" className="h-16 w-auto mb-4" />
               <p className="text-gray-400">Advanced security solutions for modern enterprises</p>
             </div>
             <div>

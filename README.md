@@ -11,10 +11,10 @@ git clone <repository-url>
 cd shoppingcart
 
 # Quick setup (installs dependencies, creates .env, builds project)
-npm run setup
+pnpm run setup
 
 # Start development servers
-npm run dev:all
+pnpm run dev:all
 
 # Visit the application
 # Frontend: http://localhost:3001
@@ -25,24 +25,24 @@ npm run dev:all
 ### For Testing
 ```bash
 # Run comprehensive test suite
-npm test
+pnpm test
 
 # Run specific tests
-npm run test:api        # API endpoint tests
-npm run test:enhanced   # Enhanced test suite
-npm run test:e2e        # End-to-end tests
+pnpm run test:api        # API endpoint tests
+pnpm run test:enhanced   # Enhanced test suite
+pnpm run test:e2e        # End-to-end tests
 ```
 
 ### Server Management
 ```bash
 # Start servers
-npm run dev:all         # Start both frontend and backend
-npm run dev:server      # Start backend only (port 3000)
-npm run dev:frontend    # Start frontend only (port 3001)
+pnpm run dev:all         # Start both frontend and backend
+pnpm run dev:server      # Start backend only (port 3000)
+pnpm run dev:frontend    # Start frontend only (port 3001)
 
 # Stop servers
-npm run stop            # Gracefully stop all development servers
-npm run kill            # Force kill all development servers (emergency)
+pnpm run stop            # Gracefully stop all development servers
+pnpm run kill            # Force kill all development servers (emergency)
 ```
 
 ## 🧪 Debug & Development Tools
@@ -133,7 +133,7 @@ This platform includes comprehensive debugging tools for development:
 - Node.js 18+ 
 - MongoDB
 - Redis
-- npm or yarn
+- pnpm
 
 ### Installation
 
@@ -145,8 +145,8 @@ This platform includes comprehensive debugging tools for development:
 
 2. **Install dependencies**
    ```bash
-   npm install
-   cd frontend && npm install
+   pnpm install
+   cd frontend && pnpm install
    ```
 
 3. **Environment Setup**
@@ -178,23 +178,23 @@ This platform includes comprehensive debugging tools for development:
    
    **Development mode (both frontend and backend):**
    ```bash
-   npm run dev:all
+   pnpm run dev:all
    ```
    
    **Backend only:**
    ```bash
-   npm run dev:server
+   pnpm run dev:server
    ```
    
    **Frontend only:**
    ```bash
-   npm run dev:frontend
+   pnpm run dev:frontend
    ```
 
 6. **Build for production**
    ```bash
-   npm run build
-   npm start
+   pnpm run build
+   pnpm start
    ```
 
 ## 📚 API Documentation
@@ -263,12 +263,12 @@ The platform uses JWT-based authentication with role-based access control:
 ## 🔧 Development
 
 ### Available Scripts
-- `npm run dev:server` - Start backend development server
-- `npm run dev:frontend` - Start frontend development server
-- `npm run dev:all` - Start both frontend and backend
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run seed` - Seed database with sample data
+- `pnpm run dev:server` - Start backend development server
+- `pnpm run dev:frontend` - Start frontend development server
+- `pnpm run dev:all` - Start both frontend and backend
+- `pnpm run build` - Build for production
+- `pnpm run start` - Start production server
+- `pnpm run seed` - Seed database with sample data
 
 ### Code Style
 - TypeScript for type safety

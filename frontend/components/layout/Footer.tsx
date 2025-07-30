@@ -7,7 +7,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">WhiteStart</h3>
+            <div className="mb-4">
+              <img src="/whitestart-logo.svg" alt="WhiteStart" className="h-16 w-auto mb-4" />
+            </div>
             <p className="text-gray-400 mb-4">
               Your trusted e-commerce platform for security solutions and professional services.
             </p>

@@ -72,20 +72,36 @@ const getNewsFeed = async (req: Request, res: Response, next: NextFunction) => {
 const getNewsCountries = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const countries = {
+      // English-speaking countries
       usa: 'United States',
       uk: 'United Kingdom', 
       scotland: 'Scotland',
       canada: 'Canada',
       australia: 'Australia',
+      // Major European countries
       germany: 'Germany',
       france: 'France',
       italy: 'Italy',
       spain: 'Spain',
       netherlands: 'Netherlands',
       ireland: 'Ireland',
-      india: 'India',
+      norway: 'Norway',
+      sweden: 'Sweden',
+      denmark: 'Denmark',
+      belgium: 'Belgium',
+      switzerland: 'Switzerland',
+      austria: 'Austria',
+      poland: 'Poland',
+      // Major Asian countries
       japan: 'Japan',
+      india: 'India',
       china: 'China',
+      southkorea: 'South Korea',
+      singapore: 'Singapore',
+      thailand: 'Thailand',
+      malaysia: 'Malaysia',
+      indonesia: 'Indonesia',
+      // Other major countries
       russia: 'Russia',
       brazil: 'Brazil',
       mexico: 'Mexico',

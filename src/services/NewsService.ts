@@ -87,6 +87,61 @@ class NewsService {
     }
   }
 
+  public async fetchAndCacheNewsByCategory(country?: string, category?: string) {
+    if (!API_KEY) return;
+
+    try {
+      let url = BASE_URL;
+      const params = new URLSearchParams();
+      params.append('apiKey', API_KEY);
+      
+      if (country && NEWS_SOURCES[country as keyof typeof NEWS_SOURCES]) {
+        params.append('sources', NEWS_SOURCES[country as keyof typeof NEWS_SOURCES]);
+      } else {
+        params.append('sources', DEFAULT_SOURCES);
+      }
+      
+      if (category && category !== 'general') {
+        params.append('category', category);
+      }
+      
+      const response = await fetch(`${url}?${params.toString()}`);
+      if (!response.ok) {
+        throw new AppError(`News API request failed with status ${response.status}`, response.status);
+      }
+      const data = await response.json();
+
+      if (data.articles && data.articles.length > 0) {
+        const operations = data.articles.map((article: any) => ({
+          updateOne: {
+            filter: { title: article.title, tenantId: this.tenantId },
+            update: {
+              $set: {
+                tenantId: this.tenantId,
+                sourceId: article.source.id,
+                sourceName: article.source.name,
+                author: article.author,
+                description: article.description,
+                url: article.url,
+                urlToImage: article.urlToImage,
+                publishedAt: new Date(article.publishedAt),
+                content: article.content,
+                country: this.getCountryFromSource(article.source.id),
+                category: category || 'general',
+                isActive: true
+              }
+            },
+            upsert: true
+          }
+        }));
+        await News.bulkWrite(operations);
+        console.log(`🗞️  Successfully cached ${operations.length} ${category || 'general'} news articles from ${country || 'default sources'}.`);
+      }
+    } catch (error) {
+      console.error(`Error fetching or caching ${category} news:`, error);
+    }
+  }
+
   private getCountryFromSource(sourceId: string): string {
     for (const [country, sources] of Object.entries(NEWS_SOURCES)) {
       if (sources.includes(sourceId)) return country;

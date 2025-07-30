@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../utils/asyncHandler';
 import { dropshippingService } from '../services/dropshipping/DropshippingService';
 import Order, { IOrder } from '../models/Order';
 import AppError from '../utils/AppError';
-import { AuthenticatedRequest } from '../middleware/auth';
+import { AuthenticatedRequest } from '../types/auth';
 
 
 
@@ -34,7 +34,11 @@ export const getDropshippingHealth = asyncHandler(async (req: Request, res: Resp
 // @desc    Manually fulfill an order with a dropshipping provider
 // @route   POST /api/dropshipping/fulfill
 // @access  Private/Admin
-export const fulfillOrder = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const fulfillOrder = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+        return next(new AppError('Authentication required', 401));
+    }
+    
     const { orderId, provider } = req.body;
 
     if (!orderId || !provider) {
@@ -49,12 +53,12 @@ export const fulfillOrder = asyncHandler(async (req: AuthenticatedRequest, res: 
 
     const fulfillmentResult = await dropshippingService.createOrder(provider, order.toObject());
 
-    if (fulfillmentResult.success) {
+    if (fulfillmentResult.orderId) {
         order.isFulfilled = true;
         order.fulfillment = {
             provider: provider,
             externalOrderId: fulfillmentResult.externalOrderId,
-            status: fulfillmentResult.status || 'processing'
+            status: 'processing'
         };
         await order.save();
     }

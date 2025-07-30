@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import User, { IUser } from '../models/User';
 import { sendTokenResponse } from '../utils/sendTokenResponse';
 import AppError from '../utils/AppError';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../utils/asyncHandler';
 import bcrypt from 'bcryptjs';
 
 // @desc    Login user

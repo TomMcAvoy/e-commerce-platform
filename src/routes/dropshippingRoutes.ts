@@ -1,10 +1,13 @@
 import express from 'express';
-import { importProducts } from '../controllers/dropshippingController';
-import { protect, authorize } from '../middleware/protect';
+import { getProviders, getDropshippingHealth, fulfillOrder, getDropshippingOrderStatus, getProviderProducts } from '../controllers/dropshippingController';
+import { protect, authorize } from '../middleware/auth';
 
 const router = express.Router();
 
-// This route is protected and only accessible by admins, as it performs a major operation.
-router.post('/import', protect, authorize('admin'), importProducts);
+router.get('/providers', protect, authorize('admin'), getProviders);
+router.get('/health', protect, authorize('admin'), getDropshippingHealth);
+router.post('/fulfill', protect, authorize('admin'), fulfillOrder);
+router.get('/status/:provider/:externalOrderId', protect, authorize('admin'), getDropshippingOrderStatus);
+router.get('/products/:provider', protect, authorize('admin'), getProviderProducts);
 
 export default router;

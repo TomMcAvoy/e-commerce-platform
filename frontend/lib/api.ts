@@ -89,11 +89,8 @@ export async function getFeaturedProducts(params: { limit?: number } = {}): Prom
 }
 
 export async function getFeaturedVendors(params: { limit?: number } = {}): Promise<IVendor[]> {
-  const query = new URLSearchParams({
-    sort: '-rating',
-    ...(params.limit && { limit: String(params.limit) }),
-  }).toString();
-  const data = await apiClient(`/vendors?${query}`, { next: { revalidate: 3600 } });
+  const query = params.limit ? `?limit=${params.limit}` : '';
+  const data = await apiClient(`/vendors/featured${query}`, { next: { revalidate: 3600 } });
   return data.data || [];
 }
 
@@ -111,6 +108,22 @@ export async function getNewsCategories(): Promise<any[]> { // Assuming a type f
 export async function getNewsFeed(params: { source?: string } = {}): Promise<any> {
   const query = params.source ? `?source=${params.source}` : '';
   return apiClient(`/news/feed${query}`, { next: { revalidate: 300 } });
+}
+
+// Country Features API
+export async function getCountryFeaturedProducts(country: string): Promise<any[]> {
+  const data = await apiClient(`/countries/${country}/products`, { next: { revalidate: 3600 } });
+  return data.data || [];
+}
+
+export async function getCountryVacationVendor(country: string): Promise<any> {
+  const data = await apiClient(`/countries/${country}/vacation`, { next: { revalidate: 3600 } });
+  return data.data || null;
+}
+
+export async function getAvailableCountriesWithFeatures(): Promise<any[]> {
+  const data = await apiClient('/countries/countries', { next: { revalidate: 3600 } });
+  return data.data || [];
 }
 
 export async function getNewsArticleBySlug(slug: string): Promise<INews | null> {
