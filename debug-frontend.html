@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Categories API</title>
+</head>
+<body>
+    <h1>Debug Categories API Call</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing API...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/categories');
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <h2>✅ SUCCESS!</h2>
+                    <p>Status: ${response.status}</p>
+                    <p>Categories: ${data.count}</p>
+                    <p>First category: ${data.data[0]?.name}</p>
+                    <pre>${JSON.stringify(data.data.slice(0, 2), null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h2>❌ ERROR!</h2>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        testAPI();
+    </script>
+</body>
+</html>

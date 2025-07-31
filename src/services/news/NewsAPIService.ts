@@ -36,7 +36,7 @@ export class NewsAPIService {
     try {
       console.log('🗞️  Starting news fetch from NewsAPI...');
       
-      const categories = ['technology', 'business', 'health', 'science', 'sports', 'entertainment'];
+      const categories = ['world', 'nation', 'business', 'technology', 'entertainment', 'sports', 'science', 'health'];
       let totalProcessed = 0;
 
       for (const category of categories) {
@@ -102,6 +102,7 @@ export class NewsAPIService {
         }
 
         const systemUserId = await this.getSystemUserId();
+        const categoryDoc = await this.getCategoryByName(category);
 
         const newsArticle = new NewsArticle({
           title: article.title,
@@ -110,8 +111,11 @@ export class NewsAPIService {
           author: systemUserId,
           authorName: article.author || article.source.name,
           source: article.source.name,
-          originalUrl: article.url,
-          category: category,
+          url: article.url,
+          sourceName: article.source.name,
+          sourceId: article.source.id || 'newsapi',
+          tenantId: process.env.DEFAULT_TENANT_ID || '6884bf4702e02fe6eb401303',
+          category: categoryDoc?._id || category,
           tags: [category, article.source.name.toLowerCase()],
           media: article.urlToImage ? [{
             type: 'image',
@@ -162,6 +166,22 @@ export class NewsAPIService {
 
   private async getSystemUserId(): Promise<string> {
     return process.env.SYSTEM_USER_ID || '60d0fe4f5311236168a109ca';
+  }
+
+  private async getCategoryByName(categoryName: string) {
+    try {
+      const NewsCategory = require('../../models/NewsCategory').default;
+      return await NewsCategory.findOne({ 
+        $or: [
+          { slug: categoryName },
+          { googleNewsCategory: categoryName },
+          { name: { $regex: new RegExp(categoryName, 'i') } }
+        ]
+      });
+    } catch (error) {
+      console.error('Error finding news category:', error);
+      return null;
+    }
   }
 }
 

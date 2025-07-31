@@ -30,18 +30,21 @@ export default async function HomePage() {
   try {
     // Fetch all data concurrently for performance
     const [categoriesData, productsData, vendorsData, newsData] = await Promise.all([
-      getCategories({ limit: 8 }),
-      getFeaturedProducts({ limit: 6 }),
-      getFeaturedVendors({ limit: 3 }),
-      getNews({ limit: 3 })
+      getCategories({ limit: 8 }).catch(e => { console.warn('Categories fetch failed:', e.message); return []; }),
+      getFeaturedProducts({ limit: 6 }).catch(e => { console.warn('Products fetch failed:', e.message); return []; }),
+      getFeaturedVendors({ limit: 3 }).catch(e => { console.warn('Vendors fetch failed:', e.message); return []; }),
+      getNews({ limit: 3 }).catch(e => { console.warn('News fetch failed:', e.message); return []; })
     ]);
     categories = categoriesData;
     featuredProducts = productsData;
     featuredVendors = vendorsData;
     latestNews = newsData;
   } catch (e: any) {
-    console.error('Failed to fetch homepage data:', e.message);
-    error = 'Could not connect to the server. Please ensure the backend is running and try again.';
+    console.error('Critical homepage data fetch error:', e.message);
+    // Only show error if ALL APIs fail, not just empty data
+    if (categories.length === 0 && featuredProducts.length === 0) {
+      error = 'Could not connect to the server. Please ensure the backend is running and try again.';
+    }
   }
 
   // Add some sample data for demonstration if we don't have real data

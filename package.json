@@ -22,7 +22,10 @@
     "clean:all": "rimraf dist node_modules frontend/node_modules frontend/.next",
     "reset:all": "pnpm run clean:all && pnpm install && cd frontend && pnpm install && cd .. && pnpm run build",
     "setup": "pnpm install && cd frontend && pnpm install && cd .. && cp .env.example .env && pnpm run build",
-    "kill": "pkill -f 'nodemon src/index.ts' && pkill -f 'next dev' || true"
+    "kill": "./kill-servers.sh",
+    "stop": "./kill-servers.sh",
+    "kill:emergency": "lsof -ti :3000 :3001 :3002 | xargs kill -9 2>/dev/null || true",
+    "news:fetch": "pnpm run build && node scripts/fetch-google-news-rss.js"
   },
   "dependencies": {
     "@types/hpp": "^0.2.6",
@@ -32,6 +35,7 @@
     "colors": "^1.4.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "csv-parse": "^6.1.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",

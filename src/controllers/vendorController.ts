@@ -46,7 +46,6 @@ export const getFeaturedVendors = asyncHandler(async (req: Request, res: Respons
     const limit = parseInt(req.query.limit as string) || 3;
     
     const vendors = await Vendor.find({ 
-        tenantId: req.tenantId,
         isActive: true 
     })
     .populate('userId', 'firstName lastName')

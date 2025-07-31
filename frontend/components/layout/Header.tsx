@@ -25,23 +25,23 @@ export default function Header() {
                 <Link href="/products" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                   Shop
                 </Link>
+                <Link href="/social" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Social
+                </Link>
                 <Link href="/news" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                   News
-                </Link>
-                <Link href="/news?category=sports" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                  Sports
-                </Link>
-                <Link href="/news?category=entertainment" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                  Entertainment
-                </Link>
-                <Link href="/products?category=fashion" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                  Fashion
                 </Link>
                 <Link href="/categories" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                   Categories
                 </Link>
-                <Link href="/company" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                  Company
+                <Link href="/features" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Features
+                </Link>
+                <Link href="/about" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  About
+                </Link>
+                <Link href="/contact" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Contact
                 </Link>
               </div>
             </div>

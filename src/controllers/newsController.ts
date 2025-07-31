@@ -1,20 +1,34 @@
 import { Request, Response, NextFunction } from 'express';
-import NewsArticle from '../models/NewsArticle';
 import News from '../models/News';
 import AppError from '../utils/AppError';
 
-// Define all controller functions as simple constants.
+// Get all news articles (public endpoint)
 const getNewsArticles = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-    const articles = await NewsArticle.find({ tenantId: req.tenantId })
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const skip = (page - 1) * limit;
+    const country = req.query.country as string;
+    const category = req.query.category as string;
+    
+    const filter: any = {};
+    if (country) filter.country = country;
+    if (category) filter.category = category;
+    
+    const articles = await News.find(filter)
       .sort({ publishedAt: -1 })
+      .skip(skip)
       .limit(limit)
-      .populate('category', 'name slug');
+      .lean();
+
+    const total = await News.countDocuments(filter);
 
     res.status(200).json({
       success: true,
       count: articles.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
       data: articles
     });
   } catch (error) {
@@ -22,107 +36,118 @@ const getNewsArticles = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
+// Get news article by slug
 const getNewsArticleBySlug = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const article = await NewsArticle.findOne({ slug: req.params.slug, tenantId: req.tenantId })
-      .populate('category', 'name slug');
+    const filter = req.tenantId 
+      ? { title: req.params.slug, tenantId: req.tenantId }
+      : { title: req.params.slug };
+      
+    const article = await News.findOne(filter);
       
     if (!article) {
-      return next(new AppError(`News article not found with slug of ${req.params.slug}`, 404));
+      return next(new AppError('Article not found', 404));
     }
-    res.status(200).json({ success: true, data: article });
+
+    res.status(200).json({
+      success: true,
+      data: article
+    });
   } catch (error) {
     next(error);
   }
 };
 
+// Get news feed (external sources)
 const getNewsFeed = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const source = req.query.source as string;
-    const country = req.query.country as string;
-    const category = req.query.category as string;
-    const query: any = { tenantId: req.tenantId, isActive: true };
-
-    if (source) {
-      query.sourceId = source;
-    }
-    if (country) {
-      query.country = country;
-    }
-    if (category) {
-      query.category = category.toLowerCase();
-    }
-
-    const articles = await News.find(query)
+    const articles = await News.find({})
       .sort({ publishedAt: -1 })
-      .limit(50)
+      .limit(20)
+      .select('title description author publishedAt category')
       .lean();
 
     res.status(200).json({
       success: true,
-      filters: { source, country, category },
       count: articles.length,
       data: articles
     });
   } catch (error) {
-    next(new AppError('Failed to get news feed from cache', 500));
+    next(error);
   }
 };
 
+// Get available countries
 const getNewsCountries = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const countries = {
-      // English-speaking countries
-      usa: 'United States',
-      uk: 'United Kingdom', 
-      scotland: 'Scotland',
-      canada: 'Canada',
-      australia: 'Australia',
-      // Major European countries
-      germany: 'Germany',
-      france: 'France',
-      italy: 'Italy',
-      spain: 'Spain',
-      netherlands: 'Netherlands',
-      ireland: 'Ireland',
-      norway: 'Norway',
-      sweden: 'Sweden',
-      denmark: 'Denmark',
-      belgium: 'Belgium',
-      switzerland: 'Switzerland',
-      austria: 'Austria',
-      poland: 'Poland',
-      // Major Asian countries
-      japan: 'Japan',
-      india: 'India',
-      china: 'China',
-      southkorea: 'South Korea',
-      singapore: 'Singapore',
-      thailand: 'Thailand',
-      malaysia: 'Malaysia',
-      indonesia: 'Indonesia',
-      // Other major countries
-      russia: 'Russia',
-      brazil: 'Brazil',
-      mexico: 'Mexico',
-      argentina: 'Argentina',
-      southafrica: 'South Africa'
-    };
+    const countries = [
+      { code: 'usa', name: 'United States', region: 'North America' },
+      { code: 'canada', name: 'Canada', region: 'North America' },
+      { code: 'uk', name: 'United Kingdom', region: 'Europe' },
+      { code: 'scotland', name: 'Scotland', region: 'Europe' }
+    ];
 
     res.status(200).json({
       success: true,
+      count: countries.length,
       data: countries
     });
   } catch (error) {
-    next(new AppError('Failed to get news countries', 500));
+    next(error);
   }
 };
 
-// FIX: Use a single default export (namespace pattern). This is the definitive fix
-// for the '[object Undefined]' error, ensuring all handlers are exported correctly.
-export default {
+// Get available categories
+const getNewsCategories = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const categories = [
+      { code: 'general', name: 'General', icon: '📰' },
+      { code: 'business', name: 'Business', icon: '💼' },
+      { code: 'entertainment', name: 'Entertainment', icon: '🎬' },
+      { code: 'health', name: 'Health', icon: '🏥' },
+      { code: 'science', name: 'Science', icon: '🔬' },
+      { code: 'sports', name: 'Sports', icon: '⚽' },
+      { code: 'technology', name: 'Technology', icon: '💻' }
+    ];
+
+    res.status(200).json({
+      success: true,
+      count: categories.length,
+      data: categories
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Create news article
+const createNewsArticle = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const articleData = {
+      ...req.body,
+      tenantId: req.tenantId || '6884bf4702e02fe6eb401303' // Default tenant
+    };
+
+    const article = new News(articleData);
+    await article.save();
+
+    res.status(201).json({
+      success: true,
+      data: article
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Export as object
+const newsController = {
   getNewsArticles,
   getNewsArticleBySlug,
   getNewsFeed,
-  getNewsCountries
+  getNewsCountries,
+  getNewsCategories,
+  createNewsArticle
 };
+
+export default newsController;

@@ -11,7 +11,7 @@ import AppError from '../utils/AppError';
 export const getCategories = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-    const query = Category.find({ tenantId: req.tenantId }).sort({ name: 1 });
+    const query = Category.find({}).sort({ name: 1 });
 
     if (limit) {
       query.limit(limit);
@@ -39,8 +39,7 @@ export const createCategory = asyncHandler(async (req: Request, res: Response, n
     const { name, description } = req.body;
     const category = await Category.create({
       name,
-      description,
-      tenantId: req.tenantId
+      description
     });
     res.status(201).json({ success: true, data: category });
   } catch (error) {
@@ -55,7 +54,7 @@ export const createCategory = asyncHandler(async (req: Request, res: Response, n
  */
 export const getCategoryBySlug = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const category = await Category.findOne({ slug: req.params.slug, tenantId: req.tenantId }).populate('products');
+    const category = await Category.findOne({ slug: req.params.slug }).populate('products');
     
     if (!category) {
       return next(new AppError(`Category not found with slug of ${req.params.slug}`, 404));

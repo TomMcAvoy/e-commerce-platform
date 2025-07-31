@@ -49,6 +49,7 @@ if (safeRequire('./newsRoutes', '/news')) loadedRoutesCount++;
 if (safeRequire('./countryFeaturesRoutes', '/countries')) loadedRoutesCount++;
 if (safeRequire('./dsers', '/dsers')) loadedRoutesCount++;
 if (safeRequire('./shopify', '/shopify')) loadedRoutesCount++;
+if (safeRequire('./newsCategoryRoutes', '/news-categories')) loadedRoutesCount++;
 if (safeRequire('./socialRoutes', '/social')) loadedRoutesCount++;
 
 // Health check endpoint following Debugging & Testing Ecosystem
