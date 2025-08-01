@@ -82,10 +82,10 @@ function CountryTabs({ countries, selectedCountry, onCountryChange }: {
 function NewsGrid({ articles }: { articles: NewsArticle[] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {articles.map((article) => (
+      {Array.isArray(articles) && articles.map((article) => (
         <div key={article._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
           <img 
-            src={article.urlToImage || '/placeholder.svg'} 
+            src={article.imageUrl || article.urlToImage || '/placeholder.svg'} 
             alt={article.title}
             className="w-full h-48 object-cover"
           />
@@ -164,29 +164,28 @@ export default function NewsPage() {
           limit: '20'
         });
         
+        // Add country filter if not 'all'
+        if (selectedCountry !== 'all') {
+          params.append('country', selectedCountry);
+        }
+        
+        // Add category filter if not 'general'
+        if (selectedCategory !== 'general') {
+          params.append('category', selectedCategory);
+        }
+        
         const response = await fetch(`/api/news?${params}`);
         if (response.ok) {
           const data = await response.json();
-          let filteredArticles = data.data || [];
-          
-          // Filter by country
-          if (selectedCountry !== 'all') {
-            filteredArticles = filteredArticles.filter(article => 
-              article.country === selectedCountry
-            );
-          }
-          
-          // Filter by category
-          if (selectedCategory !== 'general') {
-            filteredArticles = filteredArticles.filter(article => 
-              article.category === selectedCategory
-            );
-          }
-          
-          setArticles(filteredArticles);
+          console.log('API Response:', data);
+          setArticles(data.data || []);
+        } else {
+          console.error('Failed to fetch news:', response.statusText);
+          setArticles([]);
         }
       } catch (error) {
         console.error('Error fetching news:', error);
+        setArticles([]);
       } finally {
         setLoading(false);
       }
@@ -230,7 +229,7 @@ export default function NewsPage() {
         <NewsGrid articles={articles} />
       )}
 
-      {!loading && articles.length === 0 && (
+      {!loading && (!Array.isArray(articles) || articles.length === 0) && (
         <div className="text-center py-12">
           <p className="text-gray-500">No news articles available for {selectedCountry}/{selectedCategory}.</p>
         </div>

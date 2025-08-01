@@ -78,6 +78,10 @@ const NewsArticleSchema: Schema = new Schema({
     type: Date,
     default: Date.now,
     index: true
+  },
+  country: {
+    type: String,
+    index: true
   }
 }, {
   timestamps: true

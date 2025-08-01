@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AppError from '../../utils/AppError';
-import NewsArticle from '../../models/News';
+import NewsArticle from '../../models/NewsArticle';
 
 interface NewsAPIArticle {
   title: string;
@@ -36,19 +36,22 @@ export class NewsAPIService {
     try {
       console.log('🗞️  Starting news fetch from NewsAPI...');
       
-      const categories = ['world', 'nation', 'business', 'technology', 'entertainment', 'sports', 'science', 'health'];
+      const categories = ['business', 'technology', 'entertainment', 'sports', 'science', 'health', 'general'];
+      const countries = ['us', 'gb', 'ca'];
       let totalProcessed = 0;
 
-      for (const category of categories) {
-        try {
-          const articles = await this.getTopHeadlines(category);
-          const processed = await this.processArticles(articles, category);
-          totalProcessed += processed;
-          
-          // Respect NewsAPI rate limits
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-          console.error(`Failed to fetch ${category} articles:`, error);
+      for (const country of countries) {
+        for (const category of categories) {
+          try {
+            const articles = await this.getTopHeadlines(category, country);
+            const processed = await this.processArticles(articles, category, country);
+            totalProcessed += processed;
+            
+            // Respect NewsAPI rate limits
+            await new Promise(resolve => setTimeout(resolve, 500));
+          } catch (error) {
+            console.error(`Failed to fetch ${category}/${country} articles:`, error);
+          }
         }
       }
 
@@ -59,14 +62,14 @@ export class NewsAPIService {
     }
   }
 
-  private async getTopHeadlines(category: string): Promise<NewsAPIArticle[]> {
+  private async getTopHeadlines(category: string, country: string = 'us'): Promise<NewsAPIArticle[]> {
     try {
       const response = await axios.get(`${this.baseURL}/top-headlines`, {
         params: {
           apiKey: this.apiKey,
           category,
-          country: 'us',
-          pageSize: 5 // Small batch to respect rate limits
+          country,
+          pageSize: 20 // Increased batch size
         },
         timeout: 10000
       });
@@ -87,14 +90,14 @@ export class NewsAPIService {
     }
   }
 
-  private async processArticles(articles: NewsAPIArticle[], category: string): Promise<number> {
+  private async processArticles(articles: NewsAPIArticle[], category: string, country: string = 'us'): Promise<number> {
     let processed = 0;
     
     for (const article of articles) {
       try {
         // Check if article already exists
         const existingArticle = await NewsArticle.findOne({
-          originalUrl: article.url
+          url: article.url
         });
 
         if (existingArticle) {
@@ -105,31 +108,19 @@ export class NewsAPIService {
         const categoryDoc = await this.getCategoryByName(category);
 
         const newsArticle = new NewsArticle({
+          tenantId: process.env.DEFAULT_TENANT_ID || '6884bf4702e02fe6eb401303',
           title: article.title,
-          summary: article.description,
+          slug: this.generateSlug(article.title),
           content: this.cleanContent(article.content),
-          author: systemUserId,
-          authorName: article.author || article.source.name,
-          source: article.source.name,
+          excerpt: article.description?.substring(0, 200),
+          imageUrl: article.urlToImage,
+          author: article.author || article.source.name,
+          publishedAt: new Date(article.publishedAt),
           url: article.url,
           sourceName: article.source.name,
           sourceId: article.source.id || 'newsapi',
-          tenantId: process.env.DEFAULT_TENANT_ID || '6884bf4702e02fe6eb401303',
-          category: categoryDoc?._id || category,
-          tags: [category, article.source.name.toLowerCase()],
-          media: article.urlToImage ? [{
-            type: 'image',
-            url: article.urlToImage,
-            caption: article.title
-          }] : [],
-          publishedAt: new Date(article.publishedAt),
-          readTime: this.calculateReadTime(article.content),
-          seoMetadata: {
-            slug: this.generateSlug(article.title),
-            metaTitle: article.title.substring(0, 60),
-            metaDescription: article.description.substring(0, 160),
-            keywords: [category, article.source.name.toLowerCase()]
-          }
+          country: country,
+          category: category
         });
 
         await newsArticle.save();
