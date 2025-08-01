@@ -58,7 +58,15 @@ else
 fi
 
 echo ""
+# Initialize news scheduler
+echo "📰 Initializing news scheduler..."
+pnpm run news:scheduler > news-scheduler.log 2>&1 &
+NEWS_PID=$!
+echo "News scheduler PID: $NEWS_PID"
+
+echo ""
 echo "🚀 Servers are running!"
 echo "   Frontend: http://localhost:3001"
 echo "   Backend:  http://localhost:3000"
 echo "   Debug:    http://localhost:3001/debug"
+echo "   News logs: tail -f news-scheduler.log"

@@ -20,7 +20,7 @@ export const getNewsArticles = async (req: Request, res: Response) => {
       filter.category = category;
     }
     
-    const articles = await NewsArticle.find(filter as any).sort({ publishedAt: -1 }).limit(50);
+    const articles = await NewsArticle.find(filter as any).sort({ priority: 1, publishedAt: -1 }).limit(50);
     
     res.json({
       success: true,
@@ -37,10 +37,10 @@ export const getNewsCountries = async (req: Request, res: Response) => {
   res.json({
     success: true,
     data: [
-      { code: 'us', name: 'United States' },
-      { code: 'ca', name: 'Canada' },
-      { code: 'gb', name: 'United Kingdom' },
-      { code: 'scotland', name: 'Scotland' }
+      { code: 'us', name: 'United States', region: 'North America' },
+      { code: 'ca', name: 'Canada', region: 'North America' },
+      { code: 'gb', name: 'United Kingdom', region: 'Europe' },
+      { code: 'au', name: 'Australia', region: 'Oceania' }
     ]
   });
 };
@@ -49,13 +49,18 @@ export const getNewsCategories = async (req: Request, res: Response) => {
   res.json({
     success: true,
     data: [
-      { code: 'general', name: 'General' },
-      { code: 'business', name: 'Business' },
-      { code: 'technology', name: 'Technology' },
-      { code: 'entertainment', name: 'Entertainment' },
-      { code: 'health', name: 'Health' },
-      { code: 'science', name: 'Science' },
-      { code: 'sports', name: 'Sports' }
+      { code: 'general', name: 'General', icon: '📰' },
+      { code: 'business', name: 'Business', icon: '💼' },
+      { code: 'technology', name: 'Technology', icon: '💻' },
+      { code: 'entertainment', name: 'Entertainment', icon: '🎬' },
+      { code: 'health', name: 'Health', icon: '🏥' },
+      { code: 'science', name: 'Science', icon: '🔬' },
+      { code: 'sports', name: 'Sports', icon: '⚽' },
+      { code: 'events', name: 'Events', icon: '🎪' },
+      { code: 'world', name: 'World News', icon: '🌍' },
+      { code: 'uk-news', name: 'UK News', icon: '🇬🇧' },
+      { code: 'us-news', name: 'US News', icon: '🇺🇸' },
+      { code: 'sport', name: 'Sport', icon: '🏆' }
     ]
   });
 };

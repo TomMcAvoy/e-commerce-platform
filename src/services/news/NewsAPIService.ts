@@ -37,20 +37,23 @@ export class NewsAPIService {
       console.log('🗞️  Starting news fetch from NewsAPI...');
       
       const categories = ['business', 'technology', 'entertainment', 'sports', 'science', 'health', 'general'];
-      const countries = ['us', 'gb', 'ca'];
+      const countries = ['us', 'gb', 'ca', 'au'];
       let totalProcessed = 0;
 
       for (const country of countries) {
+        console.log(`🌍 Fetching news for country: ${country}`);
         for (const category of categories) {
           try {
+            console.log(`📂 Fetching ${category} articles for ${country}`);
             const articles = await this.getTopHeadlines(category, country);
+            console.log(`📄 Found ${articles.length} articles for ${category}/${country}`);
             const processed = await this.processArticles(articles, category, country);
             totalProcessed += processed;
             
             // Respect NewsAPI rate limits
             await new Promise(resolve => setTimeout(resolve, 500));
           } catch (error) {
-            console.error(`Failed to fetch ${category}/${country} articles:`, error);
+            console.error(`❌ Failed to fetch ${category}/${country} articles:`, error.message);
           }
         }
       }
@@ -120,7 +123,8 @@ export class NewsAPIService {
           sourceName: article.source.name,
           sourceId: article.source.id || 'newsapi',
           country: country,
-          category: category
+          category: category,
+          priority: 1 // High priority for articles with images
         });
 
         await newsArticle.save();

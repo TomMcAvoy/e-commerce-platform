@@ -27,6 +27,7 @@
     "seed": "ts-node src/seed.ts",
     "seed:news": "node scripts/seed-news-now.js",
     "fetch:news": "node scripts/fetch-real-news.js",
+    "news:scheduler": "node scripts/news-scheduler.js",
     "seed:full": "ts-node -e \"import { DatabaseSeeder } from './src/seeders/DatabaseSeeder'; new DatabaseSeeder().seedAll();\"",
     "seed:alibaba": "ts-node src/scripts/import-alibaba-data.ts",
     "db:clear": "ts-node -e \"import { DatabaseSeeder } from './src/seeders/DatabaseSeeder'; new DatabaseSeeder().clearAll();\"",
@@ -40,10 +41,12 @@
     "news:fetch": "pnpm run build && node scripts/fetch-google-news-rss.js"
   },
   "dependencies": {
+    "@types/cheerio": "^1.0.0",
     "@types/hpp": "^0.2.6",
     "@types/stripe": "^8.0.416",
     "axios": "^1.11.0",
     "bcryptjs": "^2.4.3",
+    "cheerio": "^1.1.2",
     "colors": "^1.4.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
